@@ -15,9 +15,9 @@ import Notification from './Notification';
 import Report from './Report';
 import Library from './Library';
 
-import * as Raphael from './static/raphael.min';
+import * as Raphael from './lib/raphael.min';
 window.Raphael = Raphael;
-import('./static/morris.min');
+import('./lib/morris.min');
 
 
 
