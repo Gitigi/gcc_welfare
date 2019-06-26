@@ -26,6 +26,7 @@ services :
   app :
     image: gcc-welfare
     volumes :
+      - .:/usr/src/app  #remove in production
       - data:/var/tmp
       - static:/etc/static
     environment :
