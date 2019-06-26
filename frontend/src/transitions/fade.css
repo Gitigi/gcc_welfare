@@ -1,0 +1,88 @@
+/* Basic fade transition */
+.fade-transition-enter {
+  opacity: 0.01;
+}
+
+.fade-transition-enter.fade-transition-enter-active {
+  opacity: 1;
+  transition: opacity 500ms ease-in;
+}
+
+fade-transition-exit {
+  opacity: 1;
+}
+
+.fade-transition-exit.fade-transition-exit-active {
+  opacity: 0.01;
+  transition: opacity 300ms ease-in;
+}
+
+.fade-transition-exit-done {
+  opacity: 0;
+  display: none;
+}
+/*END*/
+
+/*Fade Transition which sets visibility property instead of display*/
+.fade-transition-visible-enter {
+  opacity: 0.01;
+}
+
+.fade-transition-visible-enter.fade-transition-visible-enter-active {
+  opacity: 1;
+  transition: opacity 500ms ease-in;
+}
+
+fade-transition-visible-exit {
+  opacity: 1;
+}
+
+.fade-transition-visible-exit.fade-transition-visible-exit-active {
+  opacity: 0.01;
+  transition: opacity 300ms ease-in;
+}
+
+.fade-transition-visible-exit-done {
+  opacity: 0;
+  visibility: hidden;
+}
+/*END*/
+
+/*Fade Transition suitable for switching between elements*/
+.fade-transition-switch-enter {
+  opacity: 0.01;
+}
+
+.fade-transition-switch-enter.fade-transition-switch-enter-active {
+  opacity: 1;
+  transition: opacity 500ms ease-in;
+}
+
+fade-transition-switch-exit {
+  opacity: 1;
+}
+
+.fade-transition-switch-exit.fade-transition-switch-exit-active {
+  opacity: 0.01;
+  transition: opacity 300ms ease-in;
+}
+
+.fade-transition-switch-exit-done {
+  opacity: 0;
+  display: none;
+}
+
+.fade-transition-switch {
+  position: absolute;
+  top: 0;
+  padding: 1px;
+  margin: -1px;
+  width: 100%
+}
+
+.fade-transition-switch-enter,
+.fade-transition-switch-enter-active,
+.fade-transition-switch-enter-done{
+  position: relative;
+}
+/*END*/

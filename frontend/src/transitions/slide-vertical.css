@@ -1,0 +1,16 @@
+.slide-vertical-transition {
+  padding: 1px;
+  margin: -1px;
+  top: 0;
+  height: 100%;
+  width: 100%;
+}
+
+.slide-vertical-transition {
+  position: absolute;
+}
+.slide-vertical-transition-enter,
+.slide-vertical-transition-enter-active,
+.slide-vertical-transition-enter-done{
+  position: relative;
+}

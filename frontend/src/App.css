@@ -1,0 +1,65 @@
+.user-menu img.icon-user {
+  border-radius:50%;
+  width:33px;
+  margin-right: 4px;
+}
+
+.user-menu i.icon-user {
+  font-size: 1.5em;
+  vertical-align: middle;
+  padding: 2px 6px;
+}
+
+.user-menu .username {
+  font-size:13px;
+  color:#fff;
+}
+
+ul.user-menu > li > button {
+  color: #fff;
+  font-size: 16px;
+  padding: 2px 8px;
+  padding-right: 8px !important;
+  border-radius: 100px;
+  padding: 0px;
+  border: 1px solid #8b5c7e;
+  background: #8b5c7e;
+}
+
+ul.user-menu>li>button:hover,ul.user-menu>li>button:focus {
+  text-decoration:none;
+  color:#fff !important;
+  padding-right:8px !important;
+  border:1px solid #fa9fa4;
+  background:#fa9fa4 !important;
+  border-radius:100px;
+}
+
+ul.user-menu>li>button:hover .caret {
+  border-bottom-color:#000;
+  border-top-color: #000;
+}
+
+.nav.user-menu .open>a, .nav.user-menu .open>a:focus, .nav.user-menu .open>a:hover {
+   background:#fa9fa4 !important;
+  color:#fff !important;
+}
+
+.btn-circle {
+  width: 30px;
+  height: 30px;
+  padding: 6px 0;
+  border-radius: 15px;
+  text-align: center;
+  font-size: 12px;
+  line-height: 1.428571429;
+}
+
+.btn-circle.btn-lg {
+  width: 50px;
+  height: 50px;
+  padding: 10px 16px;
+  border-radius: 25px;
+  font-size: 18px;
+  line-height: 1.33;
+}
