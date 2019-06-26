@@ -30,8 +30,8 @@ class Login extends Component {
       self.props.userStore.setUser(response.data);
       let pathname = '/';
       if(this.props.location.state && this.props.location.state.from)
-        path = this.props.location.state.from;
-      self.props.history.replace({pathname})
+        pathname = this.props.location.state.from.pathname;
+        self.props.history.replace({pathname})
     },error=>{
       this.setState({loading: false})
     })
