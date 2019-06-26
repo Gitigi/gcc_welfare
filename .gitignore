@@ -163,3 +163,5 @@ frontend/static/js/index.min.js
 frontend/static/js/index.js.map
 
 frontend_angular/transpiled
+
+db.sqlite3
