@@ -11,7 +11,7 @@ fi
 
 if [ $DEPLOY_ENV == prod ] || [ $DEPLOY_ENV == stagging ];
 then
-	cd frontend && yarn build && cd ..
+	cd frontend && ln -sf $NODE_PATH node_modules && yarn build && cd ..
 fi
 
 python3 manage.py migrate --noinput
