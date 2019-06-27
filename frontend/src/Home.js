@@ -190,16 +190,20 @@ class Dashboard extends Component {
         <h2>Dashboard</h2>
         <div className="row">
             <div className="col-lg-3 col-md-6">
-              <Panel item="Upto Date Members" count={this.state.data.upto_date} icon="fa-balance-scale" />
+              <Panel item="Upto Date Members" count={this.state.data.upto_date} icon="fa-balance-scale"
+                detailsPath={{pathname:'/home/members',state: {status: 'upto-date'}}}/>
             </div>
             <div className="col-lg-3 col-md-6">
-              <Panel item="Lagging Members" count={this.state.data.lagging} icon="fa-s15 " color="green" />
+              <Panel item="Lagging Members" count={this.state.data.lagging} icon="fa-s15 " color="green"
+                detailsPath={{pathname:'/home/members',state: {status: 'lagging'}}}/>
             </div>
             <div className="col-lg-3 col-md-6">
-              <Panel item="Active Members" count={this.state.data.active} icon="fa-signing" color="yellow" />
+              <Panel item="Active Members" count={this.state.data.active} icon="fa-signing" color="yellow"
+                detailsPath={{pathname:'/home/members',state: {status: 'active'}}}/>
             </div>
             <div className="col-lg-3 col-md-6">
-              <Panel item="Suspended Members" count={this.state.data.suspended} icon="fa-thumb-tack" color="red" />
+              <Panel item="Suspended Members" count={this.state.data.suspended} icon="fa-thumb-tack" color="red"
+                detailsPath={{pathname:'/home/members',state: {status: 'suspended'}}}/>
             </div>
         </div>
 
@@ -233,14 +237,14 @@ class Panel extends Component {
           </div>
         </div>
       </div>
-      <a href="#">
+      <Link to={this.props.detailsPath || ''}>
         <div className="panel-footer">
             <span className="pull-left">View Details</span>
             <span className="pull-right"><i className="fa fa-arrow-circle-right"></i></span>
 
             <div className="clearfix"></div>
         </div>
-      </a>
+      </Link>
     </div>
   }
 }

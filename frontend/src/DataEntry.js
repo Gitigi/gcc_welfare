@@ -101,10 +101,11 @@ class Editor extends Component {
 }
 
 class List extends Component {
-	state = {members: [], status: '',contribution: '', search: '',all: false};
 	constructor(props){
 		super(props);
+		let status = this.props.location.state && this.props.location.state.status;
 
+		this.state = {members: [], status: status||'active' ,contribution: '', search: '',all: false};
 		console.log(this.props.location);
 	}
 	componentDidMount() {
