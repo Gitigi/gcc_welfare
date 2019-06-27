@@ -7,15 +7,6 @@ import './animated-switch.css';
 
 
 class AnimatedSwitch extends Component{
-  componentDidMount() {
-    this.unlisten = this.props.history.listen(_=> {
-      window.scrollTo(0,0);
-    })
-  }
-  componentWillUnmount() {
-    if(this.unlisten)
-      this.unlisten();
-  }
   render(){
     let index;
     let parentPath = this.props.match.path.replace(/^\/+|\/+$/g, '');

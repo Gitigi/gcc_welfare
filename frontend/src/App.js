@@ -10,6 +10,7 @@ import {FadeTransition} from './transitions';
 import Home from './Home';
 import Login from './Login';
 import {UserStore} from './store';
+import ScrollMemory from 'react-router-scroll-memory';
 
 const userStore = new UserStore();
 
@@ -24,6 +25,7 @@ class App extends Component {
     return <Provider userStore={userStore}>
         <Router>
             <div>
+              <ScrollMemory />
               <FadeTransition in={!this.state.loading}>
                 <div>
                   <Route
