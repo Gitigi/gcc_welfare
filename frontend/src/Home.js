@@ -15,6 +15,7 @@ import Notification from './Notification';
 import Report from './Report';
 import Library from './Library';
 
+import './library/morris.css';
 import * as Raphael from './library/raphael.min';
 window.Raphael = Raphael;
 import('./library/morris.min');
@@ -128,10 +129,10 @@ class Dashboard extends Component {
       this.setState({data: res.data});
       window.Morris.Bar({
         element: this.barChart.current,
-        data: res.data.annual_report,
+        data: this.formatDataForBarGraph(res.data.annual_report),
         xkey: 'period__month',
-        ykeys: ['total'],
-        labels: ['Total Amount', 'Months'],
+        ykeys: Object.keys(res.data.annual_report),
+        labels: Object.keys(res.data.annual_report),
         hideHover: 'auto',
         resize: true
       })
@@ -139,24 +140,47 @@ class Dashboard extends Component {
 
       window.Morris.Donut({
         element: this.donutChart.current,
-        data: [{
-            label: "Upto Date",
-            value: res.data.upto_date
-        }, {
-            label: "Lagging",
-            value: res.data.lagging
-        }, {
-            label: "Active",
-            value: res.data.active
-        }, {
-            label: "Suspended",
-            value: res.data.suspended
-        }],
+        data: this.formatDataForBarDonut(res.data),
         resize: true
     });
 
     })
 
+  }
+
+  formatDataForBarGraph(data) {
+    let years = Array.from(new Array(12), (_,index)=>{
+      let bar = {period__month: this.months[index]}
+      Object.keys(data).forEach((year)=>{
+        let m = data[year].find(v=>v.period__month == (index+1));
+        if(m){
+          bar[year] = m.total;
+        }else {
+          bar[year] = 0;
+        }
+      })
+      return bar;
+    })
+    return years;
+  }
+
+  formatDataForBarDonut(data) {
+    if (data.upto_date === 0 && data.active === 0 && data.suspended === 0 &&
+      data.lagging === 0)
+      return [{label: "No Members", value: 1}]
+    return [{
+        label: "Upto Date",
+        value: data.upto_date
+    }, {
+        label: "Lagging",
+        value: data.lagging
+    }, {
+        label: "Active",
+        value: data.active
+    }, {
+        label: "Suspended",
+        value: data.suspended
+    }]
   }
 
   render() {
@@ -181,7 +205,7 @@ class Dashboard extends Component {
 
         <div  className="clearfix"></div>
         <div className="row">
-          <h2 >Bar chart</h2>
+          <h2 ></h2>
           <div className="col-sm-6">
             <div ref={this.barChart} ></div>
           </div>

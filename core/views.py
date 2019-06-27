@@ -77,13 +77,16 @@ def dashboard_summary(request):
     active = Member.objects.filter(suspended=False)
     upto_date = Member.objects.all().filter(payment__period__year=today.year,payment__period__month=today.month).annotate(id_=Max('id')).filter(id = F('id_'))
     lagging = Member.objects.all().exclude(id__in=upto_date)
-    p = Payment.objects.filter(period__year=today.year).values('period__month').annotate(total=Sum('amount'))
+    #payment total per month for the last three years
+    p1 = Payment.objects.filter(period__year=today.year-2).values('period__month').annotate(total=Sum('amount'))
+    p2 = Payment.objects.filter(period__year=today.year-1).values('period__month').annotate(total=Sum('amount'))
+    p3 = Payment.objects.filter(period__year=today.year).values('period__month').annotate(total=Sum('amount'))
     response = {
         'suspended': suspended.count(),
         'active': active.count(),
         'upto_date': upto_date.count(),
         'lagging': lagging.count(),
-        'annual_report': list(p)
+        'annual_report': {today.year-2: list(p1), today.year-1: list(p2), today.year: list(p3)}
     }
     return Response(response)
 
