@@ -5,7 +5,6 @@ import PersonalDetailsForm from './PersonalDetailsForm';
 import ConfirmAction from './ConfirmAction';
 
 class PersonalDetails extends Component {
-  top = React.createRef();
   form = React.createRef();
   confirm = React.createRef();
 	emptyData = {children: '',first_name: '', middle_name: '', last_name: '',
@@ -51,7 +50,7 @@ class PersonalDetails extends Component {
     let error = this.validate(data);
     if(Object.keys(error).length){
       this.setState({error});
-      this.top.current.scrollIntoView();
+      window.scrollTo(0,0);
       return Promise.reject()
     }
 
@@ -61,12 +60,12 @@ class PersonalDetails extends Component {
         return axios.put(`/api/members/${id}/`,data).then(response=>{
           this.setState({data: response.data});
           return response;
-        },error=>(this.setState({error: error.response.data}),Promise.reject(error.response.data))).finally(_=>this.top.current.scrollIntoView());
+        },error=>(this.setState({error: error.response.data}),Promise.reject(error.response.data))).finally(_=>window.scrollTo(0,0));
       }else {
         return axios.post('/api/members/',data).then(response=>{
           this.setState({data: response.data});
           return response;
-        },error=>(this.setState({error: error.response.data}),Promise.reject(error.response.data))).finally(_=>this.top.current.scrollIntoView());
+        },error=>(this.setState({error: error.response.data}),Promise.reject(error.response.data))).finally(_=>window.scrollTo(0,0));
       }
     })
   }
@@ -94,7 +93,6 @@ class PersonalDetails extends Component {
 		let data = this.state.data;
 		return (
 			<div>
-        <div ref={this.top}></div>
         <div className={`alert alert-success ${this.state.saved ? 'show' : 'hide'}`} role="alert">
           Successfully saved
         </div>
