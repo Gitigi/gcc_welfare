@@ -106,7 +106,6 @@ class List extends Component {
 		let status = this.props.location.state && this.props.location.state.status;
 
 		this.state = {members: [], status: status||'active' ,contribution: '', search: '',all: false};
-		console.log(this.props.location);
 	}
 	componentDidMount() {
 		this.fetchData()

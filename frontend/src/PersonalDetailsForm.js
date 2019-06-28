@@ -7,7 +7,7 @@ export default class PersonalDetailsForm extends Component {
 	constructor(props) {
     super(props);
     
-    this.state = {married: false,age: '', child_firstname: '',child_middlename: ''};
+    this.state = {married: false,age: '', child: {first_name: '', middle_name: '', dob: ''},localError: {}};
   }
 
   static getDerivedStateFromProps(props,state){
@@ -15,6 +15,9 @@ export default class PersonalDetailsForm extends Component {
   		let dob = props.data.dob.split('-').reverse().join('/');
   		let data = {...props.data};
 	  	data.dob = dob;
+	  	data.children.forEach((v,i)=>{
+	  		data.children[i].dob = v.dob.split('-').reverse().join('/');
+	  	})
 	  	return {data, age: PersonalDetailsForm.calculateAge(dob),
 	  		married: props.data.spouse_first_name ? true : false};
   	}
@@ -26,6 +29,9 @@ export default class PersonalDetailsForm extends Component {
   getData() {
   	let data = {...this.state.data};
   	data.dob = data.dob.split('/').reverse().join('-');
+  	data.children.forEach((v,i)=>{
+  		data.children[i].dob = v.dob.split('/').reverse().join('-'); 
+  	})
   	return data;
   }
 
@@ -42,8 +48,14 @@ export default class PersonalDetailsForm extends Component {
   }
 
   handleNewChildInput(field,event){
-  	console.log(field);
-  	this.setState({[field]: event.target.value});
+  	let value = event.target.value;
+  	this.setState(state=>(state.child[field]=value,state));
+  }
+
+  handleChildEdit(field,index,event) {
+  	let children = this.state.data.children.splice(0);
+  	children[index][field] = event.target.value;
+  	this.setState(state=>(state.data.children = children,state))
   }
 
   handleDOBInput(e){
@@ -69,18 +81,36 @@ export default class PersonalDetailsForm extends Component {
   }
 
   addChild(){
-  	if(this.state.child_firstname && this.state.child_middlename){
-  		let children = this.state.data.children.length ? (this.state.data.children + ';') : '';
-  		children  += this.state.child_firstname + ':' + this.state.child_middlename;
-  		this.setState(state => (state.data.children = children, state));
+  	if(this.state.child.first_name && this.state.child.middle_name && this.state.child.dob){
+  		//delete any error messesage on new child input
+  		let e = {...this.state.localError};
+  		delete e['child_first_name'];
+  		delete e['child_middle_name'];
+  		delete e['child_dob'];
+
+  		let children = this.state.data.children.splice(0);
+  		children.push({...this.state.child});
+  		this.setState(state => (state.data.children = children,state.localError = e,
+  			state.child = {first_name: '',middle_name: '', dob: ''},state));
+  	}else {
+  		let e = {}
+  		if(!this.state.child.first_name){
+  			e['child_first_name'] = 'This field is required';
+  		}
+  		if(!this.state.child.middle_name){
+  			e['child_middle_name'] = 'This field is required';
+  		}
+  		if(!this.state.child.dob){
+  			e['child_dob'] = 'This field is required';
+  		}
+  		this.setState({localError: e});
   	}
   }
 
   removeChild(index){
-  	let children = this.state.data.children.split(';');
+  	let children = this.state.data.children.splice(0);
   	children.splice(index,1);
-  	this.setState({children: children.join(';')})
-  	this.setState(state => (state.data.children = children.join(';'),state));
+  	this.setState(state => (state.data.children = children,state));
   }
 
   handleMarried(e) {
@@ -97,6 +127,7 @@ export default class PersonalDetailsForm extends Component {
 		let id = this.props.id;
 		let data = this.state.data;
 		let error = this.props.error;
+		let childrenError = error.children || {};
 		return (
 			<div>
 				
@@ -260,34 +291,59 @@ export default class PersonalDetailsForm extends Component {
 					<legend>Children Details:</legend>
 					<div className="form-group">
 						<label htmlFor="inputCFirstname" className="col-sm-2 control-label">Children</label>
-						<div className="col-sm-10">
+						<div>
 							<div className="row">
-								{this.state.data.children.length > 0 && this.state.data.children.split(';').map((child,index)=>(
+								{this.state.data.children.map((child,index)=>(
 									<div key={index} className="col-sm-12">
 										<div className="row">
-											<p className="text-left col-sm-5">{child.split(':').join(' ')}</p>
-											<i onClick={this.removeChild.bind(this,index)} className="col-sm-1 glyphicon glyphicon-remove"></i>
-										</div>
+											<div className={`form-group col-sm-4 ${childrenError[index] && childrenError[index].first_name ? 'has-error': ''}`}>
+												<label className="col-sm-3">First Name</label>
+												<div className="col-sm-9">
+										      <input value={this.state.data.children[index].first_name} onChange={this.handleChildEdit.bind(this,'first_name',index)} type="text" className="form-control" />
+										    </div>
+									    </div>
+									    <div className={`form-group col-sm-4 ${childrenError[index] && childrenError[index].middle_name ? 'has-error': ''}`}>
+									    	<label className="col-sm-3">Last name</label>
+										    <div className="col-sm-9">
+										      <input value={this.state.data.children[index].middle_name} onChange={this.handleChildEdit.bind(this,'middle_name',index)} type="text" className="form-control" />
+										    </div>
+									   	</div>
+									   	<div className={`form-group col-sm-4 ${childrenError[index] && childrenError[index].dob ? 'has-error': ''}`}>
+									    	<label className="col-sm-3">Date of Birth</label>
+										    <div className="col-sm-9">
+										      <input value={this.state.data.children[index].dob} onChange={this.handleChildEdit.bind(this,'dob',index)} type="text" placeholder="dd/mm/year" className="form-control" />
+										    </div>
+									   	</div>
+									    <div className="col-sm-1">
+									      <button onClick={this.removeChild.bind(this,index)} type="button" className="form-control btn btn-danger btn-circle" id="inputAddChild"><i className="glyphicon glyphicon-remove"/></button>
+									    </div>
+								    </div>
 									</div>)
 								)}
 							</div>
 						</div>
 						<div className="clearfix" />
 						<div className="row">
-							<div className="form-group col-sm-5">
+							<div className={`form-group col-sm-4 ${this.state.localError.child_first_name ? 'has-error': ''}`}>
 								<label className="col-sm-3">First Name</label>
 								<div className="col-sm-9">
-						      <input value={this.state.child_firstname} onChange={this.handleNewChildInput.bind(this,'child_firstname')} type="text" className="form-control" id="inputCFirstname" />
+						      <input value={this.state.child.first_name} onChange={this.handleNewChildInput.bind(this,'first_name')} type="text" className="form-control" id="inputCFirstname" />
 						    </div>
 					    </div>
-					    <div className="form-group col-sm-5">
+					    <div className={`form-group col-sm-4 ${this.state.localError.child_middle_name ? 'has-error': ''}`}>
 					    	<label className="col-sm-3">Last name</label>
 						    <div className="col-sm-9">
-						      <input value={this.state.child_middlename} onChange={this.handleNewChildInput.bind(this,'child_middlename')} type="text" className="form-control" id="inputCMiddlename" />
+						      <input value={this.state.child.middle_name} onChange={this.handleNewChildInput.bind(this,'middle_name')} type="text" className="form-control" id="inputCMiddlename" />
+						    </div>
+					   	</div>
+					   	<div className={`form-group col-sm-4 ${this.state.localError.child_dob ? 'has-error': ''}`}>
+					    	<label className="col-sm-3">Date of Birth</label>
+						    <div className="col-sm-9">
+						      <input value={this.state.child.dob} onChange={this.handleNewChildInput.bind(this,'dob')} type="text" placeholder="dd/mm/year" className="form-control" id="inputCMiddlename" />
 						    </div>
 					   	</div>
 					    <div className="col-sm-1">
-					      <button onClick={this.addChild.bind(this)} type="button" className="form-control btn btn-success" id="inputAddChild"><i className="glyphicon glyphicon-plus"/></button>
+					      <button onClick={this.addChild.bind(this)} type="button" className="form-control btn btn-success btn-circle" id="inputAddChild"><i className="glyphicon glyphicon-plus"/></button>
 					    </div>
 				    </div>
 					</div>

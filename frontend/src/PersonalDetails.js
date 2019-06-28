@@ -7,7 +7,7 @@ import ConfirmAction from './ConfirmAction';
 class PersonalDetails extends Component {
   form = React.createRef();
   confirm = React.createRef();
-	emptyData = {children: '',first_name: '', middle_name: '', last_name: '',
+	emptyData = {children: [],first_name: '', middle_name: '', last_name: '',
   	id_no: '', address: '',code: '', city: '', mobile_no: '', email: '', nhif_no: '',
   	spouse_first_name: '',spouse_middle_name: '',spouse_last_name: '', spouse_id_no: 0, spouse_mobile_no: '',
   	father_first_name: '',father_middle_name: '',father_last_name: '',
@@ -27,8 +27,15 @@ class PersonalDetails extends Component {
   	
   }
 
+  validateDate(date) {
+    let d = new Date(date.split('/').reverse().join('/'));
+    return d.getDate() ? true : false
+  }
+
   validate(data) {
+
     let error = {}
+    let children_error = {}
     if(!data.first_name)
       error['first_name'] = 'This field is required';
     if(!data.middle_name)
@@ -39,8 +46,26 @@ class PersonalDetails extends Component {
       error['id_no'] = 'This field is required';
     if(!data.mobile_no)
       error['mobile_no'] = 'This field is required';
-    if(!data.dob)
+    if(!data.dob || !this.validateDate(data.dob))
       error['dob'] = 'This field is required';
+
+    data.children.forEach((v,i)=>{
+      let e = {};
+      if(!v.first_name){
+        e['first_name'] = 'This field is required';
+      }
+      if(!v.middle_name){
+        e['middle_name'] = 'This field is required';
+      }
+      if(!v.dob || !this.validateDate(v.dob)){
+        e['dob'] = 'This field is required';
+      }
+      if(Object.keys(e).length)
+        children_error[i] = e;
+    })
+
+    if(Object.keys(children_error).length)
+      error['children'] = children_error;
 
     return error;
   }

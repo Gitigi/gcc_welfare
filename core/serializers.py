@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
-from core.models import Member, Payment, Banking, Note, Notification, Library, Claim
+from core.models import Member, Child, Payment, Banking, Note, Notification, Library, Claim
 
 # Serializers define the API representation.
 class UserSerializer(serializers.ModelSerializer):
@@ -9,12 +9,31 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ('username',)
 
 class MemberSerializer(serializers.ModelSerializer):
+	children = serializers.SerializerMethodField()
+
+	def get_children(self,obj):
+		query = []
+		if obj.gender == 'M':
+			query = obj.fathered.all()
+			if obj.spouse:
+				query |= obj.spouse.mothered.all()
+		else:
+			query = obj.mothered.all()
+			if obj.spouse:
+				query |= obj.spouse.fathered.all()
+		return ChildSerializer(query,many=True).data
+
 	class Meta:
 		model = Member
 		fields = ('id','first_name','middle_name','last_name','id_no','address','code','city',
 			'mobile_no','email','nhif_no','spouse_first_name','spouse_middle_name','spouse_last_name','spouse_id_no','spouse_mobile_no',
 			'children','father_first_name','father_middle_name','father_last_name',
 			'mother_first_name','mother_middle_name','mother_last_name','reg','suspended','salutation','gender','dob','date_joined')
+
+class ChildSerializer(serializers.ModelSerializer):
+	class Meta:
+		model = Child
+		fields = ('id','first_name','middle_name','dob','father','mother')
 
 class BankingSerializer(serializers.ModelSerializer):
 	class Meta:

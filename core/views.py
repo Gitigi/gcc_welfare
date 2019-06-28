@@ -4,8 +4,8 @@ from django.views.decorators.csrf import ensure_csrf_cookie
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import viewsets,status
-from core.serializers import UserSerializer, MemberSerializer, PaymentSerializer, BankingSerializer, NoteSerializer, NotificationSerializer, LibrarySerializer, ClaimSerializer
-from core.models import Member,Payment,Banking,Note, Notification, Library, Claim
+from core.serializers import UserSerializer, MemberSerializer, PaymentSerializer, BankingSerializer, NoteSerializer, NotificationSerializer, LibrarySerializer, ClaimSerializer, ChildSerializer
+from core.models import Member,Payment,Banking,Note, Notification, Library, Claim, Child
 import datetime
 from dateutil.relativedelta import relativedelta
 from django.db.models import Q,Sum,Max,F
@@ -115,6 +115,72 @@ class MemberViewSet(viewsets.ModelViewSet):
                 Q(last_name__startswith=self.request.GET.get('search')))
 
         return members
+
+    def create(self,request):
+        serializer = MemberSerializer(data=request.data)
+        serializer_children = ChildSerializer(data=request.data.get('children',[]),many=True)
+        if not serializer.is_valid() or not serializer_children.is_valid():
+            errors = serializer.errors
+            errors['children'] = serializer_children.errors
+            return Response(errors,status.HTTP_400_BAD_REQUEST)
+        serializer.save()
+        serializer_children.save()
+        parent_role = 'father'
+        for child in serializer_children.instance:
+            setattr(child,parent_role,serializer.instance)
+            child.save()
+        return Response(MemberSerializer(serializer.instance).data)
+
+    def update(self,request,pk):
+        member = Member.objects.get(id=pk)
+        serializer = MemberSerializer(member,request.data,partial=True)
+        error = False
+        if not serializer.is_valid():
+            return Response(serializers.errors,status.HTTP_400_BAD_REQUEST)
+        
+        # c = self.update_children(request.data.get('children',[]),member)
+        c = self.validate_children(request.data.get('children',[]),member)
+        if c[0]:
+            return Response({'children': c[1]},status.HTTP_400_BAD_REQUEST)
+        serializer.save()
+        self.update_children(c[2],serializer.instance)
+        return Response(MemberSerializer(member).data)
+
+    def update_children(self,serializers,member):
+        #check for missing children - those that have been deleted
+        children_ids = list(map(lambda x: not getattr(x,'many',False) and x.validated_data.get('id'),serializers))
+        children_ids = list(filter(lambda x: x,children_ids))
+        children_objs = getattr(member,'fathered' if member.gender == 'M' else 'mothered').all().values('id')
+        children_objs_id = [c['id'] for c in list(children_objs)]
+        deleted_children_ids =  set(children_objs_id).difference(set(children_ids))
+        Child.objects.filter(id__in=deleted_children_ids).delete()
+
+        data = []
+        for s in serializers:
+            if s.instance:
+                s.save()
+                data.append(s.data)
+            else:
+                parent_role = 'father' if member.gender == 'M' else 'mother'
+                parent = {parent_role: member}
+                if member.spouse:
+                    parent['father' if parent_role == 'mother' else 'mother'] = member.spouse
+                s_obj = s.save(**parent)
+                data += s.data if type(s.data) == type([]) else [s.data]
+        return data
+
+    def validate_children(self,children,member):
+        existing_children = list(filter(lambda x: x.get('id'),children))
+        new_children = list(filter(lambda x: not x.get('id'),children))
+        existing_children_serializer = list(map(lambda x: ChildSerializer(Child.objects.get(id=x['id']),x,partial=True),existing_children))
+        new_children_serializer = ChildSerializer(data=new_children,many=True)
+        existing_children_error = list(map(lambda x: (x.is_valid() or True) and x.errors,existing_children_serializer))
+        new_children_serializer.is_valid()
+        errors = existing_children_error + new_children_serializer.errors
+        serializers = existing_children_serializer + [new_children_serializer]
+        has_error =  True in [bool(a) for a in errors]
+        return (has_error,errors,serializers)
+
 
 class BankingViewSet(viewsets.ModelViewSet):
     queryset = Banking.objects.all()

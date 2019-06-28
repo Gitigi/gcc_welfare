@@ -12,12 +12,12 @@ class Member(models.Model):
     mobile_no = models.CharField(max_length=15,blank=False,null=False)
     email = models.CharField(max_length=30,blank=True,default='')
     nhif_no = models.CharField(max_length=30,blank=True, default='')
+    spouse = models.ForeignKey("self", on_delete=models.SET_NULL,blank=True,null=True)
     spouse_first_name = models.CharField(max_length=40,blank=True, default='')
     spouse_middle_name = models.CharField(max_length=40,blank=True, default='')
     spouse_last_name = models.CharField(max_length=40,blank=True, default='')
     spouse_id_no = models.IntegerField(null=True)
     spouse_mobile_no = models.CharField(max_length=15,blank=True, default='')
-    children = models.TextField(blank=True,default='')
     father_first_name=models.CharField(max_length=40,blank=True, default='')
     father_middle_name=models.CharField(max_length=40,blank=True, default='')
     father_last_name=models.CharField(max_length=40,blank=True, default='')
@@ -38,6 +38,13 @@ class Member(models.Model):
 
     def __str__(self):
         return self.first_name + ' ' + self.middle_name + ' ' + self.last_name + ';' + str(self.id)
+
+class Child(models.Model):
+    first_name = models.CharField(max_length=30,blank=False,null=False,default='')
+    middle_name = models.CharField(max_length=30,blank=False,null=False,default='')
+    dob = models.DateField(null=False,blank=False)
+    father = models.ForeignKey(Member, on_delete=models.SET_NULL,null=True,related_name='fathered')
+    mother = models.ForeignKey(Member, on_delete=models.SET_NULL,null=True,related_name='mothered')
 
 class Payment(models.Model):
     member = models.ForeignKey(Member, on_delete=models.CASCADE)
