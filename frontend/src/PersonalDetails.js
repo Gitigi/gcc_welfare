@@ -96,7 +96,7 @@ class PersonalDetails extends Component {
   }
 
   apply(){
-  	this.submit().then(res=>this.setState({data: res.data,saved: true}));
+  	this.submit().then(res=>this.setState({data: res.data,error: {},saved: true}));
     setTimeout(_=>this.setState({saved: false}),4000);
   }
 
