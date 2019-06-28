@@ -115,7 +115,7 @@ class PaymentList extends Component {
 class PaymentForm extends Component {
 	confirm = React.createRef();
 	emptyData = {method: 'CA',amount: '', member: '', ref_no: '',
-		phone_no: '', date: ''}
+		phone_no: '', date: '',bank_name: ''}
 	state = {data: {...this.emptyData},error: {},saved: false,member: {}};
 
 	handleInput(field,e) {
@@ -138,6 +138,24 @@ class PaymentForm extends Component {
 			error['amount'] = 'This field is required';
 		if(!data.method)
 			error['method'] = 'This field is required';
+
+		if(data.method == 'MP'){
+			if(!data.phone_no)
+				error['phone_no'] = 'This field is required';
+			if(!data.ref_no)
+				error['ref_no'] = 'This field is required';
+			if(!data.date)
+				error['date'] = 'This field is required';
+		}
+
+		if(data.method == 'BK'){
+			if(!data.bank_name)
+				error['bank_name'] = 'This field is required';
+			if(!data.ref_no)
+				error['ref_no'] = 'This field is required';
+			if(!data.date)
+				error['date'] = 'This field is required';
+		}
 
 		return error;
 	}
@@ -225,7 +243,7 @@ class PaymentForm extends Component {
 					  <div className={`form-group col-sm-6 ${error.date ? 'has-error': ''}`}>
 							<label className="col-sm-3 control-label">Date</label>
 							<div className="col-sm-9">
-					      <input value={this.state.data.date} onChange={this.handleInput.bind(this,'date')} type="text" className="form-control" />
+					      <input value={this.state.data.date} onChange={this.handleInput.bind(this,'date')} type="text" placeholder="dd/mm/year" className="form-control" />
 					    </div>
 					  </div>
 				  </>}
@@ -246,7 +264,7 @@ class PaymentForm extends Component {
 					  <div className={`form-group col-sm-6 ${error.date ? 'has-error': ''}`}>
 							<label className="col-sm-3 control-label">Date</label>
 							<div className="col-sm-9">
-					      <input value={this.state.data.date} onChange={this.handleInput.bind(this,'date')} type="text" className="form-control" />
+					      <input value={this.state.data.date} onChange={this.handleInput.bind(this,'date')} type="text" placeholder="dd/mm/year" className="form-control" />
 					    </div>
 					  </div>
 				  </>}
