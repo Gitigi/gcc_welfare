@@ -134,7 +134,7 @@ class PaymentForm extends Component {
 		let error = {}
 		if(!data.member)
 			error['member'] = 'This field is required';
-		if(!data.amount)
+		if(!data.amount || parseInt(data.amount) <= 0)
 			error['amount'] = 'This field is required';
 		if(!data.method)
 			error['method'] = 'This field is required';
