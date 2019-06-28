@@ -122,7 +122,7 @@ class ClaimList extends Component {
 
 class ClaimForm extends Component {
 	confirm = React.createRef();
-	emptyData = {bank_name: '',amount: 0, account: '', date: '',disbursement: 'CA',reason: '',member: ''}
+	emptyData = {bank_name: '',amount: '', account: '', date: '',disbursement: 'CA',reason: '',member: ''}
 	state = {data: {...this.emptyData},error: {},saved: false,member: {}};
 	handleChange(field,e) {
 		let value = e.target.value;
@@ -138,7 +138,31 @@ class ClaimForm extends Component {
 		this.setState(state=>(state.data.member=member.id,state.member=member,state));
 	}
 
+	validate(data) {
+		let error = {}
+		if(!data.bank_name)
+			error['bank_name'] = 'This field is required';
+		if(!data.amount || parseInt(data.amount) <= 0)
+			error['amount'] = 'This field is required';
+		if(!data.account)
+			error['account'] = 'This field is required';
+		if(!data.date)
+			error['date'] = 'This field is required';
+		if(!data.disbursement)
+			error['disbursement'] = 'This field is required';
+		if(!data.member)
+			error['member'] = 'This field is required';
+
+		return error;
+	}
+
 	submit() {
+		let error = this.validate(this.state.data);
+    if(Object.keys(error).length){
+      this.setState({error});
+      return Promise.reject()
+    }
+
 		return this.confirm.current.show().then(_=>{
 			let data = this.state.data;
 			data.date = data.date.split('/').reverse().join('-');
