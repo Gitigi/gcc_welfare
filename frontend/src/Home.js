@@ -82,7 +82,7 @@ class Home extends Component {
           <ul className="nav nav-sidebar">
             <NavLink exact to={`${match.url}/dashboard`}  activeClassName='active'>Dashboard</NavLink>
             <NavLink to={`${match.url}/members`}  activeClassName='active'>Members</NavLink>
-            <NavLink to={`${match.url}/payments`}  activeClassName='active'>Payments</NavLink>
+            <NavLink to={`${match.url}/receipt`}  activeClassName='active'>Receipt</NavLink>
             <NavLink to={`${match.url}/banking`}  activeClassName='active'>Banking</NavLink>
             <NavLink to={`${match.url}/claim`}  activeClassName='active'>Claim</NavLink>
             <NavLink to={`${match.url}/notification`}  activeClassName='active'>Notification</NavLink>
@@ -98,7 +98,7 @@ class Home extends Component {
           />
           <AnimatedSwitch>
             <Route path={`${match.path}/members`} component={DataEntry} />
-            <Route path={`${match.path}/payments`} component={Payment} />
+            <Route path={`${match.path}/receipt`} component={Payment} />
             <Route path={`${match.path}/dashboard`} component={Dashboard} />
             <Route path={`${match.path}/banking`} component={Banking} />
             <Route path={`${match.path}/claim`} component={Claim} />

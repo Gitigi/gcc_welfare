@@ -60,7 +60,7 @@ class PaymentList extends Component {
 	render() {
 		return (
 			<div>
-				<h1 className='text-center'>Payment</h1>
+				<h1 className='text-center'>Receipt</h1>
 				<div className="row">
 					<Link to={`${this.props.match.url}/new`} className="btn btn-success col-sm-2 col-sm-offset-5">Record Payment <i className='glyphicon glyphicon-plus'></i></Link>
 				</div>
@@ -115,7 +115,7 @@ class PaymentList extends Component {
 class PaymentForm extends Component {
 	confirm = React.createRef();
 	emptyData = {method: 'CA',amount: '', member: '', ref_no: '',
-		phone_no: '', date: '',receipt: ''}
+		phone_no: '', date: ''}
 	state = {data: {...this.emptyData},error: {},saved: false,member: {}};
 
 	handleInput(field,e) {
@@ -160,7 +160,7 @@ class PaymentForm extends Component {
 	}
 
 	save() {
-		this.submit().then(()=>this.props.history.push('/home/payments'));
+		this.submit().then(()=>this.props.history.push('/home/receipt'));
 	}
 
 	saveContinue() {
@@ -169,7 +169,7 @@ class PaymentForm extends Component {
 	}
 
 	close() {
-		this.props.history.push('/home/payments')
+		this.props.history.push('/home/receipt')
 	}
 
 	render() {
@@ -208,15 +208,6 @@ class PaymentForm extends Component {
 			    </div>
 				</div>
 
-
-					{this.state.data.method === "CA" && <>
-						<div className={`form-group col-sm-6 ${error.receipt ? 'has-error': ''}`}>
-							<label className="col-sm-3 control-label">Receipt</label>
-							<div className="col-sm-9">
-					      <input value={this.state.data.receipt} onChange={this.handleInput.bind(this,'receipt')} type="text" className="form-control" />
-					    </div>
-					  </div>
-				  </>}
 
 				  {this.state.data.method === "MP" && <>
 				  	<div className={`form-group col-sm-6 ${error.phone_no ? 'has-error': ''}`}>
