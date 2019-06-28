@@ -26,9 +26,9 @@ class MemberSerializer(serializers.ModelSerializer):
 	class Meta:
 		model = Member
 		fields = ('id','first_name','middle_name','last_name','id_no','address','code','city',
-			'mobile_no','email','nhif_no','spouse_first_name','spouse_middle_name','spouse_last_name','spouse_id_no','spouse_mobile_no',
+			'mobile_no','email','nhif_no','spouse',
 			'children','father_first_name','father_middle_name','father_last_name',
-			'mother_first_name','mother_middle_name','mother_last_name','reg','suspended','salutation','gender','dob','date_joined')
+			'mother_first_name','mother_middle_name','mother_last_name','reg','suspended','salutation','gender','dob','date_joined','dummy')
 
 class ChildSerializer(serializers.ModelSerializer):
 	class Meta:

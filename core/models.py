@@ -13,11 +13,6 @@ class Member(models.Model):
     email = models.CharField(max_length=30,blank=True,default='')
     nhif_no = models.CharField(max_length=30,blank=True, default='')
     spouse = models.ForeignKey("self", on_delete=models.SET_NULL,blank=True,null=True)
-    spouse_first_name = models.CharField(max_length=40,blank=True, default='')
-    spouse_middle_name = models.CharField(max_length=40,blank=True, default='')
-    spouse_last_name = models.CharField(max_length=40,blank=True, default='')
-    spouse_id_no = models.IntegerField(null=True)
-    spouse_mobile_no = models.CharField(max_length=15,blank=True, default='')
     father_first_name=models.CharField(max_length=40,blank=True, default='')
     father_middle_name=models.CharField(max_length=40,blank=True, default='')
     father_last_name=models.CharField(max_length=40,blank=True, default='')
@@ -30,6 +25,7 @@ class Member(models.Model):
     salutation = models.CharField(max_length=10,default='',blank=True)
     gender = models.CharField(max_length=1,choices=[('M','male'),('F','female')],default='M',blank=False,null=False)
     dob = models.DateField(null=False,blank=True,default=timezone.now)
+    dummy = models.BooleanField(default=False)
 
     @property
     def reg(self):

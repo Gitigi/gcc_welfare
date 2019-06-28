@@ -59,7 +59,7 @@ def defaulters_report(request):
     today = datetime.datetime.today()
     #get list of member who have contributed for current period
     p = Payment.objects.filter(period__year=today.year,period__month=today.month).values_list('member')
-    m = Member.objects.all().exclude(id__in=p).annotate(period=Max('payment__period')).values('id','first_name','middle_name','last_name','date_joined','period')
+    m = Member.objects.filter(dummy=False).exclude(id__in=p).annotate(period=Max('payment__period')).values('id','first_name','middle_name','last_name','date_joined','period')
     return Response(list(m))
 
 @api_view(['GET'])
@@ -73,10 +73,10 @@ def payment_report(request):
 @api_view(['GET'])
 def dashboard_summary(request):
     today = datetime.datetime.today()
-    suspended = Member.objects.filter(suspended=True)
-    active = Member.objects.filter(suspended=False)
-    upto_date = Member.objects.all().filter(payment__period__year=today.year,payment__period__month=today.month).annotate(id_=Max('id')).filter(id = F('id_'))
-    lagging = Member.objects.all().exclude(id__in=upto_date)
+    suspended = Member.objects.filter(dummy=False,suspended=True)
+    active = Member.objects.filter(dummy=False,suspended=False)
+    upto_date = Member.objects.all().filter(dummy=False,payment__period__year=today.year,payment__period__month=today.month).annotate(id_=Max('id')).filter(id = F('id_'))
+    lagging = Member.objects.all().filter(dummy=False).exclude(id__in=upto_date)
     #payment total per month for the last three years
     p1 = Payment.objects.filter(period__year=today.year-2).values('period__month').annotate(total=Sum('amount'))
     p2 = Payment.objects.filter(period__year=today.year-1).values('period__month').annotate(total=Sum('amount'))
@@ -101,13 +101,13 @@ class MemberViewSet(viewsets.ModelViewSet):
         p = Payment.objects.filter(period__year=today.year,period__month=today.month).values_list('member')
         if self.request.GET.get('status'):
             if self.request.GET['status'] == 'active':
-                members = members.filter(suspended=False)
+                members = members.filter(dummy=False,suspended=False)
             elif self.request.GET['status'] == 'suspended':
-                members = members.filter(suspended=True)
+                members = members.filter(dummy=False,suspended=True)
             elif self.request.GET['status'] == 'upto-date':
-                members = members.filter(suspended=False).filter(id__in = p)
+                members = members.filter(dummy=False,suspended=False).filter(id__in = p)
             elif self.request.GET['status'] == 'lagging':
-                members = members.filter(suspended=False).exclude(id__in = p)
+                members = members.filter(dummy=False,suspended=False).exclude(id__in = p)
         if self.request.GET.get('search'):
             members = members.filter(
                 Q(first_name__startswith=self.request.GET.get('search')) |
@@ -119,32 +119,116 @@ class MemberViewSet(viewsets.ModelViewSet):
     def create(self,request):
         serializer = MemberSerializer(data=request.data)
         serializer_children = ChildSerializer(data=request.data.get('children',[]),many=True)
-        if not serializer.is_valid() or not serializer_children.is_valid():
+        errors = {}
+        if not serializer.is_valid():
             errors = serializer.errors
+
+        serializer_spouse = None
+        if(request.data.get('married')):
+            if not request.data.get('spouse_details',{}) and not request.data.get('spouse'):
+                errors['spouse_details'] = {'spouse': 'This field may not be blank'}
+            else:
+                serializer_spouse = self.validate_spouse_details(request.data)
+                if serializer_spouse.errors:
+                    errors['spouse_details'] = serializer_spouse.errors
+
+        if not serializer_children.is_valid():
             errors['children'] = serializer_children.errors
+        if errors:
             return Response(errors,status.HTTP_400_BAD_REQUEST)
-        serializer.save()
+
+        member = serializer.save()
         serializer_children.save()
-        parent_role = 'father'
+
+        parent_role = 'father' if member.gender == 'M' else 'mother'
         for child in serializer_children.instance:
             setattr(child,parent_role,serializer.instance)
             child.save()
+
+        self.update_spouse(serializer_spouse,member)
         return Response(MemberSerializer(serializer.instance).data)
 
     def update(self,request,pk):
         member = Member.objects.get(id=pk)
         serializer = MemberSerializer(member,request.data,partial=True)
-        error = False
+        errors = {}
         if not serializer.is_valid():
-            return Response(serializers.errors,status.HTTP_400_BAD_REQUEST)
+            errors = serializer.errors
         
-        # c = self.update_children(request.data.get('children',[]),member)
+        serializer_spouse = None
+        if(request.data.get('married')):
+            if not request.data.get('spouse_details',{}) and not request.data.get('spouse'):
+                errors['spouse_details'] = {'spouse': 'This field may not be blank'}
+            else:
+                serializer_spouse = self.validate_spouse_details(request.data)
+                if serializer_spouse.errors:
+                    errors['spouse_details'] = serializer_spouse.errors
+
         c = self.validate_children(request.data.get('children',[]),member)
         if c[0]:
-            return Response({'children': c[1]},status.HTTP_400_BAD_REQUEST)
-        serializer.save()
+            errors['children'] = c[1]
+        if errors:
+            return Response(errors,status.HTTP_400_BAD_REQUEST)
+
+        member = serializer.save()
+        #update children first to prevent any children created due to marriage from being deleted
         self.update_children(c[2],serializer.instance)
+        self.update_spouse(serializer_spouse,member)
+        print(MemberSerializer(member).data)
         return Response(MemberSerializer(member).data)
+
+    def validate_spouse_details(self,data):
+        serializer = None
+        if data.get('spouse_details'):
+            serializer = MemberSerializer(data=data['spouse_details'])
+        else:
+            serializer = MemberSerializer(Member.objects.get(id=data['spouse']),data={},partial=True)
+        serializer.is_valid()
+        return serializer
+
+    def update_spouse(self,serializer,member):
+        if serializer:
+            if not serializer.instance:
+                gender = 'M' if member.gender == 'F' else 'F'
+                serializer.save(dummy=True,gender=gender)
+
+            self.make_spouse(member,serializer.instance)
+            
+            spouse_role = 'father' if serializer.instance.gender == 'M' else 'mother'
+            member_role = 'father' if member.gender == 'M' else 'mother'
+
+            for c in Child.objects.filter(**{member_role: member}):
+                if not getattr(c,spouse_role):
+                    setattr(c,spouse_role,serializer.instance)
+                    c.save()
+            for c in list(Child.objects.filter(**{spouse_role: serializer.instance})):
+                if not getattr(c,member_role):
+                    setattr(c,member_role,member)
+                    c.save()
+        elif not member.spouse:
+            spouse = Member.objects.filter(spouse=member).first()
+            if spouse:
+                spouse.spouse = None
+                spouse.save()
+
+    def make_spouse(self,s1,s2):
+        #clear s2 ex
+        s = Member.objects.filter(spouse=s1).first()
+        if s:
+            s.spouse = None
+            s.save()
+        #clear s2 ex
+        s = Member.objects.filter(spouse=s2).first()
+        if s:
+            s.spouse = None
+            s.save()
+
+        s1.spouse = s2
+        s1.save()
+
+        s2.spouse = s1
+        s2.save()
+
 
     def update_children(self,serializers,member):
         #check for missing children - those that have been deleted
@@ -247,7 +331,7 @@ class NotificationViewSet(viewsets.ModelViewSet):
             return Response(serializer.errors,status.HTTP_400_BAD_REQUEST)
 
         serializer.save()
-        numbers = Member.objects.all().values_list('mobile_no')
+        numbers = Member.objects.filter(dummy=False).values_list('mobile_no')
         if request.data['target'] == 'individual':
             numbers = numbers.filter(id__in=request.data['contacts'].split(';'))
         else:

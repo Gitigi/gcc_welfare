@@ -1,17 +1,19 @@
 import React, {Component} from 'react';
 import axios from 'axios';
 import './PersonalDetails.css';
+import NameSearchInput from './NameSearchInput';
 
 export default class PersonalDetailsForm extends Component {
 
 	constructor(props) {
     super(props);
     
-    this.state = {married: false,age: '', child: {first_name: '', middle_name: '', dob: ''},localError: {}};
+    this.state = {married: false,age: '', spouse_is_member: true, child: {first_name: '', middle_name: '', dob: ''},localError: {},
+  		spouse: '',spouse_is_member: 'yes',spouse_details: {first_name: '',middle_name: '',last_name: '',id_no: 0,mobile_no: ''}};
   }
 
   static getDerivedStateFromProps(props,state){
-  	if(!state.data || state.data.id !== props.data.id){
+  	if(!state.data || state.data.id !== props.data.id || state.data.spouse !== props.data.spouse){
   		let dob = props.data.dob.split('-').reverse().join('/');
   		let data = {...props.data};
 	  	data.dob = dob;
@@ -19,7 +21,8 @@ export default class PersonalDetailsForm extends Component {
 	  		data.children[i].dob = v.dob.split('-').reverse().join('/');
 	  	})
 	  	return {data, age: PersonalDetailsForm.calculateAge(dob),
-	  		married: props.data.spouse_first_name ? true : false};
+	  		married: props.data.spouse ? true : false,
+	  		spouse_is_member: props.data.spouse ? 'yes' : 'no', spouse: props.data.spouse};
   	}
   	else {
   		return null
@@ -32,13 +35,22 @@ export default class PersonalDetailsForm extends Component {
   	data.children.forEach((v,i)=>{
   		data.children[i].dob = v.dob.split('/').reverse().join('-'); 
   	})
+  	data.married = this.state.married;
+  	if(this.state.married){
+  		if(this.state.spouse_is_member === 'yes')
+  			data.spouse = this.state.spouse;
+  		else
+  			data.spouse_details = {...this.state.spouse_details}
+  	}else{
+  		data.spouse = null;
+  	}
+
   	return data;
   }
 
 	handleInput(field,event) {
   	let value = event.target.value;
   	this.setState(state => (state.data[field] = value,state));
-  	console.log(this.state.data);
   }
 
   handleGroupInput(field,index,event){
@@ -114,7 +126,6 @@ export default class PersonalDetailsForm extends Component {
   }
 
   handleMarried(e) {
-  	console.log(e.target.checked);
   	this.setState({married: e.target.checked});
   }
 
@@ -123,11 +134,31 @@ export default class PersonalDetailsForm extends Component {
   	this.setState(state=>(state.data.suspended = v,state));
   }
 
+  handleDummy(e) {
+  	let v = e.target.checked;
+  	this.setState(state=>(state.data.dummy = v,state));
+  }
+
+  handleSpouseMembership(e) {
+  	this.setState({spouse_is_member: e.target.value})
+  }
+
+  handleSpouseSelect(member) {
+  	console.log(member);
+  	this.setState({spouse: member.id});
+  }
+
+  handleSpouseDetails(field,e){
+  	let v = e.target.value
+  	this.setState(state=>(state.spouse_details[field]=v,state))
+  }
+
 	render() {
 		let id = this.props.id;
 		let data = this.state.data;
 		let error = this.props.error;
 		let childrenError = error.children || {};
+		let spouseDetailsError = error.spouse_details || {}
 		return (
 			<div>
 				
@@ -253,37 +284,67 @@ export default class PersonalDetailsForm extends Component {
 					</div>
 
 					{this.state.married === true && <>
-						<div className="form-group col-sm-4">
-							<label htmlFor="inputSFirstname" className="col-sm-5 control-label">Spouse's First Name</label>
-							<div className="col-sm-7">
-					      <input value={this.state.data.spouse_first_name} onChange={this.handleInput.bind(this,'spouse_first_name')} type="text" className="form-control" id="inputSFirstname" />
-					    </div>
-					  </div>
-					  <div className="form-group col-sm-4">
-					    <label htmlFor="inputSMiddlename" className="col-sm-5 control-label">Spouse's Middle Name</label>
-					    <div className="col-sm-7">
-					      <input value={this.state.data.spouse_middle_name} onChange={this.handleInput.bind(this,'spouse_middle_name')} type="text" className="form-control" id="inputSMiddlename" />
-					    </div>
-					  </div>
-					  <div className="form-group col-sm-4">
-					    <label htmlFor="inputSLastname" className="col-sm-5 control-label">Spouse's  Last Name</label>
-					    <div className="col-sm-7">
-					      <input value={this.state.data.spouse_last_name} onChange={this.handleInput.bind(this,'spouse_last_name')} type="text" className="form-control" id="inputSLastname" />
-					    </div>
+						<div className="row">
+							<p className="col-sm-offset-1 col-sm-3 form-control-static">Is spouse member of the welfare?</p>
+							<div className="form-group col-sm-2">
+								<label className="control-label col-sm-4">Yes</label>
+								<div className="col-sm-1">
+									<input className="form-control" type="radio" name='spouse_is_member' value='yes'
+										onChange={this.handleSpouseMembership.bind(this)} checked={this.state.spouse_is_member === 'yes'}/>
+								</div>
+							</div>
+							<div className="form-group col-sm-2">
+								<label className="control-label col-sm-4">No</label>
+								<div className="col-sm-1">
+									<input className="form-control" type="radio" name='spouse_is_member' value='no'
+										onChange={this.handleSpouseMembership.bind(this)} checked={this.state.spouse_is_member === 'no'}/>
+								</div>
+							</div>
 						</div>
+						{this.state.spouse_is_member === 'no' && <div>
+							<div className={`form-group col-sm-4 ${spouseDetailsError && spouseDetailsError.first_name ? 'has-error': ''}`}>
+								<label htmlFor="inputSFirstname" className="col-sm-5 control-label">Spouse's First Name</label>
+								<div className="col-sm-7">
+						      <input value={this.state.spouse_details.first_name} onChange={this.handleSpouseDetails.bind(this,'first_name')} type="text" className="form-control" id="inputSFirstname" />
+						    </div>
+						  </div>
+						  <div className={`form-group col-sm-4 ${spouseDetailsError && spouseDetailsError.middle_name ? 'has-error': ''}`}>
+						    <label htmlFor="inputSMiddlename" className="col-sm-5 control-label">Spouse's Middle Name</label>
+						    <div className="col-sm-7">
+						      <input value={this.state.spouse_details.middle_name} onChange={this.handleSpouseDetails.bind(this,'middle_name')} type="text" className="form-control" id="inputSMiddlename" />
+						    </div>
+						  </div>
+						  <div className={`form-group col-sm-4 ${spouseDetailsError && spouseDetailsError.last_name ? 'has-error': ''}`}>
+						    <label htmlFor="inputSLastname" className="col-sm-5 control-label">Spouse's  Last Name</label>
+						    <div className="col-sm-7">
+						      <input value={this.state.spouse_details.last_name} onChange={this.handleSpouseDetails.bind(this,'last_name')} type="text" className="form-control" id="inputSLastname" />
+						    </div>
+							</div>
 
-						<div className="form-group col-sm-6">
-							<label htmlFor="inputSpouseIdNo" className="col-sm-4 control-label">Spouse ID Number</label>
-							<div className="col-sm-8">
-					      <input value={this.state.data.spouse_id_no} onChange={this.handleInput.bind(this,'spouse_id_no')} type="text" className="form-control" id="inputSpouseIdNo" />
-					    </div>
-					  </div>
-					  <div className="form-group col-sm-6">
-					    <label htmlFor="inputSpouseMobileNo" className="col-sm-5 control-label">Spouse Mobile Number</label>
-							<div className="col-sm-7">
-					      <input value={this.state.data.spouse_mobile_no} onChange={this.handleInput.bind(this,'spouse_mobile_no')} type="text" className="form-control" id="inputSpouseMobileNo" />
-					    </div>
-						</div>
+							<div className={`form-group col-sm-6 ${spouseDetailsError && spouseDetailsError.id_no ? 'has-error': ''}`}>
+								<label htmlFor="inputSpouseIdNo" className="col-sm-4 control-label">Spouse ID Number</label>
+								<div className="col-sm-8">
+						      <input value={this.state.spouse_details.id_no} onChange={this.handleSpouseDetails.bind(this,'id_no')} type="text" className="form-control" id="inputSpouseIdNo" />
+						    </div>
+						  </div>
+						  <div className={`form-group col-sm-6 ${spouseDetailsError && spouseDetailsError.mobile_no ? 'has-error': ''}`}>
+						    <label htmlFor="inputSpouseMobileNo" className="col-sm-5 control-label">Spouse Mobile Number</label>
+								<div className="col-sm-7">
+						      <input value={this.state.spouse_details.mobile_no} onChange={this.handleSpouseDetails.bind(this,'mobile_no')} type="text" className="form-control" id="inputSpouseMobileNo" />
+						    </div>
+							</div>
+						</div>}
+
+						{this.state.spouse_is_member === 'yes' && <div>
+							<div className={`form-group ${spouseDetailsError && spouseDetailsError.spouse ? 'has-error': ''}`}>
+								<label className="col-sm-4 control-label">Spouse Name</label>
+								<div className="col-sm-5">
+									<NameSearchInput userSelected={this.handleSpouseSelect.bind(this)} memberId={this.state.spouse} />
+									<p className="text-info form-control-static">*ensure that spouse has already beed registered as member</p>
+								</div>
+							</div>
+						</div>}
+
 					</>}
 					</fieldset>
 
@@ -398,6 +459,12 @@ export default class PersonalDetailsForm extends Component {
 				      <input type="checkbox" checked={this.state.data.suspended} onChange={this.handleSuspend.bind(this)}/>
 				    </div>
 					</div>
+					{this.state.data.dummy && <div className="form-group">
+						<label className="col-sm-2 control-label">Dummy Member</label>
+						<div className="col-sm-10">
+				      <input type="checkbox" checked={this.state.data.dummy} onChange={this.handleDummy.bind(this)}/>
+				    </div>
+					</div>}
 					</fieldset>
 					
 				</form>

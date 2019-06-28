@@ -30,21 +30,31 @@ export default class NameSearchInput extends Component {
 	nameDropdown = React.createRef()
 
 	componentDidMount(){
-		this.fetchData();
+		if(this.props.memberId)
+			this.fetchMemberData(this.props.memberId);
+		else
+			this.fetchData();
 	}
 
 	componentDidUpdate(prevProp,prevState){
 		if(this.props.member && this.props.member.id !== prevProp.member.id){
 			let member = this.props.member,name= '';
-			if(member.id)
-				name = member.first_name.toUpperCase() + " " + member.middle_name.toUpperCase() + " " + member.last_name.toUpperCase();
-  		this.setState({search: name,member: this.props.member})
+			this._setMember(member);
+		}
+		
+		if(this.props.memberId !== prevProp.memberId){
+			axios.get(`/api/members/${this.props.memberId}/`).then(res=>{
+				this._setMember(res.data);
+			},_=>{})
 		}
 	}
 
 	handleChange(e) {
 		this.setState({search: e.target.value});
 		this.fetchData(e.target.value);
+		if(!e.target.value){
+			this._memberSelect({})
+		}
 	}
 
 	fetchData(search=''){
@@ -52,6 +62,14 @@ export default class NameSearchInput extends Component {
 		axios.get('/api/members/',{params: {search}}).then(res=>{
 			this.setState({members: res.data.slice(0,10)})
 		},error=>console.log(error.response.data)).
+		finally(_=>this.setState({inputAddonClass: "fa fa-search"}))
+	}
+
+	fetchMemberData(id) {
+		this.setState({inputAddonClass: 'fa fa-circle-o-notch fa-spin fa-fw'})
+		axios.get(`/api/members/${this.props.memberId}/`).then(res=>{
+				this._setMember(res.data);
+		},_=>{}).
 		finally(_=>this.setState({inputAddonClass: "fa fa-search"}))
 	}
 
@@ -152,10 +170,21 @@ export default class NameSearchInput extends Component {
   _selectListItem(listItem) {
   	let userId = $(listItem).attr('data-user-id')
   	let user = this.state.members.find(m => m.id == userId);
-  	let name = user.first_name.toUpperCase() + " " + user.middle_name.toUpperCase() + " " + user.last_name.toUpperCase();
-  	this.setState({search: name,member: user})
+  	this._memberSelect(user)
+  }
+
+  _memberSelect(member) {
+  	this._setMember(member);
   	if(this.props.userSelected)
-  		this.props.userSelected(user);
+  		this.props.userSelected(member);
+  }
+
+  _setMember(member) {
+  	let name = ''
+  	if(member.id){
+  		name = member.first_name.toUpperCase() + " " + member.middle_name.toUpperCase() + " " + member.last_name.toUpperCase();
+  	}
+  	this.setState({search: name,member})
   }
 
 	_showDropdown() {

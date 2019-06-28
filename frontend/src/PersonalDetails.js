@@ -9,9 +9,8 @@ class PersonalDetails extends Component {
   confirm = React.createRef();
 	emptyData = {children: [],first_name: '', middle_name: '', last_name: '',
   	id_no: '', address: '',code: '', city: '', mobile_no: '', email: '', nhif_no: '',
-  	spouse_first_name: '',spouse_middle_name: '',spouse_last_name: '', spouse_id_no: 0, spouse_mobile_no: '',
   	father_first_name: '',father_middle_name: '',father_last_name: '',
-  	mother_first_name: '',mother_middle_name: '',mother_last_name: '', suspended: false, salutation: '', gender: 'M',dob: ''};
+  	mother_first_name: '',mother_middle_name: '',mother_last_name: '', suspended: false, dummy: false, salutation: '', gender: 'M',dob: ''};
 	constructor(props) {
     super(props);
 
@@ -32,24 +31,9 @@ class PersonalDetails extends Component {
     return d.getDate() ? true : false
   }
 
-  validate(data) {
-
-    let error = {}
+  validateChildren(children) {
     let children_error = {}
-    if(!data.first_name)
-      error['first_name'] = 'This field is required';
-    if(!data.middle_name)
-      error['middle_name'] = 'This field is required';
-    if(!data.last_name)
-      error['last_name'] = 'This field is required';
-    if(!data.id_no)
-      error['id_no'] = 'This field is required';
-    if(!data.mobile_no)
-      error['mobile_no'] = 'This field is required';
-    if(!data.dob || !this.validateDate(data.dob))
-      error['dob'] = 'This field is required';
-
-    data.children.forEach((v,i)=>{
+    children.forEach((v,i)=>{
       let e = {};
       if(!v.first_name){
         e['first_name'] = 'This field is required';
@@ -64,8 +48,56 @@ class PersonalDetails extends Component {
         children_error[i] = e;
     })
 
+    return children_error;
+  }
+
+  validateSpouseDetails(details) {
+    let error = {}
+    if(!details.first_name)
+      error['first_name'] = 'This field is required';
+    if(!details.middle_name)
+      error['middle_name'] = 'This field is required';
+    if(!details.last_name)
+      error['last_name'] = 'This field is required';
+    if(!details.id_no)
+      error['id_no'] = 'This field is required';
+    if(!details.mobile_no)
+      error['mobile_no'] = 'This field is required';
+
+    return error;
+  }
+
+  validate(data) {
+
+    let error = {}
+    if(!data.first_name)
+      error['first_name'] = 'This field is required';
+    if(!data.middle_name)
+      error['middle_name'] = 'This field is required';
+    if(!data.last_name)
+      error['last_name'] = 'This field is required';
+    if(!data.id_no)
+      error['id_no'] = 'This field is required';
+    if(!data.mobile_no)
+      error['mobile_no'] = 'This field is required';
+    if(!data.dob || !this.validateDate(data.dob))
+      error['dob'] = 'This field is required';
+
+    let children_error = this.validateChildren(data.children)
     if(Object.keys(children_error).length)
       error['children'] = children_error;
+
+    if(data.married){
+      if(data.spouse_details) {
+        let spouse_error = this.validateSpouseDetails(data.spouse_details);
+        if(Object.keys(spouse_error).length)
+          error.spouse_details = spouse_error;
+      } else {
+        if(!data.spouse){
+          error.spouse_details = {'spouse': 'This field is required'};
+        }
+      }
+    }
 
     return error;
   }
