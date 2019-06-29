@@ -43,10 +43,10 @@ def search_name(request):
     args = []
     for i in names:
         sql += ' UNION ALL ' if len(sql) else ''
-        sql += 'SELECT id,first_name,middle_name,last_name FROM core_member WHERE (first_name LIKE %s OR middle_name LIKE %s  OR last_name LIKE %s)'
+        sql += 'SELECT id FROM core_member WHERE (first_name LIKE %s OR middle_name LIKE %s  OR last_name LIKE %s)'
         arg = '%s%%'%(i,)
         args += [arg,arg,arg]
-    f = 'select count(id) count, id,first_name,middle_name,last_name from (' + sql + ') a group by id order by count desc limit 10'
+    f = 'select count(id) count, id from (' + sql + ') a group by id order by count desc limit 10'
     return Response(MemberSerializerMini(Member.objects.raw(f,args),many=True).data)
 
 @api_view(['GET'])
