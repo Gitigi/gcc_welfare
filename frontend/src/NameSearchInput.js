@@ -57,10 +57,10 @@ export default class NameSearchInput extends Component {
 		}
 	}
 
-	fetchData(search=''){
+	fetchData(name=''){
 		this.setState({inputAddonClass: 'fa fa-circle-o-notch fa-spin fa-fw'})
-		axios.get('/api/members/',{params: {search}}).then(res=>{
-			this.setState({members: res.data.slice(0,10)})
+		axios.get('/api/search-name/',{params: {name}}).then(res=>{
+			this.setState({members: res.data})
 		},error=>console.log(error.response.data)).
 		finally(_=>this.setState({inputAddonClass: "fa fa-search"}))
 	}

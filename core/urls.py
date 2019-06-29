@@ -15,6 +15,7 @@ urlpatterns = [
     path('get-user', views.get_user, name='get-user'),
     path('login',views.login, name='login'),
     path('logout',views.logout, name='logout'),
+    path('search-name/',views.search_name),
     path('annual-report/',views.annual_report),
     path('individual-report/',views.individual_report),
     path('defaulters-report/',views.defaulters_report),

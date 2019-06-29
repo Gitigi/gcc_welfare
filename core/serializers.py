@@ -8,6 +8,11 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = ('username',)
 
+class MemberSerializerMini(serializers.ModelSerializer):
+	class Meta:
+		model = Member 
+		fields = ('id','first_name','middle_name','last_name','id_no')
+
 class MemberSerializer(serializers.ModelSerializer):
 	children = serializers.SerializerMethodField()
 

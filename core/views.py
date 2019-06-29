@@ -4,13 +4,12 @@ from django.views.decorators.csrf import ensure_csrf_cookie
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import viewsets,status
-from core.serializers import UserSerializer, MemberSerializer, PaymentSerializer, BankingSerializer, NoteSerializer, NotificationSerializer, LibrarySerializer, ClaimSerializer, ChildSerializer
+from core.serializers import UserSerializer, MemberSerializer,MemberSerializerMini, PaymentSerializer, BankingSerializer, NoteSerializer, NotificationSerializer, LibrarySerializer, ClaimSerializer, ChildSerializer
 from core.models import Member,Payment,Banking,Note, Notification, Library, Claim, Child
 import datetime
 from dateutil.relativedelta import relativedelta
 from django.db.models import Q,Sum,Max,F
 from .utility import send_message
-
 
 @ensure_csrf_cookie
 @api_view(['GET', 'POST'])
@@ -36,6 +35,19 @@ def logout(request):
     auth.logout(request)
     return Response({})
 
+@api_view(['GET'])
+def search_name(request):
+    name = request.GET.get('name','')
+    names = name.split(' ')[:3]
+    sql = ''
+    args = []
+    for i in names:
+        sql += ' UNION ALL ' if len(sql) else ''
+        sql += 'SELECT id,first_name,middle_name,last_name FROM core_member WHERE (first_name LIKE %s OR middle_name LIKE %s  OR last_name LIKE %s)'
+        arg = '%s%%'%(i,)
+        args += [arg,arg,arg]
+    f = 'select count(id) count, id,first_name,middle_name,last_name from (' + sql + ') a group by id order by count desc limit 10'
+    return Response(MemberSerializerMini(Member.objects.raw(f,args),many=True).data)
 
 @api_view(['GET'])
 def annual_report(request):
