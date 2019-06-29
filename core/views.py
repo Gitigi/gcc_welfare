@@ -43,7 +43,7 @@ def search_name(request):
     args = []
     for i in names:
         sql += ' UNION ALL ' if len(sql) else ''
-        sql += 'SELECT id FROM core_member WHERE (first_name LIKE %s OR middle_name LIKE %s  OR last_name LIKE %s)'
+        sql += 'SELECT id FROM core_member WHERE (first_name ILIKE %s OR middle_name ILIKE %s  OR last_name ILIKE %s)'
         arg = '%s%%'%(i,)
         args += [arg,arg,arg]
     f = 'select count(id) count, id from (' + sql + ') a group by id order by count desc limit 10'
