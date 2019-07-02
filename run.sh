@@ -23,7 +23,7 @@ then
     --ini uwsgi.ini:prod
 else
 	uwsgi --vacuum --plugin python3 --enable-threads --thunder-lock\
-    --ini uwsgi.ini & cd frontend && ln -s $NODE_PATH node_modules && yarn start	
+    --ini uwsgi.ini & cd frontend && (ln -s $NODE_PATH node_modules || true) && yarn start	
 fi
 
 

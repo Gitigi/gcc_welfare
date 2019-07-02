@@ -38,7 +38,7 @@ class Member(models.Model):
 class Child(models.Model):
     first_name = models.CharField(max_length=30,blank=False,null=False,default='')
     middle_name = models.CharField(max_length=30,blank=False,null=False,default='')
-    dob = models.DateField(null=False,blank=False)
+    dob = models.DateField(null=False,blank=True,default=timezone.now)
     father = models.ForeignKey(Member, on_delete=models.SET_NULL,null=True,related_name='fathered')
     mother = models.ForeignKey(Member, on_delete=models.SET_NULL,null=True,related_name='mothered')
 

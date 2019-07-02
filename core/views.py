@@ -122,9 +122,9 @@ class MemberViewSet(viewsets.ModelViewSet):
                 members = members.filter(dummy=False,suspended=False).exclude(id__in = p)
         if self.request.GET.get('search'):
             members = members.filter(
-                Q(first_name__startswith=self.request.GET.get('search')) |
-                Q(middle_name__startswith=self.request.GET.get('search')) |
-                Q(last_name__startswith=self.request.GET.get('search')))
+                Q(first_name__istartswith=self.request.GET.get('search')) |
+                Q(middle_name__istartswith=self.request.GET.get('search')) |
+                Q(last_name__istartswith=self.request.GET.get('search')))
 
         return members
 
