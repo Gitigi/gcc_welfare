@@ -421,6 +421,15 @@ class PaymentViewSet(viewsets.ModelViewSet):
             payments.append(p)
             last_payment_date = period
 
+        if amount % 200 != 0:
+            rem = amount % 200
+            period = last_payment_date + relativedelta(months=+1,day=1)
+            p = Payment.objects.create(member=member,
+                method=request.data['method'],
+                amount=rem,
+                period=period,
+                date=date)
+
         send_message("Thank you %s %s %s for your welfare payment of amount %d on %s" % 
             (member.first_name,member.middle_name,member.last_name,request.data['amount'],date), member.mobile_no)
         
