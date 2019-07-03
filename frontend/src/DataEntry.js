@@ -104,8 +104,9 @@ class List extends Component {
 	constructor(props){
 		super(props);
 		let status = this.props.location.state && this.props.location.state.status;
+		let search = this.props.location.state && this.props.location.state.search;
 
-		this.state = {members: [], status: status||'active' ,contribution: '', search: '',all: false};
+		this.state = {members: [], status: status||'active' ,contribution: '', search,all: false};
 	}
 	componentDidMount() {
 		this.fetchData()
@@ -114,6 +115,7 @@ class List extends Component {
 	componentDidUpdate(prevProps,prevState){
 		if(this.state.search !== prevState.search || this.state.contribution !== prevState.contribution ||
 			this.state.status !== prevState.status){
+				this.props.history.replace(this.props.match.url,{status: this.state.status,search: this.state.search})
 				this.fetchData();
 			}
 	}
