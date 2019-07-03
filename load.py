@@ -28,7 +28,7 @@ def format_name(info):
 	if len(name) >= 3:
 		return {
 			'first_name': name[0],
-			'middle_name': name[1],
+			'middle_name': name[1] if name[1][-1].isalpha() else name[1][:-1],
 			'last_name': name[2]}
 	elif len(name) == 2:
 		if name[1].find('.') != -1:
@@ -53,7 +53,7 @@ def format_other_names(name):
 	if len(name) >= 3:
 		return {
 			'first_name': name[0],
-			'middle_name': name[1],
+			'middle_name': name[1] if name[1][-1].isalpha() else name[1][:-1],
 			'last_name': name[2]}
 	elif len(name) == 2:
 		if name[1].find('.') != -1:
@@ -125,7 +125,7 @@ def format_details(info):
 
 
 def read():
-	for i in range(1,147):
+	for i in range(1,sheet.nrows):
 		r = get_detail(i)
 		m = MemberSerializer(data=format_details(r))
 		if not m.is_valid():
