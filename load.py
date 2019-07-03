@@ -1,6 +1,7 @@
 import xlrd,re
 from core.serializers import MemberSerializer
 from core.models import Member,Child
+from django.conf import settings
 workbook = xlrd.open_workbook('GCCWELFARE DATABASE.xlsx')
 sheet = workbook.sheet_by_index(0)
 sheet.cell(1,1)
@@ -136,12 +137,13 @@ def read():
 def search_name(name):
 	if not name:
 		return None
+	like_op = 'like' if 'sqlite' in settings.DATABASES['default']['ENGINE'].split('.')[-1] else 'ilike'
 	names = name.split(' ')[:3]
 	sql = ''
 	args = []
 	for i in names:
 		sql += ' UNION ALL ' if len(sql) else ''
-		sql += 'SELECT id FROM core_member WHERE (first_name ILIKE %s OR middle_name ILIKE %s  OR last_name ILIKE %s)'
+		sql += 'SELECT id FROM core_member WHERE (first_name '+like_op +' %s OR middle_name '+like_op +' %s  OR last_name '+like_op +' %s)'
 		arg = '%s%%'%(i,)
 		args += [arg,arg,arg]
 	f = 'select count(id) count, id from (' + sql + ') a group by id order by count desc limit 10'
@@ -157,9 +159,9 @@ def update_spouse(member1,member2):
   	return
 
   if member1.spouse and member1.spouse.dummy:
-  	member.spouse.delete()
+  	member1.spouse.delete()
   if member2.spouse and member2.spouse.dummy:
-  	member.spouse.delete()
+  	member2.spouse.delete()
 
   member1.spouse = member2
   member1.save()

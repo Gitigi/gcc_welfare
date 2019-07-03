@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from django.contrib import auth
+from django.conf import settings
 from django.views.decorators.csrf import ensure_csrf_cookie
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -37,13 +38,14 @@ def logout(request):
 
 @api_view(['GET'])
 def search_name(request):
+    like_op = 'like' if 'sqlite' in settings.DATABASES['default']['ENGINE'].split('.')[-1] else 'ilike'
     name = request.GET.get('name','')
     names = name.split(' ')[:3]
     sql = ''
     args = []
     for i in names:
         sql += ' UNION ALL ' if len(sql) else ''
-        sql += 'SELECT id FROM core_member WHERE (first_name ILIKE %s OR middle_name ILIKE %s  OR last_name ILIKE %s)'
+        sql += 'SELECT id FROM core_member WHERE (first_name '+like_op +' %s OR middle_name '+like_op +' %s  OR last_name '+like_op +' %s)'
         arg = '%s%%'%(i,)
         args += [arg,arg,arg]
     f = 'select count(id) count, id from (' + sql + ') a group by id order by count desc limit 10'
