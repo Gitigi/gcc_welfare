@@ -21,8 +21,8 @@ def get_detail(row):
 		'spouse_id_no':r[8].value,
 		'spouse_mobile_no':r[9].value,
 		'children': [re_s.sub(' ',r[10].value.strip()),re_s.sub(' ',r[12].value.strip()),re_s.sub(' ',r[14].value.strip()),re_s.sub(' ',r[16].value.strip()),re_s.sub(' ',r[18].value.strip()),re_s.sub(' ',r[20].value)],
-		'father':r[22].value.strip(),
-		'mother':r[23].value.strip()}
+		'father':re_s.sub(' ',r[22].value.strip()),
+		'mother':re_s.sub(' ',r[23].value.strip())}
 def format_name(info):
 	name = info['name'].split(' ')
 	if len(name) >= 3:
