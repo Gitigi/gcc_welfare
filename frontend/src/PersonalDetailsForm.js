@@ -178,7 +178,7 @@ export default class PersonalDetailsForm extends Component {
 				    		<option>Apostle</option>
 				    		<option>Bishop</option>
 				    		<option>Elder</option>
-				    		<option>Dicon</option>
+				    		<option>Deacon</option>
 				    	</select>
 				    </div>
 				  </div>
@@ -340,7 +340,7 @@ export default class PersonalDetailsForm extends Component {
 								<label className="col-sm-4 control-label">Spouse Name</label>
 								<div className="col-sm-5">
 									<NameSearchInput userSelected={this.handleSpouseSelect.bind(this)} memberId={this.state.spouse} />
-									<p className="text-info form-control-static">*ensure that spouse has already beed registered as member</p>
+									<p className="text-info form-control-static">*ensure that spouse has already been registered as member</p>
 								</div>
 							</div>
 						</div>}
