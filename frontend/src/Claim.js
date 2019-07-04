@@ -6,6 +6,7 @@ import * as $ from 'jquery/dist/jquery.slim';
 import axios from 'axios';
 import ConfirmAction from './ConfirmAction';
 import NameSearchInput from './NameSearchInput';
+import Pagination from './Pagination';
 
 
 export default class Claim extends Component {
@@ -33,21 +34,21 @@ class ClaimList extends Component {
 		let date = new Date();
 		let year = date.getFullYear();
 		let month = date.getMonth() + 1;
-		this.state = {claims: [],filter: {year,month,search:''}}
+		this.state = {claims: {results: []},filter: {year,month,search:''}}
 	}
 
 	handleFilterChange(field,event){
 		let filter = {...this.state.filter};
 		filter[field] = event.target.value;
 		this.setState({filter});
-		this.updateBanking(filter);
+		this.updateClaim(filter);
 	}
 
 	componentDidMount() {
 		axios.get('/api/claim/',{params: this.state.filter}).then(res=>this.setState({claims: res.data}))
 	}
 
-	updateBanking(filter={}){
+	updateClaim(filter={}){
 		axios.get('/api/claim/',{params: filter}).then(res=>this.setState({claims: res.data}))
 	}
 
@@ -60,6 +61,12 @@ class ClaimList extends Component {
 		b.push(banking);
 		this.setState({banking: b});
 	}
+
+	gotoPage(page) {
+		let params = {...this.state.filter,page}
+		this.updateClaim(params);
+	}
+
 	render() {
 		return (
 			<div>
@@ -71,6 +78,7 @@ class ClaimList extends Component {
 					<div className="form-group">
 						<div className="col-sm-4">
 				      <select value={this.state.filter.year} onChange={this.handleFilterChange.bind(this,'year')} className="form-control">
+				      	<option value=''>ALL</option>
 				      	{this.years.map( v => <option key={v} value={v}>{v}</option> )}
 				      </select>
 				    </div>
@@ -100,7 +108,7 @@ class ClaimList extends Component {
 						</tr>
 					</thead>
 					<tbody>
-						{this.state.claims.map(b=>(
+						{this.state.claims.results.map(b=>(
 							<tr key={b.id}>
 								<td>{b.first_name}</td>
 								<td>{b.last_name}</td>
@@ -115,6 +123,7 @@ class ClaimList extends Component {
 							))}
 					</tbody>
 				</table>
+				<Pagination goto={this.gotoPage.bind(this)} data={this.state.claims} />
 			</div>
 		);
 	}

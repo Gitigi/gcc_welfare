@@ -5,6 +5,7 @@ import * as $ from 'jquery/dist/jquery.slim';
 import axios from 'axios';
 import NameSearchInput from './NameSearchInput';
 import ConfirmAction from './ConfirmAction';
+import Pagination from './Pagination';
 
 export default class Payment extends Component {
 	render() {
@@ -30,11 +31,11 @@ class PaymentList extends Component {
 		let date = new Date();
 		let year = date.getFullYear();
 		let month = date.getMonth() + 1;
-		this.state = {payments: [],filter: {year,month,search:''}}
+		this.state = {payments: {results: []},filter: {year,month,search:''}}
 	}
 
 	handleFilterChange(field,event){
-		let filter = {...this.state.filter};
+		let filter = {...this.state.filter,page: 1};
 		filter[field] = event.target.value;
 		this.setState({filter});
 		this.updatePayments(filter);
@@ -44,7 +45,7 @@ class PaymentList extends Component {
 		axios.get('/api/payments/',{params: this.state.filter}).then(res=>this.setState({payments: res.data}))
 	}
 
-	updatePayments(filter={}){
+	updatePayments(filter={},page=1){
 		axios.get('/api/payments/',{params: filter}).then(res=>this.setState({payments: res.data}))
 	}
 
@@ -57,6 +58,12 @@ class PaymentList extends Component {
 		p.push(payment);
 		this.setState({payments: p});
 	}
+
+	gotoPage(page){
+		let params = {...this.state.filter,page}
+		this.updatePayments(params);
+	}
+
 	render() {
 		return (
 			<div>
@@ -95,7 +102,7 @@ class PaymentList extends Component {
 						</tr>
 					</thead>
 					<tbody>
-						{this.state.payments.map(payment=>(
+						{this.state.payments.results.map(payment=>(
 							<tr key={payment.id}>
 								<td>{payment.first_name}</td>
 								<td>{payment.middle_name}</td>
@@ -107,6 +114,7 @@ class PaymentList extends Component {
 							))}
 					</tbody>
 				</table>
+				<Pagination goto={this.gotoPage.bind(this)} data={this.state.payments} />
 			</div>
 		);
 	}

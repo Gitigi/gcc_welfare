@@ -1,6 +1,7 @@
 import React, {Component} from 'react';
 import axios from 'axios';
 import NameSearchInput from './NameSearchInput';
+import Pagination from './Pagination';
 
 export default class IndividualReport extends Component {
 	monthsArray = (new Array(12)).fill(0)
@@ -12,7 +13,7 @@ export default class IndividualReport extends Component {
 		super(props);
 
 		let year = (new Date()).getFullYear();
-		this.state = {data: [],members: [],total: 0,year,member: {},showAll: true,filterError: false};
+		this.state = {data: [],originalData:{results:[]},members: [],total: 0,year,member: {},showAll: true,filterError: false};
 
 		this.handleYearChange = this.handleYearChange.bind(this);
 		this.handleMemberChange = this.handleMemberChange.bind(this);
@@ -23,14 +24,15 @@ export default class IndividualReport extends Component {
 		this.fetchData(this.state.year,this.state.member);
 	}
 
-	fetchData(year,member,showAll) {
-		let params = {year};
+	fetchData(year,member,showAll,page=1) {
+		let params = {year,page};
 		if(member && !showAll){
 			params.member = member.id;
 		}
 
 		axios.get('/api/individual-report/',{params}).then(res=>{
-			this.updateData(res.data);
+			this.setState({originalData: res.data})
+			this.updateData(res.data.results);
 		})
 	}
 
@@ -72,6 +74,10 @@ export default class IndividualReport extends Component {
 			this.fetchData(this.state.year,this.state.member,false)
 	}
 
+	gotoPage(page) {
+		this.fetchData(this.state.year,this.state.member,false,page)
+	}
+
 	render() {
 		return <div>
 				<div className={`alert alert-danger ${this.state.filterError ? 'show' : 'hide'}`} role="alert">
@@ -84,6 +90,7 @@ export default class IndividualReport extends Component {
 							<label className="col-sm-1 control-label">Year</label>
 							<div className="col-sm-3">
 								<select onChange={this.handleYearChange} value={this.state.year} className="form-control">
+									<option value=''>ALL</option>
 									{this.years.map((y,i)=><option key={i} value={y}>{y}</option>)}
 								</select>
 							</div>
@@ -128,6 +135,7 @@ export default class IndividualReport extends Component {
 						})}
 					</tbody>
 				</table>
+				<Pagination goto={this.gotoPage.bind(this)} data={this.state.originalData} />
 			</div>
 	}
 }

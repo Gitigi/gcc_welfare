@@ -1,15 +1,16 @@
 import React, {Component} from 'react';
 import axios from 'axios';
 import NameSearchInput from './NameSearchInput';
+import Pagination from './Pagination';
 
 export default class PaymentReport extends Component {
-	state = {data: [],member: {}}
+	state = {data: {results: []},member: {},page:1}
 	componentDidMount() {
 		this.fetchData();
 	}
 
 	fetchData() {
-		let params = {}
+		let params = {page:this.state.page}
 		if(this.state.member.id){
 			params['member'] = this.state.member.id;
 		}
@@ -17,13 +18,17 @@ export default class PaymentReport extends Component {
 	}
 
 	componentDidUpdate(prevProp,prevState) {
-		if(this.state.member.id !== prevState.member.id){
+		if(this.state.member.id !== prevState.member.id || this.state.page !== prevState.page){
 			this.fetchData();
 		}
 	}
 
 	handleMemberChange(member) {
-		this.setState({member});
+		this.setState({member,page: 1});
+	}
+
+	gotoPage(page) {
+		this.setState({page})
 	}
 
 	render() {
@@ -47,7 +52,7 @@ export default class PaymentReport extends Component {
 						</tr>
 					</thead>
 					<tbody>
-						{this.state.data.map((p,index)=>{
+						{this.state.data.results.map((p,index)=>{
 							return <tr key={index}>
 									<td>{p.member__first_name.toUpperCase()}</td>
 									<td>{p.member__middle_name.toUpperCase()}</td>
@@ -58,6 +63,7 @@ export default class PaymentReport extends Component {
 						})}
 					</tbody>
 				</table>
+				<Pagination goto={this.gotoPage.bind(this)} data={this.state.data} />
 			</div>
 	}
 }

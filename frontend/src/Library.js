@@ -3,22 +3,28 @@ import FileUpload from './FileUpload';
 import axios from 'axios';
 import {WordIcon,ZipIcon,ImageIcon,PdfIcon,PowerPointIcon,SpreadSheetIcon,TextIcon} from './FileIcons';
 import ConfirmAction from './ConfirmAction';
+import Pagination from './Pagination';
 import './Library.css';
 
 export default class Library extends Component {
-	state = {files: [],deleteFileName: ''}
+	state = {files: {results:[]},deleteFileName: ''}
 	confirm = React.createRef();
 
 
 	fileAdded(f) {
-		let files = this.state.files.splice(0)
-		files.push(f);
-		this.setState({files});
+		this.fetchData()
 	}
 
 	componentDidMount() {
-		axios.get('/api/library').then(res=>this.setState({files: res.data}))
-		axios.get('/api/library').then(res=>console.log(res.data));
+		this.fetchData();
+	}
+
+	fetchData(page){
+		axios.get('/api/library',{params: {page}}).then(res=>this.setState({files: res.data}))
+	}
+
+	gotoPage(page) {
+		this.fetchData(page);
 	}
 
 	getIcon(filename) {
@@ -72,7 +78,7 @@ export default class Library extends Component {
           addButton={<span className='btn btn-success'><i className="glyphicon glyphicon-plus"/>Upload File</span>}>
         </FileUpload>
         <div className="row">
-        	{this.state.files.map((f,i)=> <React.Fragment key={f.id}>
+        	{this.state.files.results.map((f,i)=> <React.Fragment key={f.id}>
         		<div key={f.id} className="col-sm-3">
         		<div className="file-container">
 	        		<img className="image" style={{width: "100%",height:"100%"}} src={this.getIcon(f.file)} alt="word" />
@@ -91,6 +97,7 @@ export default class Library extends Component {
         	</React.Fragment>)}
         </div>
         <div className="clearfix" />
+        <Pagination goto={this.gotoPage.bind(this)} data={this.state.files} />
 			</div>
 	}
 }

@@ -1,11 +1,16 @@
 import React, {Component} from 'react';
 import axios from 'axios';
+import Pagination from './Pagination';
 
 export default class PersonalNotes extends Component {
-	state = {note: '',sent: false, notes: []}
+	state = {note: '',sent: false, notes: {results: []}}
 
 	componentDidMount() {
 		axios.get('/api/notes/',{params: {member: this.props.match.params.id}}).then(res=>this.setState({notes: res.data}))
+	}
+
+	fetchData(page=1) {
+		axios.get('/api/notes/',{params: {page,member: this.props.match.params.id}}).then(res=>this.setState({notes: res.data}))
 	}
 
 	handleChange(e){
@@ -15,12 +20,14 @@ export default class PersonalNotes extends Component {
 	save(){
 		if(this.state.note){
 			axios.post('/api/notes/',{member: this.props.match.params.id, note: this.state.note}).then(res=>{
-				let notes = this.state.notes.splice(0);
-				notes.push(res.data);
-				this.setState({sent: true, note: '',notes})
+				this.fetchData()
 				setTimeout(_=>this.setState({sent: false}),2000);
 			})
 		}
+	}
+
+	gotoPage(page) {
+		this.fetchData(page);
 	}
 
 	render() {
@@ -50,7 +57,7 @@ export default class PersonalNotes extends Component {
 						</tr>
 					</thead>
 					<tbody>
-						{this.state.notes.map(n=>{
+						{this.state.notes.results.map(n=>{
 							return <tr key={n.id}>
 									<td>{n.date}</td>
 									<td>{n.note}</td>
@@ -58,7 +65,7 @@ export default class PersonalNotes extends Component {
 						})}
 					</tbody>
 				</table>
-
+				<Pagination goto={this.gotoPage.bind(this)} data={this.state.notes} />
 			</div>
 	}
 }

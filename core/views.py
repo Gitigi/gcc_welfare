@@ -10,7 +10,8 @@ from core.models import Member,Payment,Banking,Note, Notification, Library, Clai
 import datetime
 from dateutil.relativedelta import relativedelta
 from django.db.models import Q,Sum,Max,F
-from .utility import send_message
+from .utility import send_message,add_params_to_url,paginate_list
+from django.core.paginator import Paginator
 
 @ensure_csrf_cookie
 @api_view(['GET', 'POST'])
@@ -65,7 +66,10 @@ def individual_report(request):
     if request.GET.get('member'):
         p = p.filter(member=request.GET['member'])
     p = p.values('period__month','member','member__first_name','member__middle_name','member__last_name').annotate(total=Sum('amount'))
-    return Response(list(p))
+
+    url = request.build_absolute_uri()
+    page_number = request.GET.get('page',1)
+    return paginate_list(list(p),page_number,url)
 
 
 @api_view(['GET'])
@@ -74,15 +78,19 @@ def defaulters_report(request):
     #get list of member who have contributed for current period
     p = Payment.objects.filter(period__year=today.year,period__month=today.month).values_list('member')
     m = Member.objects.filter(dummy=False).exclude(id__in=p).annotate(period=Max('payment__period')).values('id','first_name','middle_name','last_name','date_joined','period')
-    return Response(list(m))
+    
+    url = request.build_absolute_uri()
+    page_number = request.GET.get('page',1)
+    return paginate_list(list(m),page_number,url)
 
 @api_view(['GET'])
 def payment_report(request):
     p = Payment.objects.values('date','member','member__first_name','member__middle_name','member__last_name').annotate(total=Sum('amount'))
-    
     if request.GET.get('member'):
         p = p.filter(member=request.GET['member'])
-    return Response(list(p))
+    url = request.build_absolute_uri()
+    page_number = request.GET.get('page',1)
+    return paginate_list(list(p),page_number,url)
 
 @api_view(['GET'])
 def dashboard_summary(request):

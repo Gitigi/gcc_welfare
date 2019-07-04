@@ -4,7 +4,7 @@ import {Route} from 'react-router-dom';
 import AnimatedSwitch from './animated-switch';
 import NameSearchInput from './NameSearchInput';
 import NavLink from './navlink';
-
+import Pagination from './Pagination';
 
 export default class Notification extends Component {
 	render() {
@@ -179,9 +179,16 @@ class SendNotification extends Component {
 }
 
 class SentNotification extends Component {
-	state = {notifications: []}
+	state = {notifications: {results: []}}
 	componentDidMount(){
-		axios.get('/api/notification/').then(res=>this.setState({notifications: res.data}));
+		this.fetchData()
+	}
+	fetchData(page=1){
+		axios.get('/api/notification/',{params: {page}}).then(res=>this.setState({notifications: res.data}));
+	}
+
+	gotoPage(page) {
+		this.fetchData(page);
 	}
 	render() {
 		return <div>
@@ -196,7 +203,7 @@ class SentNotification extends Component {
 						</tr>
 					</thead>
 					<tbody>
-						{this.state.notifications.map(n=>{
+						{this.state.notifications.results.map(n=>{
 							return <tr key={n.id}>
 									<td>{n.date}</td>
 									<td>{n.heading}</td>
@@ -206,6 +213,7 @@ class SentNotification extends Component {
 						})}
 					</tbody>
 				</table>
+				<Pagination goto={this.gotoPage.bind(this)} data={this.state.notifications} />
 			</div>
 	}
 }

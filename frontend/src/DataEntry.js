@@ -8,6 +8,7 @@ import PersonalDetails from './PersonalDetails';
 import PersonalNotes from './PersonalNotes';
 import NameSearchInput from './NameSearchInput';
 import NavLink from './navlink';
+import Pagination from './Pagination';
 
 export default class DataEntry extends Component {
 	render() {
@@ -105,48 +106,50 @@ class List extends Component {
 		super(props);
 		let status = this.props.location.state && this.props.location.state.status;
 		let search = this.props.location.state && this.props.location.state.search;
+		let page = this.props.location.state && this.props.location.state.page;
 
-		this.state = {members: [], status: status||'active' ,contribution: '', search,all: false};
+		this.state = {members: {results:[]}, status: status||'active', search,all: false,page: page||1};
 	}
 	componentDidMount() {
 		this.fetchData()
 	}
 
 	componentDidUpdate(prevProps,prevState){
-		if(this.state.search !== prevState.search || this.state.contribution !== prevState.contribution ||
-			this.state.status !== prevState.status){
-				this.props.history.replace(this.props.match.url,{status: this.state.status,search: this.state.search})
-				this.fetchData();
-			}
+		if(this.state.search !== prevState.search || this.state.status !== prevState.status){
+			this.props.history.replace(this.props.match.url,{status: this.state.status,search: this.state.search,page: 1})
+			this.fetchData();
+		} else if(this.state.page !== prevState.page){
+			this.props.history.replace(this.props.match.url,{status: this.state.status,search: this.state.search,page: this.state.page})
+			this.fetchData();
+		}
 	}
 
 	fetchData(){
-		let params = {};
-		if(this.state.contribution)
-			params['contribution'] = this.state.contribution;
+		let params = {page: this.state.page};
 		if(this.state.status)
 			params['status'] = this.state.status;
 		if(this.state.search)
 			params['search'] = this.state.search;
-
 		axios.get('/api/members/',{params}).then(response => this.setState({members: response.data}))
+	}
+
+	gotoPage(page){
+		this.setState({page})
 	}
 
 	handleChange(field,e){
 		let all = field === 'search' ? this.state.all : false;
 
-		this.setState({[field]: e.target.value,all});
+		this.setState({[field]: e.target.value,all,page: 1});
 	}
 
 	handleAllChange(e){
 		let status = this.state.status;
-		let contribution = this.state.contribution;
 
 		if(e.target.checked){
 			status = '';
-			contribution = '';
 		}
-		this.setState({all: e.target.checked,status,contribution});
+		this.setState({all: e.target.checked,status,page: 1});
 	}
 
 	render(){
@@ -212,7 +215,7 @@ class List extends Component {
 						</tr>
 					</thead>
 					<tbody>
-						{this.state.members.map(member=>(
+						{this.state.members.results.map(member=>(
 							<tr key={member.id}>
 								<td><Link to={`${match.url}/${member.id}`}>{member.first_name}</Link></td>
 								<td><Link to={`${match.url}/${member.id}`}>{member.middle_name}</Link></td>
@@ -223,6 +226,7 @@ class List extends Component {
 							))}
 					</tbody>
 				</table>
+				<Pagination goto={this.gotoPage.bind(this)} data={this.state.members} />
 
 			</div>
 			);

@@ -1,10 +1,15 @@
 import React, {Component} from 'react';
 import axios from 'axios';
+import Pagination from './Pagination';
 
 export default class DefaultersReport extends Component {
-	state = {data: []}
+	state = {data: {results: []}}
 	componentDidMount() {
-		axios.get('/api/defaulters-report').then(res=>this.setState({data: res.data}))
+		this.fetchData();
+	}
+
+	fetchData(page=1) {
+		axios.get('/api/defaulters-report',{params: {page}}).then(res=>this.setState({data: res.data}))
 	}
 
 	calculateLag(date,date_joined) {
@@ -15,6 +20,10 @@ export default class DefaultersReport extends Component {
 			delay+=1;
 		}
 		return delay
+	}
+
+	gotoPage(page) {
+		this.fetchData(page);
 	}
 
 	render() {
@@ -31,7 +40,7 @@ export default class DefaultersReport extends Component {
 						</tr>
 					</thead>
 					<tbody>
-						{this.state.data.map(p=>{
+						{this.state.data.results.map(p=>{
 							return <tr key={p.id}>
 									<td>{p.first_name.toUpperCase()}</td>
 									<td>{p.middle_name.toUpperCase()}</td>
@@ -42,6 +51,7 @@ export default class DefaultersReport extends Component {
 						})}
 					</tbody>
 				</table>
+				<Pagination goto={this.gotoPage.bind(this)} data={this.state.data} />
 			</div>
 	}
 }

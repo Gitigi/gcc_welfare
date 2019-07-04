@@ -5,6 +5,7 @@ import ReactDOM from 'react-dom'
 import * as $ from 'jquery/dist/jquery.slim';
 import axios from 'axios';
 import ConfirmAction from './ConfirmAction';
+import Pagination from './Pagination';
 
 
 export default class Banking extends Component {
@@ -32,7 +33,7 @@ class BankingList extends Component {
 		let date = new Date();
 		let year = date.getFullYear();
 		let month = date.getMonth() + 1;
-		this.state = {banking: [],filter: {year,month,search:''}}
+		this.state = {banking: {results:[]},filter: {year,month,search:''}}
 	}
 
 	handleFilterChange(field,event){
@@ -59,6 +60,12 @@ class BankingList extends Component {
 		b.push(banking);
 		this.setState({banking: b});
 	}
+
+	gotoPage(page) {
+		let params = {...this.state.filter,page}
+		this.updateBanking(params);
+	}
+
 	render() {
 		return (
 			<div>
@@ -96,7 +103,7 @@ class BankingList extends Component {
 						</tr>
 					</thead>
 					<tbody>
-						{this.state.banking.map(b=>(
+						{this.state.banking.results.map(b=>(
 							<tr key={b.id}>
 								<td>{b.bank_name}</td>
 								<td>{b.account}</td>
@@ -107,6 +114,7 @@ class BankingList extends Component {
 							))}
 					</tbody>
 				</table>
+				<Pagination goto={this.gotoPage.bind(this)} data={this.state.banking} />
 			</div>
 		);
 	}
