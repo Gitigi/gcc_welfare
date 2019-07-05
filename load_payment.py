@@ -47,7 +47,7 @@ def format_name(name):
 		if names[1].find('.') != -1:
 			return names[0] + ' ' + names[1].split('.')[0] + ' ' + names[1].split('.')[1]
 		else:
-			return name
+			return names[0] + ' ' + names[1] + ' ' + names[1]
 	else:
 		return name
 
@@ -79,7 +79,7 @@ def make_payment(member,amount,year,month):
 						date=datetime.date(2016,month,1),
 						period=datetime.date(2016,month,1))
 		return
-	last_payment = Payment.objects.filter(member=member).last()
+	last_payment = Payment.objects.filter(member=member,period__year__gt=2016).last()
 	last_payment_date = None
 	if last_payment:
 		last_payment_date = last_payment.period
@@ -89,7 +89,11 @@ def make_payment(member,amount,year,month):
 		  last_payment.amount = 200
 		  last_payment.save()
 	else:
-		month = (month-1) if month > 1 else 1
+		if month == 1:
+			month = 12
+			year -= 1
+		else:
+			month -= 1
 		last_payment_date = datetime.date(year,month,1)
 
 

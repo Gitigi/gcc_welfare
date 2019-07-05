@@ -2,9 +2,9 @@ import xlrd,re
 from core.serializers import MemberSerializer
 from core.models import Member,Child
 from django.conf import settings
+# workbook = xlrd.open_workbook('GCCWELFARE DATABASE.xlsx')
 workbook = xlrd.open_workbook('GCCWELFARE DATABASE.xlsx')
 sheet = workbook.sheet_by_index(0)
-sheet.cell(1,1)
 
 def get_detail(row):
 	r = sheet.row(row)
@@ -181,7 +181,7 @@ def update_spouse(member1,member2):
           c.save()
 
 def set_spouse():
-	for i in range(1,147):
+	for i in range(1,sheet.nrows):
 		r = get_detail(i)
 		f = format_details(r)
 		m = search_name(f['first_name'] + ' ' + f['middle_name'] + ' ' +f['last_name'])
