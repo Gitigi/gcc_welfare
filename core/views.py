@@ -99,6 +99,7 @@ def dashboard_summary(request):
     active = Member.objects.filter(dummy=False,suspended=False)
     upto_date = Member.objects.all().filter(dummy=False,payment__period__year=today.year,payment__period__month=today.month).annotate(id_=Max('id')).filter(id = F('id_'))
     lagging = Member.objects.all().filter(dummy=False).exclude(id__in=upto_date)
+    dormant = Member.objects.all().filter(dummy=False,suspended=False).exclude(id__in=Payment.objects.all().values_list('member'))
     #payment total per month for the last three years
     p1 = Payment.objects.filter(period__year=today.year-2).values('period__month').annotate(total=Sum('amount'))
     p2 = Payment.objects.filter(period__year=today.year-1).values('period__month').annotate(total=Sum('amount'))
@@ -108,6 +109,7 @@ def dashboard_summary(request):
         'active': active.count(),
         'upto_date': upto_date.count(),
         'lagging': lagging.count(),
+        'dormant': dormant.count(),
         'annual_report': {today.year-2: list(p1), today.year-1: list(p2), today.year: list(p3)}
     }
     return Response(response)
@@ -129,7 +131,9 @@ class MemberViewSet(viewsets.ModelViewSet):
             elif self.request.GET['status'] == 'upto-date':
                 members = members.filter(dummy=False,suspended=False).filter(id__in = p)
             elif self.request.GET['status'] == 'lagging':
-                members = members.filter(dummy=False,suspended=False).exclude(id__in = p)
+                members = members.filter(dummy=False,suspended=False).filter(id__in=Payment.objects.all().values_list('member')).exclude(id__in = p)
+            elif self.request.GET['status'] == 'dormant':
+                members = members.filter(dummy=False,suspended=False).exclude(id__in=Payment.objects.all().values_list('member'))
         if self.request.GET.get('search'):
             members = members.filter(
                 Q(first_name__istartswith=self.request.GET.get('search')) |

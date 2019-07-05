@@ -191,6 +191,13 @@ class List extends Component {
 							</div>
 						</div>
 						<div className="form-group col-sm-2">
+							<label className="col-sm-8 control-label">Dormant</label>
+							<div className="col-sm-1">
+								<input onChange={this.handleChange.bind(this,'status')} type="radio" name="status" value="dormant" className="form-control"
+									checked={this.state.status === 'dormant'} />
+							</div>
+						</div>
+						<div className="form-group col-sm-2">
 							<label className="col-sm-8 control-label">ALL</label>
 							<div className="col-sm-1">
 								<input onChange={this.handleAllChange.bind(this)} checked={this.state.all} type="checkbox" name="status" value="all" className="form-control" />

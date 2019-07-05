@@ -189,21 +189,25 @@ class Dashboard extends Component {
       <div>
         <h2>Dashboard</h2>
         <div className="row">
-            <div className="col-lg-3 col-md-6">
+            <div className="col-lg-offset-1 col-lg-2 col-md-6">
               <Panel item="Upto Date Members" count={this.state.data.upto_date} icon="fa-balance-scale"
                 detailsPath={{pathname:'/home/members',state: {status: 'upto-date'}}}/>
             </div>
-            <div className="col-lg-3 col-md-6">
+            <div className="col-lg-2 col-md-6">
               <Panel item="Lagging Members" count={this.state.data.lagging} icon="fa-s15 " color="green"
                 detailsPath={{pathname:'/home/members',state: {status: 'lagging'}}}/>
             </div>
-            <div className="col-lg-3 col-md-6">
+            <div className="col-lg-2 col-md-6">
               <Panel item="Active Members" count={this.state.data.active} icon="fa-signing" color="yellow"
                 detailsPath={{pathname:'/home/members',state: {status: 'active'}}}/>
             </div>
-            <div className="col-lg-3 col-md-6">
+            <div className="col-lg-2 col-md-6">
               <Panel item="Suspended Members" count={this.state.data.suspended} icon="fa-thumb-tack" color="red"
                 detailsPath={{pathname:'/home/members',state: {status: 'suspended'}}}/>
+            </div>
+            <div className="col-lg-2 col-md-6">
+              <Panel item="Dormant Members" count={this.state.data.dormant} icon="fa-thumb-tack" color="yellow"
+                detailsPath={{pathname:'/home/members',state: {status: 'dormant'}}}/>
             </div>
         </div>
 
@@ -229,7 +233,7 @@ class Panel extends Component {
       <div className="panel-heading">
         <div className="row">
           <div className="col-xs-3">
-            <i className={`fa ${this.props.icon} fa-5x`}></i>
+            <i className={`fa ${this.props.icon} fa-4x`}></i>
           </div>
           <div className="col-xs-9 text-right">
             <div className="huge">{this.props.count}</div>
