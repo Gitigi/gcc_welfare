@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
-from core.models import Member, Child, Payment, Banking, Note, Notification, Library, Claim
+from core.models import Member, Child, Payment, Period, Banking, Note, Notification, Library, Claim
 
 # Serializers define the API representation.
 class UserSerializer(serializers.ModelSerializer):
@@ -68,6 +68,12 @@ class PaymentSerializer(serializers.ModelSerializer):
 	class Meta:
 		model = Payment
 		fields = ('id','member','method','amount','date','period','first_name','middle_name','last_name','id_no','reg')
+
+class PeriodSerializer(serializers.ModelSerializer):
+	payment_total = serializers.ReadOnlyField(source='payment.amount')
+	class Meta:
+		model = Period
+		fields = ('id','payment','amount','period','payment_total')
 
 
 class NoteSerializer(serializers.ModelSerializer):

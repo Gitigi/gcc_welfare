@@ -1,148 +1,87 @@
 import React, {Component} from 'react';
 import axios from 'axios';
 import NameSearchInput from './NameSearchInput';
-import Pagination from './Pagination';
-import ExportButton from './ExportButton';
-import {getPaginatedData} from './utility';
+import * as $ from 'jquery/dist/jquery.slim';
 
 export default class IndividualReport extends Component {
-	monthsArray = (new Array(12)).fill(0)
-	months = ['January','February','March','April','May',
-		'June','July','August','Septempber','October','November','December']
-	years = Array.from(new Array(20), (v,i)=>2015+i)
-
-	constructor(props) {
-		super(props);
-
-		let year = (new Date()).getFullYear();
-		this.state = {data: [],originalData:{results:[]},members: [],total: 0,year,member: {},showAll: true,filterError: false};
-
-		this.handleYearChange = this.handleYearChange.bind(this);
-		this.handleMemberChange = this.handleMemberChange.bind(this);
-		this.handleShowAll = this.handleShowAll.bind(this);
-	}
-
+	state = {rows: [],first:'',last:'',member: {}}
 	componentDidMount() {
-		this.fetchData(this.state.year,this.state.member);
+		this.fetchData();
 	}
-
-	fetchData(year,member,showAll,page=1) {
-		let params = {year,page};
-		if(member && !showAll){
-			params.member = member.id;
+	componentDidUpdate(prevProp,prevState) {
+		if(prevState.member.id !== this.state.member.id){
+			this.fetchData();
 		}
-
-		axios.get('/api/individual-report/',{params}).then(res=>{
-			this.setState({originalData: res.data})
-			this.updateData(res.data.results);
-		})
+		$('[data-toggle="tooltip"]').tooltip({container: 'body'})
 	}
-
-	updateData(data) {
-		let d = {}
-		let members = [];
-		data.forEach(o=>{
-			if (!d[o.member]){
-				members.push(o.member);
-				d[o.member] = {first_name: o.member__first_name,middle_name: o.member__middle_name,last_name: o.member__last_name};
+	fetchData() {
+		axios.get('/api/payment-distribution/',{params:{member: this.state.member.id}}).then(res=>{
+			if(!res.data.length){
+				this.setState({data: [],rows:[]})
+				return;
 			}
+			console.log(res.data);
+			let first = new Date(res.data[0].period);
+			let last = new Date(res.data[res.data.length-1].period);
+			let years = Math.abs(first.getFullYear()-last.getFullYear())+1;
+			let direction = 1;
+			if(first > last)
+				direction = -1
 
-			d[o.member][o.period__month] = o.total;
-		})
-		this.setState({data: d,members});
+			let rows = Array.from(new Array(years), (v,i)=>first.getFullYear()+(direction*i));
+			this.setState({rows,first,last,data: res.data})
+		});
 	}
 
-	handleYearChange(e){
-		this.setState({year: e.target.value});
-		this.fetchData(e.target.value,this.state.member,this.state.showAll);
+	getAmount(year,month) {
+		let p = this.state.data.find(v=>(new Date(v.period)).getFullYear() === year && (new Date(v.period)).getMonth() === month);
+		if(!p)
+			return '';
+		return p.amount
 	}
-
 	handleMemberChange(member) {
-		let filterError = false;
-		if(this.state.showAll){
-			filterError = true;
-		} else{
-			this.fetchData(this.state.year,member,this.state.showAll);
-		}
-		this.setState({member,filterError});
+		this.setState({member})
 	}
-
-	handleShowAll(e) {
-		this.setState({showAll: e.target.checked,filterError: false});
-		
-		if(e.target.checked)
-			this.fetchData(this.state.year,this.state.member,true);
-		else
-			this.fetchData(this.state.year,this.state.member,false)
-	}
-
-	gotoPage(page) {
-		this.fetchData(this.state.year,this.state.member,false,page)
-	}
-
-	getData() {
-		return getPaginatedData('/api/individual-report');
-	}
-
 	render() {
+		let months = (new Array(12)).fill(0);
 		return <div>
-				<div className={`alert alert-danger ${this.state.filterError ? 'show' : 'hide'}`} role="alert">
-					Please uncheck the 'All' checkbox to enable individual name search
-				</div>
 				<h2 className="text-center">Individual Report</h2>
 				<div className="row">
 					<form>
-						<div className="form-group">
-							<label className="col-sm-1 control-label">Year</label>
-							<div className="col-sm-3">
-								<select onChange={this.handleYearChange} value={this.state.year} className="form-control">
-									<option value=''>ALL</option>
-									{this.years.map((y,i)=><option key={i} value={y}>{y}</option>)}
-								</select>
-							</div>
-						</div>
-						<div className="form-group">
-							<label className="col-sm-1 control-label">Name</label>
-							<div className="col-sm-4">
-								<NameSearchInput userSelected={this.handleMemberChange}/>
-							</div>
-						</div>
-						<div className="form-group">
-							<label className="col-sm-1 control-label">All</label>
-							<div className="col-sm-2" >
-								<input type="checkbox" checked={this.state.showAll} onChange={this.handleShowAll} />
-							</div>
+						<div className="col-sm-offset-4 col-sm-4">
+							<NameSearchInput userSelected={this.handleMemberChange.bind(this)}/>
 						</div>
 					</form>
 				</div>
-				<table className="table table-responsive table-striped">
+				<table className="table table-responsive">
 					<thead>
 						<tr>
-							<th>First Name</th>
-							<th>Middle Name</th>
-							<th>Last Name</th>
-							{this.months.map((m,i)=> <th key={i}>{m}</th>)}
-							<th>Total (KSH)</th>
+							<th></th>
+							<th>January</th>
+							<th>Febrary</th>
+							<th>March</th>
+							<th>April</th>
+							<th>May</th>
+							<th>June</th>
+							<th>July</th>
+							<th>August</th>
+							<th>September</th>
+							<th>October</th>
+							<th>November</th>
+							<th>December</th>
 						</tr>
 					</thead>
 					<tbody>
-						{this.state.members.map((v,i)=>{
-							let total = 0;
-							return <tr key={v}>
-									<td>{this.state.data[v].first_name}</td>
-									<td>{this.state.data[v].middle_name}</td>
-									<td>{this.state.data[v].last_name}</td>
-									{this.monthsArray.map((m,i)=>{
-										total += this.state.data[v][i+1] || 0;
-										return <td key={i}>{this.state.data[v][i+1] || 0}</td>
+						{this.state.rows.map((year,index)=>{
+							return <tr key={year}>
+									<th>{year}</th>
+									{months.map((m,index)=>{
+										return <td key={year+''+index}>{this.getAmount(year,index)}</td>
 									})}
-									<td>{total}</td>
 								</tr>
 						})}
 					</tbody>
 				</table>
-				<Pagination goto={this.gotoPage.bind(this)} data={this.state.originalData} />
-				<ExportButton data={this.getData.bind(this)}/>
 			</div>
 	}
 }

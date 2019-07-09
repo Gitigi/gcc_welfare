@@ -5,8 +5,8 @@ from django.views.decorators.csrf import ensure_csrf_cookie
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import viewsets,status
-from core.serializers import UserSerializer, MemberSerializer,MemberSerializerMini, PaymentSerializer, BankingSerializer, NoteSerializer, NotificationSerializer, LibrarySerializer, ClaimSerializer, ChildSerializer
-from core.models import Member,Payment,Banking,Note, Notification, Library, Claim, Child
+from core.serializers import UserSerializer, MemberSerializer,MemberSerializerMini, PaymentSerializer, PeriodSerializer, BankingSerializer, NoteSerializer, NotificationSerializer, LibrarySerializer, ClaimSerializer, ChildSerializer
+from core.models import Member,Payment,Period,Banking,Note, Notification, Library, Claim, Child
 import datetime
 from dateutil.relativedelta import relativedelta
 from django.db.models import Q,Sum,Max,F
@@ -55,17 +55,17 @@ def search_name(request):
 @api_view(['GET'])
 def annual_report(request):
     year = request.GET.get('year',datetime.datetime.today().year)
-    p = Payment.objects.filter(period__year=year).values('period__month').annotate(total=Sum('amount'))
+    p = Period.objects.all().values('period__year','period__month').annotate(total=Sum('amount'))
     return Response(list(p))
 
 @api_view(['GET'])
 def individual_report(request):
-    p = Payment.objects.all()
+    p = Period.objects.all()
     if request.GET.get('year'):
         p = p.filter(period__year=request.GET['year'])
     if request.GET.get('member'):
-        p = p.filter(member=request.GET['member'])
-    p = p.values('period__month','member','member__first_name','member__middle_name','member__last_name').annotate(total=Sum('amount'))
+        p = p.filter(payment__member=request.GET['member'])
+    p = p.values('period__month','payment__member','payment__member__first_name','payment__member__middle_name','payment__member__last_name').annotate(total=Sum('amount'))
 
     url = request.build_absolute_uri()
     page_number = request.GET.get('page',1)
@@ -76,8 +76,10 @@ def individual_report(request):
 def defaulters_report(request):
     today = datetime.datetime.today()
     #get list of member who have contributed for current period
-    p = Payment.objects.filter(period__year=today.year,period__month=today.month).values_list('member')
-    m = Member.objects.filter(dummy=False).exclude(id__in=p).annotate(period=Max('payment__period')).values('id','first_name','middle_name','last_name','date_joined','period')
+    p = Period.objects.filter(period__year=today.year,period__month=today.month).values_list('payment__member')
+    m = Member.objects.filter(dummy=False).exclude(id__in=p).annotate(period=Max('payment__period__period')).values('id','first_name','middle_name','last_name','date_joined','period')
+    if request.GET.get('salutation'):
+        m = m.filter(salutation=request.GET['salutation'])
     
     url = request.build_absolute_uri()
     page_number = request.GET.get('page',1)
@@ -85,25 +87,25 @@ def defaulters_report(request):
 
 @api_view(['GET'])
 def payment_report(request):
-    p = Payment.objects.values('date','member','member__first_name','member__middle_name','member__last_name').annotate(total=Sum('amount'))
+    p = Payment.objects.values('date','member','member__first_name','member__middle_name','member__last_name','amount')
     if request.GET.get('member'):
         p = p.filter(member=request.GET['member'])
     url = request.build_absolute_uri()
     page_number = request.GET.get('page',1)
-    return paginate_list(list(p),page_number,url)
+    return paginate_list(list(p.order_by('-date')),page_number,url)
 
 @api_view(['GET'])
 def dashboard_summary(request):
     today = datetime.datetime.today()
     suspended = Member.objects.filter(dummy=False,suspended=True)
     active = Member.objects.filter(dummy=False,suspended=False)
-    upto_date = Member.objects.all().filter(dummy=False,payment__period__year=today.year,payment__period__month=today.month).annotate(id_=Max('id')).filter(id = F('id_'))
+    upto_date = Member.objects.all().filter(dummy=False,payment__period__period__year=today.year,payment__period__period__month=today.month).annotate(id_=Max('id')).filter(id = F('id_'))
     lagging = Member.objects.all().filter(dummy=False).exclude(id__in=upto_date)
     dormant = Member.objects.all().filter(dummy=False,suspended=False).exclude(id__in=Payment.objects.all().values_list('member'))
     #payment total per month for the last three years
-    p1 = Payment.objects.filter(period__year=today.year-2).values('period__month').annotate(total=Sum('amount'))
-    p2 = Payment.objects.filter(period__year=today.year-1).values('period__month').annotate(total=Sum('amount'))
-    p3 = Payment.objects.filter(period__year=today.year).values('period__month').annotate(total=Sum('amount'))
+    p1 = Payment.objects.filter(period__period__year=today.year-2).values('period__period__month').annotate(total=Sum('amount'))
+    p2 = Payment.objects.filter(period__period__year=today.year-1).values('period__period__month').annotate(total=Sum('amount'))
+    p3 = Payment.objects.filter(period__period__year=today.year).values('period__period__month').annotate(total=Sum('amount'))
     response = {
         'suspended': suspended.count(),
         'active': active.count(),
@@ -116,8 +118,8 @@ def dashboard_summary(request):
 
 @api_view(['GET'])
 def payment_distribution(request):
-    p = Payment.objects.filter(member=request.GET.get('member')).annotate(total=Sum('amount')).order_by('-period')
-    serializer = PaymentSerializer(p,many=True)
+    p = Period.objects.filter(payment__member=request.GET.get('member')).order_by('-period')
+    serializer = PeriodSerializer(p,many=True)
     return Response(serializer.data)
 
 class MemberViewSet(viewsets.ModelViewSet):
@@ -128,7 +130,7 @@ class MemberViewSet(viewsets.ModelViewSet):
         members = self.queryset
         today = datetime.datetime.today()
         #get list of member who have contributed for current period
-        p = Payment.objects.filter(period__year=today.year,period__month=today.month).values_list('member')
+        p = Payment.objects.filter(period__period__year=today.year,period__period__month=today.month).values_list('member')
         if self.request.GET.get('status'):
             if self.request.GET['status'] == 'active':
                 members = members.filter(dummy=False,suspended=False)
@@ -363,13 +365,13 @@ class NotificationViewSet(viewsets.ModelViewSet):
             return Response(serializer.errors,status.HTTP_400_BAD_REQUEST)
 
         serializer.save()
-        numbers = Member.objects.filter(dummy=False).values_list('mobile_no')
+        numbers = Member.objects.filter(dummy=False,suspended=False).values_list('mobile_no')
         if request.data['target'] == 'individual':
             numbers = numbers.filter(id__in=request.data['contacts'].split(';'))
         else:
             today = datetime.datetime.today()
             #get list of member who have contributed for current period
-            p = Payment.objects.filter(period__year=today.year,period__month=today.month).values_list('member')
+            p = Payment.objects.filter(period__period__year=today.year,period__period__month=today.month).values_list('member')
             if request.data['status'] == 'active':
                 numbers = numbers.filter(suspended=False)
             elif request.data['status'] == 'suspended':
@@ -390,65 +392,60 @@ class PaymentViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         q = self.queryset
         if self.request.GET.get('year'):
-            q = q.filter(period__year=self.request.GET['year'])
+            q = q.filter(date__year=self.request.GET['year'])
         if self.request.GET.get('month'):
-            q = q.filter(period__month=self.request.GET['month'])
+            q = q.filter(date__month=self.request.GET['month'])
         if self.request.GET.get('search'):
             q = q.filter(
                 Q(member__first_name__startswith=self.request.GET['search']) |
                 Q(member__middle_name__startswith=self.request.GET['search']) |
                 Q(member__last_name__startswith=self.request.GET['search']))
-        return q
+        return q.order_by('-date')
 
     def create(self,request):
-        res = dict(request.data)
-        res['date'] = datetime.datetime.now()
-        serializer = PaymentSerializer(data=res)
+        serializer = PaymentSerializer(data=request.data)
         if not serializer.is_valid():
             return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
 
+        member = Member.objects.get(id=request.data['member'])
+        payment = Payment.objects.create(member=member,amount=request.data['amount'],method=request.data['method'])
         amount = int(request.data['amount'])
-        last_payment = Payment.objects.filter(member=request.data['member']).last()
-        last_payment_date = None
-        if last_payment:
-            if last_payment.amount < 200:
-                rem = 200 - last_payment.amount
+        last_period = Period.objects.filter(payment__member=request.data['member']).last()
+        last_period_date = None
+        if last_period:
+            if last_period.amount < 200:
+                rem = 200 - last_period.amount
                 amount -= rem
-                last_payment.amount = 200
-                last_payment.save()
-            last_payment_date = last_payment.period
+                last_period.amount = 200
+                last_period.save()
+            last_period_date = last_period.period
         else:
-            member_date_joined = Member.objects.get(id=request.data['member']).date_joined
-            last_payment_date = datetime.date(member_date_joined.year,member_date_joined.month,1)
+            member_date_joined = member.date_joined
+            last_period_date = datetime.date(member_date_joined.year,member_date_joined.month,1)
             #subtract a month from date of joining.
             #so that payment begin on the month of joining
-            last_payment_date += relativedelta(months=-1,day=1)
+            last_period_date += relativedelta(months=-1,day=1)
 
         
-        payments = []
+        periods = []
         date = datetime.datetime.today()
         period = None
-        member = Member.objects.get(id=request.data['member'])
         for i in range(int(amount / 200)):
-            period = last_payment_date + relativedelta(months=+1,day=1)
-            p = Payment.objects.create(member=member,
-                method=request.data['method'],
+            period = last_period_date + relativedelta(months=+1,day=1)
+            p = Period.objects.create(payment=payment,
                 amount=200,
-                period=period,
-                date=date)
-            payments.append(p)
-            last_payment_date = period
+                period=period)
+            periods.append(p)
+            last_period_date = period
 
         if amount % 200 != 0:
             rem = amount % 200
-            period = last_payment_date + relativedelta(months=+1,day=1)
-            p = Payment.objects.create(member=member,
-                method=request.data['method'],
+            period = last_period_date + relativedelta(months=+1,day=1)
+            p = Period.objects.create(payment=payment,
                 amount=rem,
-                period=period,
-                date=date)
+                period=period)
 
         send_message("Thank you %s %s %s for your welfare payment of amount %d on %s" % 
             (member.first_name,member.middle_name,member.last_name,request.data['amount'],date), member.mobile_no)
         
-        return Response(PaymentSerializer(payments,many=True).data)
+        return Response(PaymentSerializer(payment).data)

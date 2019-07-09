@@ -152,7 +152,7 @@ class Dashboard extends Component {
     let years = Array.from(new Array(12), (_,index)=>{
       let bar = {period__month: this.months[index]}
       Object.keys(data).forEach((year)=>{
-        let m = data[year].find(v=>v.period__month == (index+1));
+        let m = data[year].find(v=>v.period__period__month == (index+1));
         if(m){
           bar[year] = m.total;
         }else {

@@ -68,7 +68,7 @@ export default class PaymentReport extends Component {
 									<td>{p.member__middle_name.toUpperCase()}</td>
 									<td>{p.member__last_name.toUpperCase()}</td>
 									<td>{p.date}</td>
-									<td>{p.total}</td>
+									<td>{p.amount}</td>
 								</tr>
 						})}
 					</tbody>

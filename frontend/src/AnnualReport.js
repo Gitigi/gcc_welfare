@@ -3,18 +3,7 @@ import axios from 'axios';
 import ExportButton from './ExportButton';
 
 export default class AnnualReport extends Component {
-	months = ['January','February','March','April','May',
-		'June','July','August','Septempber','October','November','December']
-	years = Array.from(new Array(20), (v,i)=>2015+i)
-
-	constructor(props) {
-		super(props);
-
-		let year = (new Date()).getFullYear();
-		this.state = {data: [],total: 0,year};
-
-		this.handleYearChange = this.handleYearChange.bind(this);
-	}
+	state = {rows: [],member: {}}
 
 	componentDidMount() {
 		this.fetchData(this.state.year);
@@ -22,65 +11,72 @@ export default class AnnualReport extends Component {
 
 	fetchData(year) {
 		axios.get('/api/annual-report/',{params : {year}}).then(res=>{
-			this.updateData(res.data);
-		})
-	}
+			// this.updateData(res.data);
+			if(!res.data.length){
+				this.setState({data: [],rows:[]})
+				return;
+			}
+			console.log(res.data);
+			let first = res.data[0].period__year;
+			let last = res.data[res.data.length-1].period__year;
+			let years = Math.abs(first-last)+1;
+			let direction = 1;
+			if(first > last)
+				direction = -1
 
-	updateData(data) {
-		let d = (new Array(12)).fill(0);
-		d = d.map((value,index)=>{
-			let v = data.find(d=>(d.period__month-1)===index);
-			return v ? v.total : 0;
+			let rows = Array.from(new Array(years), (v,i)=>first+(direction*i));
+			this.setState({rows,data: res.data})
 		})
-		let total = 0;
-		d.forEach(a=>total+=a);
-		this.setState({data: d,total});
-	}
-
-	handleYearChange(e){
-		this.setState({year: e.target.value});
-		this.fetchData(e.target.value);
 	}
 
 	getData(){
-		let d = this.state.data.map((amount,index)=>[this.months[index],amount]);
-		d.unshift(["Months","Amount KSH"]);
-		return d;
+		return [[]]
+	}
+
+	getAmount(year,month) {
+		let p = this.state.data.find(v=> v.period__year === year && v.period__month === month);
+		if(!p)
+			return '';
+		return p.total
 	}
 
 	render() {
+		let months = (new Array(12)).fill(0);
 		return <div>
 				<h2 className="text-center">Annual Report</h2>
-				<div className="row">
-					<form>
-						<div className="col-sm-offset-4 col-sm-4">
-							<select onChange={this.handleYearChange} value={this.state.year} className="form-control">
-								{this.years.map((y,i)=><option key={i} value={y}>{y}</option>)}
-							</select>
-						</div>
-					</form>
-				</div>
-				<table className="table table-responsive table-striped">
+				<table className="table table-responsive">
 					<thead>
 						<tr>
-							<th>Month</th>
-							<th>Amount (KSH)</th>
+							<th></th>
+							<th>January</th>
+							<th>Febrary</th>
+							<th>March</th>
+							<th>April</th>
+							<th>May</th>
+							<th>June</th>
+							<th>July</th>
+							<th>August</th>
+							<th>September</th>
+							<th>October</th>
+							<th>November</th>
+							<th>December</th>
+							<th>Total</th>
 						</tr>
 					</thead>
 					<tbody>
-						{this.state.data.map((v,i)=>{
-							return <tr key={i}>
-									<td>{this.months[i]}</td>
-									<td>{v}</td>
+						{this.state.rows.map((year,index)=>{
+							let total = 0;
+							return <tr key={year}>
+									<th>{year}</th>
+									{months.map((m,index)=>{
+										let amount = this.getAmount(year,index+1);
+										total += amount;
+										return <td key={year+''+index}>{amount}</td>
+									})}
+									<th>{total}</th>
 								</tr>
 						})}
 					</tbody>
-					<tfoot>
-						<tr>
-							<th>Total</th>
-							<th>{this.state.total}</th>
-						</tr>
-					</tfoot>
 				</table>
 				<ExportButton data={this.getData.bind(this)}/>
 			</div>

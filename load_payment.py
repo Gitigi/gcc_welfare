@@ -1,6 +1,6 @@
 import xlrd,openpyxl,re
 from django.conf import settings
-from core.models import Member,Payment
+from core.models import Member,Payment,Period
 import datetime
 from dateutil.relativedelta import relativedelta
 
@@ -51,70 +51,41 @@ def format_name(name):
 	else:
 		return name
 
-def read_2016():
-	sheet = workbook.sheet_by_index(6)
-	re_s = re.compile(' +')
-	for i in range(1,sheet.nrows):
-		r = sheet.row(i)
-		name = re_s.sub(' ',r[0].value.strip())
-		if not name or not name[0].isalpha():
-				continue
-		name =format_name(name)
-		names = name.split(' ')
-		if len(names) == 2:
-			names += ['']
-		member = search_name(name)
-		if member and member.first_name == names[0] and (member.middle_name == names[1] or member.last_name == names[2]):
-			for index,col in enumerate(r[2:-1]):
-				if col.value:
-					Payment.objects.create(member=member,amount=col.value,method='CA',
-						date=datetime.date(2016,index+1,1),
-						period=datetime.date(2016,index+1,1))
-		else:
-			print(name)
 
 def make_payment(member,amount,year,month):
+	payment = Payment.objects.create(member=member,amount=amount,method='CA',
+						date=datetime.date(year,month,1))
 	if year == 2016:
-		Payment.objects.create(member=member,amount=amount,method='CA',
-						date=datetime.date(2016,month,1),
-						period=datetime.date(2016,month,1))
+		p = Period.objects.create(payment=payment,amount=amount,period=datetime.date(2016,month,1))
 		return
-	last_payment = Payment.objects.filter(member=member,period__year__gt=2016).last()
-	last_payment_date = None
-	if last_payment:
-		last_payment_date = last_payment.period
-		if last_payment.amount < 200:
-		  rem = 200 - last_payment.amount
+	last_period = Period.objects.filter(payment__member=member,period__year__gt=2016).last()
+	last_period_date = None
+	if last_period:
+		last_period_date = last_period.period
+		if last_period.amount < 200:
+		  rem = 200 - last_period.amount
 		  amount -= rem
-		  last_payment.amount = 200
-		  last_payment.save()
+		  last_period.amount = 200
+		  last_period.save()
 	else:
 		if month == 1:
 			month = 12
 			year -= 1
 		else:
 			month -= 1
-		last_payment_date = datetime.date(year,month,1)
+		last_period_date = datetime.date(year,month,1)
 
 
 	date = datetime.date(year,month,1)
 	period = None
 	for i in range(int(amount / 200)):
-	  period = last_payment_date + relativedelta(months=+1,day=1)
-	  p = Payment.objects.create(member=member,
-	    method='CA',
-	    amount=200,
-	    period=period,
-	    date=date)
-	  last_payment_date = period
+	  period = last_period_date + relativedelta(months=+1,day=1)
+	  p = Period.objects.create(payment=payment,amount=200,period=period)
+	  last_period_date = period
 	if amount % 200 != 0:
 		rem = amount % 200
-		period = last_payment_date + relativedelta(months=+1,day=1)
-		p = Payment.objects.create(member=member,
-	    method='CA',
-	    amount=rem,
-	    period=period,
-	    date=date)
+		period = last_period_date + relativedelta(months=+1,day=1)
+		p = Period.objects.create(payment=payment,amount=rem,period=period)
 
 def read():
 	for sheet_index in range(6,10):

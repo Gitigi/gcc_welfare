@@ -5,13 +5,19 @@ import ExportButton from './ExportButton';
 import {getPaginatedData} from './utility';
 
 export default class DefaultersReport extends Component {
-	state = {data: {results: []}}
+	state = {data: {results: []},salutation: ''}
 	componentDidMount() {
 		this.fetchData();
 	}
 
+	componentDidUpdate(prevProp,prevState) {
+		if(prevState.salutation !== this.state.salutation){
+			this.fetchData();
+		}
+	}
+
 	fetchData(page=1) {
-		axios.get('/api/defaulters-report',{params: {page}}).then(res=>this.setState({data: res.data}))
+		axios.get('/api/defaulters-report',{params: {page,salutation: this.state.salutation}}).then(res=>this.setState({data: res.data}))
 	}
 
 	calculateLag(date,date_joined) {
@@ -32,9 +38,31 @@ export default class DefaultersReport extends Component {
 		return getPaginatedData('/api/defaulters-report');
 	}
 
+	handleSalutation(e) {
+		this.setState({salutation: e.target.value});
+	}
+
 	render() {
 		return <div>
 				<h2 className="text-center">Defaulters Report</h2>
+				<div className="row">
+					<form>
+						<div className="col-sm-offset-4 col-sm-4">
+							<select value={this.state.salutation} onChange={this.handleSalutation.bind(this)} className="form-control" id="inputSalutation">
+				    		<option></option>
+				    		<option>Dr</option>
+				    		<option>Mr</option>
+				    		<option>Mrs</option>
+				    		<option>Ms</option>
+				    		<option>Pastor</option>
+				    		<option>Apostle</option>
+				    		<option>Bishop</option>
+				    		<option>Elder</option>
+				    		<option>Deacon</option>
+				    	</select>
+						</div>
+					</form>
+				</div>
 				<table className="table table-responsive table-striped">
 					<thead>
 						<tr>

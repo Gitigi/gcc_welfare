@@ -47,8 +47,13 @@ class Payment(models.Model):
     amount = models.IntegerField(null=False)
     method = models.CharField(max_length=2,choices=[
         ('CA','cash'),('BK','bank'),('MP','mpesa')],default='CA')
+    date = models.DateTimeField()
+
+
+class Period(models.Model):
+    payment = models.ForeignKey(Payment,on_delete=models.CASCADE)
     period = models.DateField(null=False,blank=False)
-    date = models.DateTimeField(null=False,blank=False)
+    amount = models.IntegerField(null=False)
 
 
 class Banking(models.Model):
