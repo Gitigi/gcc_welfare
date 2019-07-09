@@ -114,6 +114,12 @@ def dashboard_summary(request):
     }
     return Response(response)
 
+@api_view(['GET'])
+def payment_distribution(request):
+    p = Payment.objects.filter(member=request.GET.get('member')).annotate(total=Sum('amount')).order_by('-period')
+    serializer = PaymentSerializer(p,many=True)
+    return Response(serializer.data)
+
 class MemberViewSet(viewsets.ModelViewSet):
     queryset = Member.objects.all()
     serializer_class = MemberSerializer
