@@ -2,6 +2,8 @@ import React, {Component} from 'react';
 import axios from 'axios';
 import NameSearchInput from './NameSearchInput';
 import Pagination from './Pagination';
+import ExportButton from './ExportButton';
+import {getPaginatedData} from './utility';
 
 export default class IndividualReport extends Component {
 	monthsArray = (new Array(12)).fill(0)
@@ -78,6 +80,10 @@ export default class IndividualReport extends Component {
 		this.fetchData(this.state.year,this.state.member,false,page)
 	}
 
+	getData() {
+		return getPaginatedData('/api/individual-report');
+	}
+
 	render() {
 		return <div>
 				<div className={`alert alert-danger ${this.state.filterError ? 'show' : 'hide'}`} role="alert">
@@ -136,6 +142,7 @@ export default class IndividualReport extends Component {
 					</tbody>
 				</table>
 				<Pagination goto={this.gotoPage.bind(this)} data={this.state.originalData} />
+				<ExportButton data={this.getData.bind(this)}/>
 			</div>
 	}
 }

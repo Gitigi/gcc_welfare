@@ -1,6 +1,8 @@
 import React, {Component} from 'react';
 import axios from 'axios';
 import Pagination from './Pagination';
+import ExportButton from './ExportButton';
+import {getPaginatedData} from './utility';
 
 export default class DefaultersReport extends Component {
 	state = {data: {results: []}}
@@ -24,6 +26,10 @@ export default class DefaultersReport extends Component {
 
 	gotoPage(page) {
 		this.fetchData(page);
+	}
+
+	getData() {
+		return getPaginatedData('/api/defaulters-report');
 	}
 
 	render() {
@@ -52,6 +58,7 @@ export default class DefaultersReport extends Component {
 					</tbody>
 				</table>
 				<Pagination goto={this.gotoPage.bind(this)} data={this.state.data} />
+				<ExportButton data={this.getData.bind(this)}/>
 			</div>
 	}
 }

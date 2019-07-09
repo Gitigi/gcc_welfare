@@ -2,6 +2,8 @@ import React, {Component} from 'react';
 import axios from 'axios';
 import NameSearchInput from './NameSearchInput';
 import Pagination from './Pagination';
+import ExportButton from './ExportButton';
+import {getPaginatedData} from './utility';
 
 export default class PaymentReport extends Component {
 	state = {data: {results: []},member: {},page:1}
@@ -29,6 +31,14 @@ export default class PaymentReport extends Component {
 
 	gotoPage(page) {
 		this.setState({page})
+	}
+
+	formatDataForExcel(data) {
+		
+	}
+
+	getData() {
+		return getPaginatedData('/api/payment-report');
 	}
 
 	render() {
@@ -64,6 +74,7 @@ export default class PaymentReport extends Component {
 					</tbody>
 				</table>
 				<Pagination goto={this.gotoPage.bind(this)} data={this.state.data} />
+				<ExportButton data={this.getData.bind(this)}/>
 			</div>
 	}
 }

@@ -1,0 +1,14 @@
+.export-button{
+	position: fixed;
+	width: 180px;
+	height: 40px;
+	bottom: 40px;
+	right: 40px;
+	background-color: #25d366;
+	color: #FFF;
+	border-radius: 20px;
+	text-align: center;
+	font-size: 18px;
+	box-shadow: 2px 2px 3px #999;
+	z-index: 100;
+}

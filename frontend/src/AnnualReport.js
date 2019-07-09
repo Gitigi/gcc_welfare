@@ -1,5 +1,6 @@
 import React, {Component} from 'react';
 import axios from 'axios';
+import ExportButton from './ExportButton';
 
 export default class AnnualReport extends Component {
 	months = ['January','February','March','April','May',
@@ -41,6 +42,12 @@ export default class AnnualReport extends Component {
 		this.fetchData(e.target.value);
 	}
 
+	getData(){
+		let d = this.state.data.map((amount,index)=>[this.months[index],amount]);
+		d.unshift(["Months","Amount KSH"]);
+		return d;
+	}
+
 	render() {
 		return <div>
 				<h2 className="text-center">Annual Report</h2>
@@ -75,6 +82,7 @@ export default class AnnualReport extends Component {
 						</tr>
 					</tfoot>
 				</table>
+				<ExportButton data={this.getData.bind(this)}/>
 			</div>
 	}
 }
