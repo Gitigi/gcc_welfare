@@ -55,7 +55,7 @@ def search_name(request):
 @api_view(['GET'])
 def annual_report(request):
     year = request.GET.get('year',datetime.datetime.today().year)
-    p = Period.objects.all().values('period__year','period__month').annotate(total=Sum('amount'))
+    p = Period.objects.all().values('period__year','period__month').annotate(total=Sum('amount')).order_by('period__year');
     return Response(list(p))
 
 @api_view(['GET'])
