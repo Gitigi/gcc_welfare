@@ -237,7 +237,7 @@ class ClaimForm extends Component {
 			  </div>
 
 			  <div className={`form-group col-sm-6 ${error.date ? 'has-error': ''}`}>
-					<label className="col-sm-3 control-label">Deposit Date</label>
+					<label className="col-sm-3 control-label">Claim Date</label>
 			    <div className="col-sm-9">
 			      <input value={this.state.data.date} onChange={this.handleInput.bind(this,'date')} type="text" placeholder="dd/mm/year" className="form-control" />
 			    </div>
