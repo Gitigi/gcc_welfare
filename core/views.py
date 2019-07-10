@@ -353,7 +353,7 @@ class NoteViewSet(viewsets.ModelViewSet):
         q = self.queryset
         if self.request.GET.get('member'):
             q = q.filter(member=self.request.GET['member'])
-        return q
+        return q.order_by('-date')
 
 class NotificationViewSet(viewsets.ModelViewSet):
     queryset = Notification.objects.all()
