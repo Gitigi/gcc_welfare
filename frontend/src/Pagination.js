@@ -105,15 +105,15 @@ export default class Pagination extends Component {
 		return <ul className="pagination" style={{margin: "5px 0 10px 0"}}>
 		  {this.state.previous ? <li>
 		      <a onClick={this.goto.bind(this,this.state.previous)} aria-label="Previous">
-		        <span aria-hidden="true">&laquo;</span>
+		        <span aria-hidden="true">&laquo;</span> <span aria-hidden="true">Previous</span>
 		      </a>
 		    </li>	: <li className="disabled">
 		      <a aria-label="Previous">
-		        <span aria-hidden="true">&laquo;</span>
+		        <span aria-hidden="true">&laquo;</span> <span aria-hidden="true">Previous</span>
 		      </a>
 		    </li>}
 
-		  {this.state.pageLinks.map((page_link,index)=><React.Fragment key={index} >
+		  {!this.props.onlyPreviousNext && this.state.pageLinks.map((page_link,index)=><React.Fragment key={index} >
 		  	{page_link.is_break ? <li className="disabled">
 		        <a ><span aria-hidden="true">&hellip;</span></a>
 		      </li> : page_link.is_active ? <li className="active">
@@ -125,11 +125,11 @@ export default class Pagination extends Component {
 
 		  {this.state.next ? <li>
 		      <a onClick={this.goto.bind(this,this.state.next)} aria-label="Next">
-		        <span aria-hidden="true">&raquo;</span>
+		      	<span aria-hidden="true">Next</span> <span aria-hidden="true">&raquo;</span>
 		      </a>
 		    </li> : <li className="disabled">
 		      <a aria-label="Next">
-		        <span aria-hidden="true">&raquo;</span>
+		        <span aria-hidden="true">Next</span> <span aria-hidden="true">&raquo;</span>
 		      </a>
 		    </li>}
 		</ul>

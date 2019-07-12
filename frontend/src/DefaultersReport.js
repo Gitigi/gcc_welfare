@@ -20,13 +20,13 @@ export default class DefaultersReport extends Component {
 		axios.get('/api/defaulters-report',{params: {page,salutation: this.state.salutation}}).then(res=>this.setState({data: res.data}))
 	}
 
-	calculateLag(date,date_joined) {
-		let today = new Date();
-		let last_period = new Date(date || date_joined);
-		let delay =  ((today.getFullYear() - last_period.getFullYear()) * 12) + (today.getMonth() - last_period.getMonth())
+	calculateLag(date) {
 		if(!date){
-			delay+=1;
+			return '-'
 		}
+		let today = new Date();
+		let last_period = new Date(date);
+		let delay =  ((today.getFullYear() - last_period.getFullYear()) * 12) + (today.getMonth() - last_period.getMonth())
 		return delay
 	}
 
@@ -35,7 +35,20 @@ export default class DefaultersReport extends Component {
 	}
 
 	getData() {
-		return getPaginatedData('/api/defaulters-report');
+		return getPaginatedData('/api/defaulters-report',{salutation: this.state.salutation}).then(res=>{
+			let rows = [['Name','Last Payed Period', 'Number of Unpayed Periods']];
+			for(let i = 0; i < res.length; i++){
+				rows.push([
+					res[i].first_name.toUpperCase() + ' ' + res[i].middle_name.toUpperCase()  + ' ' + res[i].last_name.toUpperCase(),
+					res[i].period || "Dormant",
+					this.calculateLag(res[i].period)
+					])
+			}
+			let filename = 'Defaulters Report'
+			if(this.state.salutation)
+				filename += ' for ' + this.state.salutation;
+			return {rows,filename};
+		});
 	}
 
 	handleSalutation(e) {
@@ -79,8 +92,8 @@ export default class DefaultersReport extends Component {
 									<td>{p.first_name.toUpperCase()}</td>
 									<td>{p.middle_name.toUpperCase()}</td>
 									<td>{p.last_name.toUpperCase()}</td>
-									<td>{p.period || `Joined on ${p.date_joined}`}</td>
-									<td>{this.calculateLag(p.period,p.date_joined)}</td>
+									<td>{p.period || "Dormant"}</td>
+									<td>{this.calculateLag(p.period)}</td>
 								</tr>
 						})}
 					</tbody>

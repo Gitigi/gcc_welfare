@@ -29,8 +29,24 @@ export default class AnnualReport extends Component {
 		})
 	}
 
-	getData(){
-		return [[]]
+	getData() {
+		let data = [['','January','February','March','April','May','June','July','August','Septempber','October','November','December']];
+		return getPaginatedData('/api/annual-report/').then(res=>{
+			let row = 0;
+			let item,year;
+			for(let index=0; index < res.length; index++){
+				item = res[index];
+				if(year !== item.period__year){
+					data.push([(new Array(13)).fill(null)]);
+					row++;
+					year = item.period__year;
+					data[row][0] = year;
+				}
+				data[row][item.period__month] = item.total;
+			}
+			let filename = 'Annual Report';
+			return {rows: data,filename};
+		});
 	}
 
 	getAmount(year,month) {

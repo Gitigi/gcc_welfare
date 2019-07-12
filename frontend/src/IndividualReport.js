@@ -23,7 +23,6 @@ export default class IndividualReport extends Component {
 				this.setState({data: {results:[]},rows:[]})
 				return;
 			}
-			console.log(res.data);
 			let first = new Date(res.data.results[0].period);
 			let last = new Date(res.data.results[res.data.results.length-1].period);
 			let years = Math.abs(first.getFullYear()-last.getFullYear())+1;
@@ -37,7 +36,7 @@ export default class IndividualReport extends Component {
 	}
 
 	getAmount(year,month) {
-		let p = this.state.data.results.find(v=>(new Date(v.period)).getFullYear() === year && (new Date(v.period)).getMonth() === month);
+		let p = this.state.data.results.find(v => v.period__year === year && v.period__month === month);
 		if(!p)
 			return '';
 		return p.amount
@@ -46,8 +45,26 @@ export default class IndividualReport extends Component {
 		this.setState({member})
 	}
 
-	getData(){
-		return [[]]
+	getData() {
+		let data = [['','January','February','March','April','May','June','July','August','Septempber','October','November','December']];
+		return getPaginatedData('/api/payment-distribution/',{member: this.state.member.id}).then(res=>{
+			let row = 0;
+			let item,year;
+			for(let index=0; index < res.length; index++){
+				item = res[index];
+				if(year !== item.period__year){
+					data.push([(new Array(13)).fill(null)]);
+					row++;
+					year = item.period__year;
+					data[row][0] = year;
+				}
+				data[row][item.period__month] = item.amount;
+			}
+			let filename = 'Individual Report';
+			if(this.state.member.id)
+				filename = this.state.member.first_name.toUpperCase() + ' ' + this.state.member.middle_name.toUpperCase() + ' ' + this.state.member.last_name.toUpperCase() + ' ' +filename;
+			return {rows: data,filename};
+		});
 	}
 
 	gotoPage(page) {

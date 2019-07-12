@@ -19,30 +19,31 @@ export default class ExportButton extends Component {
 			}else{
 				ws_data = await this.props.data;
 			}
-			if(ws_data)
-				this.createExcel(ws_data);
+			if(ws_data && ws_data.rows)
+				this.createExcel(ws_data.rows,ws_data.filename);
 			this.setState({loading: false});
 		})();
 		// this.createExcel(ws_data);
 	}
-	createExcel(ws_data) {
+	createExcel(ws_data,filename) {
 		let wb = XLSX.utils.book_new();
 		wb.Props = {
-			Title: "SheetJS Tutorial",
-			Subject: "Test",
-			Author: "Red Stapler",
-			CreatedDate: new Date(2019,7,5)
+			Title: filename,
+			Subject: "Individual Report",
+			Author: "GCC KAYOLE WELFARE",
+			CreatedDate: new Date()
 		}
-		wb.SheetNames.push("Test Sheet");
+		wb.SheetNames.push("Sheet 1");
 		let ws;
 		if(ws_data[0].constructor == Array)
 			ws = XLSX.utils.aoa_to_sheet(ws_data);
 		else if (ws_data[0].constructor == Object)
 			ws = XLSX.utils.json_to_sheet(ws_data);
-		wb.Sheets["Test Sheet"] = ws;
+		wb.Sheets["Sheet 1"] = ws;
 
 		let wbout = XLSX.write(wb,{bookType: 'xlsx',type: 'binary'});
-		saveAs(new Blob([this.s2ab(wbout)],{type:"application/octet-stream"}), 'test.xlsx');
+		// console.log('saving',ws_data);
+		saveAs(new Blob([this.s2ab(wbout)],{type:"application/octet-stream"}), filename+'.xlsx');
 	}
 
 	s2ab(s) {

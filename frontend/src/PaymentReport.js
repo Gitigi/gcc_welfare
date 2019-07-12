@@ -33,12 +33,21 @@ export default class PaymentReport extends Component {
 		this.setState({page})
 	}
 
-	formatDataForExcel(data) {
-		
-	}
-
 	getData() {
-		return getPaginatedData('/api/payment-report');
+		return getPaginatedData('/api/payment-report',{member: this.state.member.id}).then(res=>{
+			let rows = [['Name','Date', 'Amount']];
+			for(let i = 0; i < res.length; i++){
+				rows.push([
+					res[i].member__first_name.toUpperCase() + ' ' + res[i].member__middle_name.toUpperCase()  + ' ' + res[i].member__last_name.toUpperCase(),
+					res[i].date,
+					res[i].amount
+					])
+			}
+			let filename = 'Payment Report'
+			if(this.state.member.id)
+				filename += ' for ' + this.state.member.first_name.toUpperCase() + ' ' + this.state.member.middle_name.toUpperCase()  + ' ' + this.state.member.last_name.toUpperCase();
+			return {rows,filename};
+		});
 	}
 
 	render() {
