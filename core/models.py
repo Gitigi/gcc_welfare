@@ -2,7 +2,7 @@ from django.db import models
 from django.utils import timezone
 
 class Member(models.Model):
-    first_name = models.CharField(max_length=30,blank=False,null=False,default='')
+    first_name = models.CharField(max_length=30,blank=False,null=False,default='',db_index=True)
     middle_name = models.CharField(max_length=30,blank=False,null=False,default='')
     last_name = models.CharField(max_length=30,blank=False,null=False,default='')
     address = models.CharField(max_length=15,blank=True, default='')
@@ -91,3 +91,4 @@ class Claim(models.Model):
 
 class Library(models.Model):
     file = models.FileField()
+    date = models.DateField(auto_now_add=True)
