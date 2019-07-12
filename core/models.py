@@ -47,7 +47,7 @@ class Payment(models.Model):
     amount = models.IntegerField(null=False)
     method = models.CharField(max_length=2,choices=[
         ('CA','cash'),('BK','bank'),('MP','mpesa')],default='CA')
-    date = models.DateTimeField()
+    date = models.DateTimeField(auto_now_add=True)
 
 
 class Period(models.Model):
