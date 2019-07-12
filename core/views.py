@@ -85,7 +85,7 @@ def defaulters_report(request):
     
     url = request.build_absolute_uri()
     page_number = request.GET.get('page',1)
-    return paginate_list(list(m),page_number,url)
+    return paginate_list(list(m.order_by('first_name')),page_number,url)
 
 @api_view(['GET'])
 def payment_report(request):
@@ -127,7 +127,7 @@ def payment_distribution(request):
     return paginate_query_by_field(p,page_number,url,'period__year')
 
 class MemberViewSet(viewsets.ModelViewSet):
-    queryset = Member.objects.all()
+    queryset = Member.objects.all().order_by('first_name')
     serializer_class = MemberSerializer
 
     def get_queryset(self):
@@ -305,7 +305,7 @@ class MemberViewSet(viewsets.ModelViewSet):
 
 
 class BankingViewSet(viewsets.ModelViewSet):
-    queryset = Banking.objects.all()
+    queryset = Banking.objects.all().order_by('-date')
     serializer_class = BankingSerializer
 
     def get_queryset(self):
@@ -322,7 +322,7 @@ class BankingViewSet(viewsets.ModelViewSet):
         return q
 
 class ClaimViewSet(viewsets.ModelViewSet):
-    queryset = Claim.objects.all()
+    queryset = Claim.objects.all().order_by('-date')
     serializer_class = ClaimSerializer
 
     def get_queryset(self):
@@ -339,7 +339,7 @@ class ClaimViewSet(viewsets.ModelViewSet):
         return q
 
 class LibraryViewSet(viewsets.ModelViewSet):
-    queryset = Library.objects.all()
+    queryset = Library.objects.all().order_by('-date')
     serializer_class = LibrarySerializer
 
     def create(self,request):
@@ -350,7 +350,7 @@ class LibraryViewSet(viewsets.ModelViewSet):
         return Response({'files': [serializer.data]})
 
 class NoteViewSet(viewsets.ModelViewSet):
-    queryset = Note.objects.all()
+    queryset = Note.objects.all().order_by('-date')
     serializer_class = NoteSerializer
 
     def get_queryset(self):
@@ -360,7 +360,7 @@ class NoteViewSet(viewsets.ModelViewSet):
         return q.order_by('-date')
 
 class NotificationViewSet(viewsets.ModelViewSet):
-    queryset = Notification.objects.all()
+    queryset = Notification.objects.all().order_by('-date')
     serializer_class = NotificationSerializer
 
     def create(self,request):
@@ -392,7 +392,7 @@ class NotificationViewSet(viewsets.ModelViewSet):
 
 class PaymentViewSet(viewsets.ModelViewSet):
     serializer_class = PaymentSerializer
-    queryset = Payment.objects.all()
+    queryset = Payment.objects.all().order_by('-date')
     def get_queryset(self):
         q = self.queryset
         if self.request.GET.get('year'):
@@ -404,7 +404,7 @@ class PaymentViewSet(viewsets.ModelViewSet):
                 Q(member__first_name__startswith=self.request.GET['search']) |
                 Q(member__middle_name__startswith=self.request.GET['search']) |
                 Q(member__last_name__startswith=self.request.GET['search']))
-        return q.order_by('-date')
+        return q
 
     def create(self,request):
         serializer = PaymentSerializer(data=request.data)

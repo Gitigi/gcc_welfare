@@ -26,7 +26,7 @@ class MemberSerializer(serializers.ModelSerializer):
 			query = obj.mothered.all()
 			if obj.spouse:
 				query |= obj.spouse.fathered.all()
-		return ChildSerializer(query,many=True).data
+		return ChildSerializer(query.order_by('dob'),many=True).data
 
 	class Meta:
 		model = Member
