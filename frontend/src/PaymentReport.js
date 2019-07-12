@@ -6,17 +6,18 @@ import ExportButton from './ExportButton';
 import {getPaginatedData} from './utility';
 
 export default class PaymentReport extends Component {
-	state = {data: {results: []},member: {},page:1}
+	state = {loading: false,data: {results: []},member: {},page:1}
 	componentDidMount() {
 		this.fetchData();
 	}
 
 	fetchData() {
+		this.setState({loading:true});
 		let params = {page:this.state.page}
 		if(this.state.member.id){
 			params['member'] = this.state.member.id;
 		}
-		axios.get('/api/payment-report',{params}).then(res=>this.setState({data: res.data}))
+		axios.get('/api/payment-report',{params}).then(res=>this.setState({data: res.data})).finally(_=>this.setState({loading:false}))
 	}
 
 	componentDidUpdate(prevProp,prevState) {
@@ -52,7 +53,7 @@ export default class PaymentReport extends Component {
 
 	render() {
 		return <div>
-				<h2 className="text-center">Payment Report</h2>
+				<h2 className="text-center">Payment Report <i className={`fa fa-circle-o-notch fa-spin fa-fw ${this.state.loading ? '' : 'fade'}`}></i> </h2>
 				<div className="row">
 					<form>
 						<div className="col-sm-offset-4 col-sm-4">

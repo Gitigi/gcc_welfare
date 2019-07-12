@@ -7,7 +7,7 @@ import ExportButton from './ExportButton';
 import {getPaginatedData} from './utility';
 
 export default class IndividualReport extends Component {
-	state = {rows: [],first:'',last:'',member: {},data:{results:[]}}
+	state = {loading: false,rows: [],first:'',last:'',member: {},data:{results:[]}}
 	componentDidMount() {
 		this.fetchData();
 	}
@@ -18,6 +18,7 @@ export default class IndividualReport extends Component {
 		$('[data-toggle="tooltip"]').tooltip({container: 'body'})
 	}
 	fetchData(page=1) {
+		this.setState({loading:true});
 		axios.get('/api/payment-distribution/',{params:{member: this.state.member.id,page}}).then(res=>{
 			if(!res.data.results.length){
 				this.setState({data: {results:[]},rows:[]})
@@ -32,7 +33,7 @@ export default class IndividualReport extends Component {
 
 			let rows = Array.from(new Array(years), (v,i)=>first.getFullYear()+(direction*i));
 			this.setState({rows,first,last,data: res.data})
-		});
+		}).finally(_=>this.setState({loading:false}))
 	}
 
 	getAmount(year,month) {
@@ -74,7 +75,7 @@ export default class IndividualReport extends Component {
 	render() {
 		let months = (new Array(12)).fill(0);
 		return <div>
-				<h2 className="text-center">Individual Report</h2>
+				<h2 className="text-center">Individual Report <i className={`fa fa-circle-o-notch fa-spin fa-fw ${this.state.loading ? '' : 'fade'}`}></i> </h2>
 				<div className="row">
 					<form>
 						<div className="col-sm-offset-4 col-sm-4">

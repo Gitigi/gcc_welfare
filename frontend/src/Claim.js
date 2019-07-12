@@ -34,7 +34,7 @@ class ClaimList extends Component {
 		let date = new Date();
 		let year = date.getFullYear();
 		let month = date.getMonth() + 1;
-		this.state = {claims: {results: []},filter: {year,month,search:''}}
+		this.state = {loading: false,claims: {results: []},filter: {year,month,search:''}}
 	}
 
 	handleFilterChange(field,event){
@@ -45,11 +45,12 @@ class ClaimList extends Component {
 	}
 
 	componentDidMount() {
-		axios.get('/api/claim/',{params: this.state.filter}).then(res=>this.setState({claims: res.data}))
+		this.updateClaim(this.state.filter);
 	}
 
 	updateClaim(filter={}){
-		axios.get('/api/claim/',{params: filter}).then(res=>this.setState({claims: res.data}))
+		this.setState({loading: true});
+		axios.get('/api/claim/',{params: filter}).then(res=>this.setState({claims: res.data})).finally(_=>this.setState({loading:false}))
 	}
 
 	showDialog() {
@@ -70,7 +71,7 @@ class ClaimList extends Component {
 	render() {
 		return (
 			<div>
-				<h1 className='text-center'>Claims</h1>
+				<h1 className='text-center'>Claims <i className={`fa fa-circle-o-notch fa-spin fa-fw ${this.state.loading ? '' : 'fade'}`}></i></h1>
 				<div className="row">
 					<Link to={`${this.props.match.url}/new`} className="btn btn-success col-sm-2 col-sm-offset-5">Record Claim</Link>
 				</div>
@@ -132,7 +133,7 @@ class ClaimList extends Component {
 class ClaimForm extends Component {
 	confirm = React.createRef();
 	emptyData = {bank_name: '',amount: '', account: '', date: '',disbursement: 'CA',reason: '',member: ''}
-	state = {data: {...this.emptyData},error: {},saved: false,member: {}};
+	state = {loading:false,data: {...this.emptyData},error: {},saved: false,member: {}};
 	handleChange(field,e) {
 		let value = e.target.value;
 		this.setState(state=>(state.data[field]=value,state));
@@ -172,6 +173,7 @@ class ClaimForm extends Component {
       return Promise.reject()
     }
 
+    this.setState({loading:true});
 		return this.confirm.current.show().then(_=>{
 			let data = this.state.data;
 			data.date = data.date.split('/').reverse().join('-');
@@ -179,7 +181,7 @@ class ClaimForm extends Component {
 				console.log(error.response.data);
 				this.setState({error: error.response.data});
 				return Promise.reject(error.response.data);
-			})
+			}).finally(_=>this.setState({loading:false}))
 		})
 	}
 
@@ -265,13 +267,13 @@ class ClaimForm extends Component {
 
       	<div className="form-group">
           <div className="col-sm-offset-4 col-sm-2">
-            <input onClick={this.save.bind(this)} type="button" value="SAVE" className="btn btn-success" />
+            <input onClick={this.save.bind(this)} type="button" value="SAVE" disabled={this.state.loading?true:false} className="btn btn-success" />
           </div>
           <div className="col-sm-4">
-            <input onClick={this.saveContinue.bind(this)} type="button" value="SAVE AND CONTINUE" className="btn btn-primary" />
+            <input onClick={this.saveContinue.bind(this)} type="button" value="SAVE AND CONTINUE" disabled={this.state.loading?true:false} className="btn btn-primary" />
           </div>
           <div className="col-sm-2">
-            <input onClick={this.close.bind(this)} type="button" value="CLOSE" className="btn btn-warning" />
+            <input onClick={this.close.bind(this)} type="button" value="CLOSE" disabled={this.state.loading?true:false} className="btn btn-warning" />
           </div>
         </div>
       </form>

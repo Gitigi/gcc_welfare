@@ -5,7 +5,7 @@ import ExportButton from './ExportButton';
 import {getPaginatedData} from './utility';
 
 export default class DefaultersReport extends Component {
-	state = {data: {results: []},salutation: ''}
+	state = {loading:false,data: {results: []},salutation: ''}
 	componentDidMount() {
 		this.fetchData();
 	}
@@ -17,7 +17,8 @@ export default class DefaultersReport extends Component {
 	}
 
 	fetchData(page=1) {
-		axios.get('/api/defaulters-report',{params: {page,salutation: this.state.salutation}}).then(res=>this.setState({data: res.data}))
+		this.setState({loading:true})
+		axios.get('/api/defaulters-report',{params: {page,salutation: this.state.salutation}}).then(res=>this.setState({data: res.data})).finally(_=>this.setState({loading:false}))
 	}
 
 	calculateLag(date) {
@@ -57,7 +58,7 @@ export default class DefaultersReport extends Component {
 
 	render() {
 		return <div>
-				<h2 className="text-center">Defaulters Report</h2>
+				<h2 className="text-center">Defaulters Report <i className={`fa fa-circle-o-notch fa-spin fa-fw ${this.state.loading ? '' : 'fade'}`}></i> </h2>
 				<div className="row">
 					<form>
 						<div className="col-sm-offset-4 col-sm-4">

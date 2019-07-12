@@ -33,7 +33,7 @@ class BankingList extends Component {
 		let date = new Date();
 		let year = date.getFullYear();
 		let month = date.getMonth() + 1;
-		this.state = {banking: {results:[]},filter: {year,month,search:''}}
+		this.state = {loading: false,banking: {results:[]},filter: {year,month,search:''}}
 	}
 
 	handleFilterChange(field,event){
@@ -44,11 +44,12 @@ class BankingList extends Component {
 	}
 
 	componentDidMount() {
-		axios.get('/api/banking/',{params: this.state.filter}).then(res=>this.setState({banking: res.data}))
+		this.updateBanking(this.state.filter);
 	}
 
 	updateBanking(filter={}){
-		axios.get('/api/banking/',{params: filter}).then(res=>this.setState({banking: res.data}))
+		this.setState({loading: true});
+		axios.get('/api/banking/',{params: filter}).then(res=>this.setState({banking: res.data})).finally(_=>this.setState({loading: false}))
 	}
 
 	showDialog() {
@@ -69,7 +70,7 @@ class BankingList extends Component {
 	render() {
 		return (
 			<div>
-				<h1 className='text-center'>Banking</h1>
+				<h1 className='text-center'>Banking <i className={`fa fa-circle-o-notch fa-spin fa-fw ${this.state.loading ? '' : 'fade'}`}></i></h1>
 				<div className="row">
 					<Link to={`${this.props.match.url}/new`} className="btn btn-success col-sm-2 col-sm-offset-5">Record Bank Transaction</Link>
 				</div>
@@ -123,7 +124,7 @@ class BankingList extends Component {
 class BankingForm extends Component {
 	confirm = React.createRef();
 	emptyData = {bank_name: '',amount: '', account: '', date: '',banked_by: ''}
-	state = {data: {...this.emptyData},error: {},saved: false};
+	state = {loading:false,data: {...this.emptyData},error: {},saved: false};
 	handleChange(field,e) {
 		let value = e.target.value;
 		this.setState(state=>(state.data[field]=value,state));
@@ -157,6 +158,7 @@ class BankingForm extends Component {
       return Promise.reject()
     }
 		
+		this.setState({loading:true});
 		return this.confirm.current.show().then(_=>{
 			let data = this.state.data;
 			data.date = data.date.split('/').reverse().join('-');
@@ -164,7 +166,7 @@ class BankingForm extends Component {
 				console.log(error.response.data);
 				this.setState({error: error.response.data});
 				return Promise.reject(error.response.data);
-			})
+			}).finally(_=>this.setState({loading:false}))
 		})
 	}
 
@@ -233,13 +235,13 @@ class BankingForm extends Component {
 
       	<div className="form-group">
           <div className="col-sm-offset-4 col-sm-2">
-            <input onClick={this.save.bind(this)} type="button" value="SAVE" className="btn btn-success" />
+            <input onClick={this.save.bind(this)} type="button" value="SAVE" disabled={this.state.loading?true:false} className="btn btn-success" />
           </div>
           <div className="col-sm-4">
-            <input onClick={this.saveContinue.bind(this)} type="button" value="SAVE AND CONTINUE" className="btn btn-primary" />
+            <input onClick={this.saveContinue.bind(this)} type="button" value="SAVE AND CONTINUE" disabled={this.state.loading?true:false} className="btn btn-primary" />
           </div>
           <div className="col-sm-2">
-            <input onClick={this.close.bind(this)} type="button" value="CLOSE" className="btn btn-warning" />
+            <input onClick={this.close.bind(this)} type="button" value="CLOSE" disabled={this.state.loading?true:false} className="btn btn-warning" />
           </div>
         </div>
       </form>

@@ -31,7 +31,7 @@ class PaymentList extends Component {
 		let date = new Date();
 		let year = date.getFullYear();
 		let month = date.getMonth() + 1;
-		this.state = {payments: {results: []},filter: {year,month,search:''}}
+		this.state = {loading: false,payments: {results: []},filter: {year,month,search:''}}
 	}
 
 	handleFilterChange(field,event){
@@ -42,11 +42,12 @@ class PaymentList extends Component {
 	}
 
 	componentDidMount() {
-		axios.get('/api/payments/',{params: this.state.filter}).then(res=>this.setState({payments: res.data}))
+		this.updatePayments(this.state.filter);
 	}
 
 	updatePayments(filter={},page=1){
-		axios.get('/api/payments/',{params: filter}).then(res=>this.setState({payments: res.data}))
+		this.setState({loading: true});
+		axios.get('/api/payments/',{params: filter}).then(res=>this.setState({payments: res.data})).finally(_=>this.setState({loading:false}))
 	}
 
 	showDialog() {
@@ -67,9 +68,9 @@ class PaymentList extends Component {
 	render() {
 		return (
 			<div>
-				<h1 className='text-center'>Receipt</h1>
+				<h1 className='text-center'>Receipt <i className={`fa fa-circle-o-notch fa-spin fa-fw ${this.state.loading ? '' : 'fade'}`}></i></h1>
 				<div className="row">
-					<Link to={`${this.props.match.url}/new`} className="btn btn-success col-sm-2 col-sm-offset-5">Record Payment <i className='glyphicon glyphicon-plus'></i></Link>
+					<Link to={`${this.props.match.url}/new`} className="btn btn-success col-sm-3 col-sm-offset-4">Record Payment <i className='glyphicon glyphicon-plus'></i></Link>
 				</div>
 				<form>
 					<div className="form-group">
@@ -124,7 +125,7 @@ class PaymentForm extends Component {
 	confirm = React.createRef();
 	emptyData = {method: 'CA',amount: '', member: '', ref_no: '',
 		phone_no: '', date: '',bank_name: ''}
-	state = {data: {...this.emptyData},error: {},saved: false,member: {}};
+	state = {loading:false,data: {...this.emptyData},error: {},saved: false,member: {}};
 
 	handleInput(field,e) {
 		let value = e.target.value;
@@ -174,6 +175,7 @@ class PaymentForm extends Component {
       this.setState({error});
       return Promise.reject()
     }
+    this.setState({loading:true});
 		return this.confirm.current.show().then(_=>{
 			let data = {...this.state.data}
 			data['amount'] = parseFloat(data.amount);
@@ -181,7 +183,7 @@ class PaymentForm extends Component {
 				console.log(error.response.data);
 				this.setState({error: error.response.data});
 				return Promise.reject(error.response.data);
-			})
+			}).finally(_=>this.setState({loading:false}))
 		})
 	}
 
@@ -283,13 +285,13 @@ class PaymentForm extends Component {
 
       	<div className="form-group">
           <div className="col-sm-offset-4 col-sm-2">
-            <input onClick={this.save.bind(this)} type="button" value="SAVE" className="btn btn-success" />
+            <input onClick={this.save.bind(this)} type="button" value="SAVE" disabled={this.state.loading?true:false} className="btn btn-success" />
           </div>
           <div className="col-sm-4">
-            <input onClick={this.saveContinue.bind(this)} type="button" value="SAVE AND CONTINUE" className="btn btn-primary" />
+            <input onClick={this.saveContinue.bind(this)} type="button" value="SAVE AND CONTINUE" disabled={this.state.loading?true:false} className="btn btn-primary" />
           </div>
           <div className="col-sm-2">
-            <input onClick={this.close.bind(this)} type="button" value="CLOSE" className="btn btn-warning" />
+            <input onClick={this.close.bind(this)} type="button" value="CLOSE" disabled={this.state.loading?true:false} className="btn btn-warning" />
           </div>
         </div>
       </form>

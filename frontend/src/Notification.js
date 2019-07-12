@@ -179,12 +179,13 @@ class SendNotification extends Component {
 }
 
 class SentNotification extends Component {
-	state = {notifications: {results: []}}
+	state = {loading: false,notifications: {results: []}}
 	componentDidMount(){
 		this.fetchData()
 	}
 	fetchData(page=1){
-		axios.get('/api/notification/',{params: {page}}).then(res=>this.setState({notifications: res.data}));
+		this.setState({loading:true});
+		axios.get('/api/notification/',{params: {page}}).then(res=>this.setState({notifications: res.data})).finally(_=>this.setState({loading:false}))
 	}
 
 	gotoPage(page) {
@@ -192,7 +193,7 @@ class SentNotification extends Component {
 	}
 	render() {
 		return <div>
-				<h2>Sent Notifications</h2>
+				<h2>Sent Notifications <i className={`fa fa-circle-o-notch fa-spin fa-fw ${this.state.loading ? '' : 'fade'}`}></i></h2>
 				<table className="table table-striped table-responsive">
 					<thead>
 						<tr>

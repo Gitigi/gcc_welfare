@@ -4,7 +4,7 @@ import Pagination from './Pagination';
 import ConfirmAction from './ConfirmAction';
 
 export default class PersonalNotes extends Component {
-	state = {note: {note:''},sent: false, notes: {results: []}}
+	state = {loading:false,note: {note:''},sent: false, notes: {results: []}}
 	confirmSave = React.createRef()
 	confirmDelete = React.createRef()
 	componentDidMount() {
@@ -22,19 +22,20 @@ export default class PersonalNotes extends Component {
 
 	save(){
 		if(this.state.note.note){
+			this.setState(this.setState({loading:true}))
 			this.confirmSave.current.show().then(_=>{
 				if(this.state.note.id){
 					axios.put('/api/notes/'+this.state.note.id+'/',this.state.note).then(res=>{
 						this.fetchData();
 						this.setState({note: {note: ''},sent: true})
 						setTimeout(_=>this.setState({sent: false}),2000);
-					})
+					}).finally(_=>this.setState({loading:false}))
 				}else{
 					axios.post('/api/notes/',{member: this.props.match.params.id, note: this.state.note.note}).then(res=>{
 						this.fetchData()
 						this.setState({note: {note: ''},sent: true})
 						setTimeout(_=>this.setState({sent: false}),2000);
-					})
+					}).finally(_=>this.setState({loading:false}))
 				}
 			})
 		}
@@ -42,11 +43,12 @@ export default class PersonalNotes extends Component {
 
 	delete(){
 		if(this.state.note.id){
+			this.setState({loading:true})
 			this.confirmDelete.current.show().then(_=>{
 				axios.delete('/api/notes/'+this.state.note.id+'/').then(res=>{
 					this.fetchData();
 					this.setState({note: {note: ''}})
-				})
+				}).finally(_=>this.setState({loading:false}))
 			})
 		}
 	}
@@ -81,10 +83,10 @@ export default class PersonalNotes extends Component {
 				    </div>
 					</div>
 					<div className="col-sm-offset-4 col-sm-4">
-						<input type="button" className="form-control btn btn-primary" value="SAVE" onClick={this.save.bind(this)} />
+						<input type="button" className="form-control btn btn-primary" value="SAVE" disabled={this.state.loading?true:false} onClick={this.save.bind(this)} />
 					</div>
 					{this.state.note.id && <div className="col-sm-2">
-						<button type="button" className="form-control btn btn-danger" value="DELETE" onClick={this.delete.bind(this)}>DELETE <i className="glyphicon glyphicon-trash" /></button>
+						<button type="button" className="form-control btn btn-danger" value="DELETE" disabled={this.state.loading?true:false} onClick={this.delete.bind(this)}>DELETE <i className="glyphicon glyphicon-trash" /></button>
 					</div>}
 					<div className="clearfix" />
 				</form>

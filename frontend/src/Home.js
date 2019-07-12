@@ -123,8 +123,9 @@ class Dashboard extends Component {
   months = ['January','February','March','April','May',
     'June','July','August','Septempber','October','November','December']
 
-  state = {data: {}}
+  state = {loading: false,data: {}}
   componentDidMount() {
+    this.setState({loading:true});
     axios.get('/api/dashboard-summary/').then(res=>{
       this.setState({data: res.data});
       window.Morris.Bar({
@@ -144,7 +145,7 @@ class Dashboard extends Component {
         resize: true
     });
 
-    })
+    }).finally(_=>this.setState({loading:false}))
 
   }
 
@@ -187,7 +188,7 @@ class Dashboard extends Component {
     let match = this.props.match;
     return (
       <div>
-        <h2>Dashboard</h2>
+        <h2>Dashboard <i className={`fa fa-circle-o-notch fa-spin fa-fw ${this.state.loading ? '' : 'fade'}`}></i> </h2>
         <div className="row">
             <div className="col-lg-offset-1 col-lg-2 col-md-6">
               <Panel item="Upto Date Members" count={this.state.data.upto_date} icon="fa-balance-scale"

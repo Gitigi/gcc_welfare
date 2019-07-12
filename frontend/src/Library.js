@@ -7,7 +7,7 @@ import Pagination from './Pagination';
 import './Library.css';
 
 export default class Library extends Component {
-	state = {files: {results:[]},deleteFileName: ''}
+	state = {loading: false,files: {results:[]},deleteFileName: ''}
 	confirm = React.createRef();
 
 
@@ -20,7 +20,8 @@ export default class Library extends Component {
 	}
 
 	fetchData(page){
-		axios.get('/api/library',{params: {page}}).then(res=>this.setState({files: res.data}))
+		this.setState({loading:true})
+		axios.get('/api/library',{params: {page}}).then(res=>this.setState({files: res.data})).finally(_=>this.setState({loading:false}))
 	}
 
 	gotoPage(page) {
@@ -60,8 +61,8 @@ export default class Library extends Component {
 		this.setState({deleteFileName: f.file.substr(f.file.lastIndexOf('/')+1)})
 		this.confirm.current.show().then(_=>{
 			axios.delete('/api/library/'+id+'/').then(res=>{
-				let files = this.state.files.filter(f=> f.id!==id);
-				this.setState({files});
+				let files = this.state.files.results.filter(f=> f.id!==id);
+				this.setState(state=>(state.files.results = files,state));
 			})
 		})
 	}
@@ -69,7 +70,7 @@ export default class Library extends Component {
 
 	render() {
 		return <div className="library">
-				<h2 className="text-center">Library</h2>
+				<h2 className="text-center">Library <i className={`fa fa-circle-o-notch fa-spin fa-fw ${this.state.loading ? '' : 'fade'}`}></i></h2>
 				<ConfirmAction ref={this.confirm} yesLabel="Delete" noLabel="Cancel" title="Deleting...">
           <p>Do you want to delete this file</p>
           <p>{this.state.deleteFileName}</p>

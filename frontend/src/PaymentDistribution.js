@@ -5,7 +5,7 @@ import * as $ from 'jquery/dist/jquery.slim';
 import Pagination from './Pagination';
 
 export default class PaymentDistribution extends Component {
-	state = {rows: [],first:'',last:'',member: {},data: {results:[]}}
+	state = {loading: false,rows: [],first:'',last:'',member: {},data: {results:[]}}
 	componentDidMount() {
 		this.fetchData();
 	}
@@ -16,6 +16,7 @@ export default class PaymentDistribution extends Component {
 		$('[data-toggle="tooltip"]').tooltip({container: 'body'})
 	}
 	fetchData(page=1) {
+		this.setState({loading:true});
 		axios.get('/api/payment-distribution/',{params:{member: this.state.member.id,page}}).then(res=>{
 			if(!res.data.results.length){
 				this.setState({data: {results:[]},rows:[]})
@@ -30,7 +31,7 @@ export default class PaymentDistribution extends Component {
 
 			let rows = Array.from(new Array(years), (v,i)=>first.getFullYear()+(direction*i));
 			this.setState({rows,first,last,data: res.data})
-		});
+		}).finally(_=>this.setState({loading:false}))
 	}
 	payments = {}
 	paymentCount = 0;
@@ -57,7 +58,7 @@ export default class PaymentDistribution extends Component {
 	render() {
 		let months = (new Array(12)).fill(0);
 		return <div>
-				<h2 className="text-center">Payment Distribution</h2>
+				<h2 className="text-center">Payment Distribution <i className={`fa fa-circle-o-notch fa-spin fa-fw ${this.state.loading ? '' : 'fade'}`}></i></h2>
 				<div className="row">
 					<form>
 						<div className="col-sm-offset-4 col-sm-4">

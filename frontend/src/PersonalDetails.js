@@ -14,7 +14,7 @@ class PersonalDetails extends Component {
 	constructor(props) {
     super(props);
 
-    this.state = {data: {...this.emptyData}, error: {},saved: false};
+    this.state = {loading:false,data: {...this.emptyData}, error: {},saved: false};
   }
 
   componentDidMount() {
@@ -111,6 +111,7 @@ class PersonalDetails extends Component {
       return Promise.reject()
     }
 
+    this.setState({loading: true})
     return this.confirm.current.show().then(_=>{
       let id = this.props.match.params.id;
       if(id){
@@ -124,7 +125,7 @@ class PersonalDetails extends Component {
           return response;
         },error=>(this.setState({error: error.response.data}),Promise.reject(error.response.data))).finally(_=>window.scrollTo(0,0));
       }
-    })
+    }).finally(_=>this.setState({loading:false}))
   }
 
   apply(){
@@ -163,23 +164,23 @@ class PersonalDetails extends Component {
         <form>
         {id ? <div>
               <div className="col-sm-offset-6 col-sm-2">
-                <input onClick={this.apply.bind(this)} type="button" value="APPLY" className="btn btn-success" />
+                <input onClick={this.apply.bind(this)} type="button" value="APPLY" disabled={this.state.loading?true:false} className="btn btn-success" />
               </div>
               <div className="col-sm-2">
-                <input onClick={this.save.bind(this)} type="button" value="SAVE" className="btn btn-primary" />
+                <input onClick={this.save.bind(this)} type="button" value="SAVE" disabled={this.state.loading?true:false} className="btn btn-primary" />
               </div>
               <div className="col-sm-2">
-                <input onClick={this.close.bind(this)} type="button" value="CLOSE" className="btn btn-warning" />
+                <input onClick={this.close.bind(this)} type="button" value="CLOSE" disabled={this.state.loading?true:false} className="btn btn-warning" />
               </div>
             </div> : <div className="form-group">
               <div className="col-sm-offset-4 col-sm-2">
-                <input onClick={this.save.bind(this)} type="button" value="SAVE" className="btn btn-success" />
+                <input onClick={this.save.bind(this)} type="button" value="SAVE" disabled={this.state.loading?true:false} className="btn btn-success" />
               </div>
               <div className="col-sm-4">
-                <input onClick={this.save_continue.bind(this)} type="button" value="SAVE AND CONTINUE" className="btn btn-primary" />
+                <input onClick={this.save_continue.bind(this)} type="button" value="SAVE AND CONTINUE" disabled={this.state.loading?true:false} className="btn btn-primary" />
               </div>
               <div className="col-sm-2">
-                <input onClick={this.close.bind(this)} type="button" value="CLOSE" className="btn btn-warning" />
+                <input onClick={this.close.bind(this)} type="button" value="CLOSE" disabled={this.state.loading?true:false} className="btn btn-warning" />
               </div>
             </div>}
         </form>

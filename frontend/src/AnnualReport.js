@@ -5,13 +5,14 @@ import Pagination from './Pagination';
 import {getPaginatedData} from './utility';
 
 export default class AnnualReport extends Component {
-	state = {rows: [],member: {},data: {results: []}}
+	state = {loading:false,rows: [],member: {},data: {results: []}}
 
 	componentDidMount() {
 		this.fetchData();
 	}
 
 	fetchData(page=1) {
+		this.setState({loading:true})
 		axios.get('/api/annual-report/',{params : {page}}).then(res=>{
 			if(!res.data.results.length){
 				this.setState({data: {results:[]},rows:[]})
@@ -26,7 +27,7 @@ export default class AnnualReport extends Component {
 
 			let rows = Array.from(new Array(years), (v,i)=>first+(direction*i));
 			this.setState({rows,data: res.data})
-		})
+		}).finally(_=>this.setState({loading:false}))
 	}
 
 	getData() {
@@ -63,7 +64,7 @@ export default class AnnualReport extends Component {
 	render() {
 		let months = (new Array(12)).fill(0);
 		return <div>
-				<h2 className="text-center">Annual Report</h2>
+				<h2 className="text-center">Annual Report <i className={`fa fa-circle-o-notch fa-spin fa-fw ${this.state.loading ? '' : 'fade'}`}></i></h2>
 				<table className="table table-responsive">
 					<thead>
 						<tr>

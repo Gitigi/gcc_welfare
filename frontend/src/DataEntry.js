@@ -108,7 +108,7 @@ class List extends Component {
 		let search = this.props.location.state && this.props.location.state.search;
 		let page = this.props.location.state && this.props.location.state.page;
 
-		this.state = {members: {results:[]}, status: status||'active', search,all: false,page: page||1};
+		this.state = {loading: false, members: {results:[]}, status: status||'active', search,all: false,page: page||1};
 	}
 	componentDidMount() {
 		this.fetchData()
@@ -130,7 +130,8 @@ class List extends Component {
 			params['status'] = this.state.status;
 		if(this.state.search)
 			params['search'] = this.state.search;
-		axios.get('/api/members/',{params}).then(response => this.setState({members: response.data}))
+		this.setState({loading: true});
+		axios.get('/api/members/',{params}).then(response => this.setState({members: response.data})).finally(_=>this.setState({loading:false}))
 	}
 
 	gotoPage(page){
@@ -156,9 +157,9 @@ class List extends Component {
 		let match = this.props.match;
 		return (
 			<div>
-				<h1 className='text-center'> Members</h1>
+				<h1 className='text-center'> Members <i className={`fa fa-circle-o-notch fa-spin fa-fw ${this.state.loading ? '' : 'fade'}`}></i> </h1>
 				<div className="row">
-					<Link to={`${this.props.match.url}/new`} className="btn btn-success col-sm-2 col-sm-offset-5">Add <i className='glyphicon glyphicon-plus'></i></Link>
+					<Link to={`${this.props.match.url}/new`} className="btn btn-success col-sm-3 col-sm-offset-4">Add <i className='glyphicon glyphicon-plus'></i></Link>
 				</div>
 				<div className="row">
 					<form className="form-horizontal">
