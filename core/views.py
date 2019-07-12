@@ -10,7 +10,7 @@ from core.models import Member,Payment,Period,Banking,Note, Notification, Librar
 import datetime
 from dateutil.relativedelta import relativedelta
 from django.db.models import Q,Sum,Max,F
-from .utility import send_message,add_params_to_url,paginate_list
+from .utility import send_message,add_params_to_url,paginate_list,paginate_query_by_field
 from django.core.paginator import Paginator
 
 @ensure_csrf_cookie
@@ -54,9 +54,11 @@ def search_name(request):
 
 @api_view(['GET'])
 def annual_report(request):
-    year = request.GET.get('year',datetime.datetime.today().year)
-    p = Period.objects.all().values('period__year','period__month').annotate(total=Sum('amount')).order_by('period__year');
-    return Response(list(p))
+    p = Period.objects.all().values('period__year','period__month').annotate(total=Sum('amount')).order_by('-period__year');
+    url = request.build_absolute_uri()
+    page_number = request.GET.get('page',1)
+    return paginate_query_by_field(p,page_number,url,'period__year')
+
 
 @api_view(['GET'])
 def individual_report(request):
@@ -119,8 +121,10 @@ def dashboard_summary(request):
 @api_view(['GET'])
 def payment_distribution(request):
     p = Period.objects.filter(payment__member=request.GET.get('member')).order_by('-period')
-    serializer = PeriodSerializer(p,many=True)
-    return Response(serializer.data)
+    p = p.values('id','payment','amount','period','payment__amount','period__year','period__month')
+    url = request.build_absolute_uri()
+    page_number = request.GET.get('page',1)
+    return paginate_query_by_field(p,page_number,url,'period__year')
 
 class MemberViewSet(viewsets.ModelViewSet):
     queryset = Member.objects.all()

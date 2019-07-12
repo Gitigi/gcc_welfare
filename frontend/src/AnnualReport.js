@@ -1,24 +1,24 @@
 import React, {Component} from 'react';
 import axios from 'axios';
 import ExportButton from './ExportButton';
+import Pagination from './Pagination';
+import {getPaginatedData} from './utility';
 
 export default class AnnualReport extends Component {
-	state = {rows: [],member: {}}
+	state = {rows: [],member: {},data: {results: []}}
 
 	componentDidMount() {
-		this.fetchData(this.state.year);
+		this.fetchData();
 	}
 
-	fetchData(year) {
-		axios.get('/api/annual-report/',{params : {year}}).then(res=>{
-			// this.updateData(res.data);
-			if(!res.data.length){
-				this.setState({data: [],rows:[]})
+	fetchData(page=1) {
+		axios.get('/api/annual-report/',{params : {page}}).then(res=>{
+			if(!res.data.results.length){
+				this.setState({data: {results:[]},rows:[]})
 				return;
 			}
-			console.log(res.data);
-			let first = res.data[0].period__year;
-			let last = res.data[res.data.length-1].period__year;
+			let first = res.data.results[0].period__year;
+			let last = res.data.results[res.data.results.length-1].period__year;
 			let years = Math.abs(first-last)+1;
 			let direction = 1;
 			if(first > last)
@@ -34,10 +34,14 @@ export default class AnnualReport extends Component {
 	}
 
 	getAmount(year,month) {
-		let p = this.state.data.find(v=> v.period__year === year && v.period__month === month);
+		let p = this.state.data.results.find(v=> v.period__year === year && v.period__month === month);
 		if(!p)
 			return '';
 		return p.total
+	}
+
+	gotoPage(page) {
+		this.fetchData(page);
 	}
 
 	render() {
@@ -78,6 +82,7 @@ export default class AnnualReport extends Component {
 						})}
 					</tbody>
 				</table>
+				<Pagination goto={this.gotoPage.bind(this)} data={this.state.data} onlyPreviousNext={true} />
 				<ExportButton data={this.getData.bind(this)}/>
 			</div>
 	}

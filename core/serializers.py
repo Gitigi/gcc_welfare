@@ -70,10 +70,10 @@ class PaymentSerializer(serializers.ModelSerializer):
 		fields = ('id','member','method','amount','date','period','first_name','middle_name','last_name','id_no','reg')
 
 class PeriodSerializer(serializers.ModelSerializer):
-	payment_total = serializers.ReadOnlyField(source='payment.amount')
+	payment__amount = serializers.ReadOnlyField(source='payment.amount')
 	class Meta:
 		model = Period
-		fields = ('id','payment','amount','period','payment_total')
+		fields = ('id','payment','amount','period','payment__amount')
 
 
 class NoteSerializer(serializers.ModelSerializer):

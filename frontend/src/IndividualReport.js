@@ -2,9 +2,12 @@ import React, {Component} from 'react';
 import axios from 'axios';
 import NameSearchInput from './NameSearchInput';
 import * as $ from 'jquery/dist/jquery.slim';
+import Pagination from './Pagination';
+import ExportButton from './ExportButton';
+import {getPaginatedData} from './utility';
 
 export default class IndividualReport extends Component {
-	state = {rows: [],first:'',last:'',member: {}}
+	state = {rows: [],first:'',last:'',member: {},data:{results:[]}}
 	componentDidMount() {
 		this.fetchData();
 	}
@@ -14,15 +17,15 @@ export default class IndividualReport extends Component {
 		}
 		$('[data-toggle="tooltip"]').tooltip({container: 'body'})
 	}
-	fetchData() {
-		axios.get('/api/payment-distribution/',{params:{member: this.state.member.id}}).then(res=>{
-			if(!res.data.length){
-				this.setState({data: [],rows:[]})
+	fetchData(page=1) {
+		axios.get('/api/payment-distribution/',{params:{member: this.state.member.id,page}}).then(res=>{
+			if(!res.data.results.length){
+				this.setState({data: {results:[]},rows:[]})
 				return;
 			}
 			console.log(res.data);
-			let first = new Date(res.data[0].period);
-			let last = new Date(res.data[res.data.length-1].period);
+			let first = new Date(res.data.results[0].period);
+			let last = new Date(res.data.results[res.data.results.length-1].period);
 			let years = Math.abs(first.getFullYear()-last.getFullYear())+1;
 			let direction = 1;
 			if(first > last)
@@ -34,7 +37,7 @@ export default class IndividualReport extends Component {
 	}
 
 	getAmount(year,month) {
-		let p = this.state.data.find(v=>(new Date(v.period)).getFullYear() === year && (new Date(v.period)).getMonth() === month);
+		let p = this.state.data.results.find(v=>(new Date(v.period)).getFullYear() === year && (new Date(v.period)).getMonth() === month);
 		if(!p)
 			return '';
 		return p.amount
@@ -42,6 +45,15 @@ export default class IndividualReport extends Component {
 	handleMemberChange(member) {
 		this.setState({member})
 	}
+
+	getData(){
+		return [[]]
+	}
+
+	gotoPage(page) {
+		this.fetchData(page);
+	}
+
 	render() {
 		let months = (new Array(12)).fill(0);
 		return <div>
@@ -82,6 +94,8 @@ export default class IndividualReport extends Component {
 						})}
 					</tbody>
 				</table>
+				<Pagination goto={this.gotoPage.bind(this)} data={this.state.data} onlyPreviousNext={true} />
+				<ExportButton data={this.getData.bind(this)}/>
 			</div>
 	}
 }
