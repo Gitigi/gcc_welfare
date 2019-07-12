@@ -111,8 +111,8 @@ class PersonalDetails extends Component {
       return Promise.reject()
     }
 
-    this.setState({loading: true})
     return this.confirm.current.show().then(_=>{
+      this.setState({loading: true})
       let id = this.props.match.params.id;
       if(id){
         return axios.put(`/api/members/${id}/`,data).then(response=>{

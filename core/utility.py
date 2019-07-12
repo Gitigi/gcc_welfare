@@ -11,6 +11,8 @@ except:
     from urllib.parse import urlencode
 
 def send_message(msg,number):
+    if type(number) != list:
+        number = [number]
     print('sending to',msg,number)
     # africastalking.initialize(username=settings.AFRICASTALKING_USERNAME,
     #     api_key=settings.AFRICASTALKING_API_KEY)

@@ -5,6 +5,7 @@ import AnimatedSwitch from './animated-switch';
 import NameSearchInput from './NameSearchInput';
 import NavLink from './navlink';
 import Pagination from './Pagination';
+import ConfirmAction from './ConfirmAction';
 
 export default class Notification extends Component {
 	render() {
@@ -25,7 +26,8 @@ export default class Notification extends Component {
 }
 
 class SendNotification extends Component {
-	state = {sent: false,heading: '', body: '', target: 'individual', status: 'active' ,contribution: 'all',currentUser: {},contacts: []}
+	confirm = React.createRef();
+	state = {loading:false,sent: false,heading: '', body: '', target: 'individual', status: 'active' ,contribution: 'all',currentUser: {},contacts: [],error:{}}
 
 	constructor(props) {
 		super(props);
@@ -40,8 +42,7 @@ class SendNotification extends Component {
 	}
 
 	handleUserChange(user){
-		if(user.id)
-			this.setState({currentUser: user})
+		this.setState({currentUser: user})
 	}
 
 	addContact() {
@@ -58,18 +59,46 @@ class SendNotification extends Component {
   	this.setState({contacts: c})
 	}
 
+	validate(data){
+		let error = {}
+		if(!data.heading)
+			error.heading = 'This field is required';
+		if(!data.body)
+			error.body = 'This field is required';
+		if(data.target === 'individual' && !data.contacts.split(';')[0])
+			error.contacts = 'This field is required';
+		return error;
+	}
+
 	sendMessage(){
-		axios.post('/api/notification/',{
+		let data = {
 			heading: this.state.heading,
 			body: this.state.body,
 			target: this.state.target,
 			contacts: this.state.contacts.map(c=>c.id).join(';'),
 			status: this.state.status,
 			contribution: this.state.contribution
-		}).then(res=>{
-			this.setState({sent: true,heading: '', body: '', target: 'individual', status: 'active' ,contribution: 'all',currentUser: {},contacts: []})
-			setTimeout(_=>this.setState({sent: false}),2000);
-		},error=>console.log(error.response.data))
+		}
+		let error = this.validate(data);
+    if(Object.keys(error).length){
+      this.setState({error});
+      console.log(error);
+      window.scrollTo(0,0);
+      return;
+    }
+
+		this.confirm.current.show().then(_=>{
+			this.setState({loading:true})
+			axios.post('/api/notification/',data).then(res=>{
+				this.setState({sent: true,heading: '', body: '', target: 'individual', status: 'active' ,contribution: 'all',currentUser: {},contacts: [],error:{}})
+				window.scrollTo(0,0);
+				setTimeout(_=>this.setState({sent: false}),2000);
+			},error=>{
+				console.log(error.response.data);
+				window.scrollTo(0,0)
+				this.setState({error: error.response.data});
+			}).finally(_=>this.setState({loading:false}))
+		})
 	}
 
 	render() {
@@ -77,17 +106,26 @@ class SendNotification extends Component {
 				<div className={`alert alert-success ${this.state.sent ? 'show' : 'hide'}`} role="alert">
           Successfully sent
         </div>
+        <ConfirmAction ref={this.confirm} yesLabel="Save" noLabel="Cancel" title="Sending message...">
+					<p>Do you want to send message</p>
+				</ConfirmAction>
 				<form>
-					<div className="form-group">
+					<div className={`form-group ${this.state.error.heading ? 'has-error': ''}`}>
 						<label className="col-sm-2 control-label">Heading</label>
 						<div className="col-sm-4">
 							<input onChange={this.handleChange.bind(this,'heading')} value={this.state.heading} type="text" className="form-control" />
 						</div>
 						<div className="clearfix" />
 					</div>
-					<div className="form-group">
+					<div className={`form-group ${this.state.error.body ? 'has-error': ''}`}>
 						<label className="col-sm-2 control-label">Message</label>
 						<div className="col-sm-10">
+							<p className="text-bold">Variables</p>
+							<p>#NAME</p>
+							<p>#LAST_PAYED_PERIOD</p>
+							<p>#UNPAYED_PERIOD</p>
+							<p>#NUMBER_OF_UNPAYED_PERIOD</p>
+							<p>#CURRENT_PERIOD</p>
 							<textarea onChange={this.handleChange.bind(this,'body')} value={this.state.body} className="form-control" rows="7"></textarea>
 						</div>
 					</div>
@@ -122,10 +160,11 @@ class SendNotification extends Component {
 								})}
 							</ul>
 						</div>
-						<div className="form-group">
+						<div className={`form-group ${this.state.error.contacts ? 'has-error': ''}`}>
+							{this.state.error.contacts && <p className='form-control-static text-danger text-center'>*You have to click the add button to add the contact</p>}
 							<label className="col-sm-2 control-label">Name</label>
 							<div className="col-sm-6">
-								<NameSearchInput userSelected={this.handleUserChange}/>
+								<NameSearchInput userSelected={this.handleUserChange} member={this.state.currentUser} />
 							</div>
 							<div className="col-sm-4">
 								<button type="button" className="btn btn-primary" onClick={this.addContact}>Add</button>
@@ -152,26 +191,32 @@ class SendNotification extends Component {
 									checked={this.state.status === 'all'} />
 							</div>
 						</div>
-						<div className="form-group">
-							<label className="col-sm-2 control-label">Up To Date</label>
+						{this.state.status === 'active' && <div className="form-group">
+							<label className="col-sm-1 control-label">Up To Date</label>
 							<div className="col-sm-2">
 								<input onChange={this.handleChange.bind(this,"contribution")} type="radio" name="contribution" value="up-to-date"
 									checked={this.state.contribution === 'up-to-date'} />
 							</div>
-							<label className="col-sm-2 control-label">Lagging</label>
+							<label className="col-sm-1 control-label">Lagging</label>
 							<div className="col-sm-2">
 								<input onChange={this.handleChange.bind(this,"contribution")} type="radio" name="contribution" value="lagging"
 									checked={this.state.contribution === 'lagging'} />
 							</div>
-							<label className="col-sm-2 control-label">All</label>
+							<label className="col-sm-1 control-label">Dormant</label>
+							<div className="col-sm-2">
+								<input onChange={this.handleChange.bind(this,"contribution")} type="radio" name="contribution" value="dormant"
+									checked={this.state.contribution === 'dormant'} />
+							</div>
+							<label className="col-sm-1 control-label">All</label>
 							<div className="col-sm-2">
 								<input onChange={this.handleChange.bind(this,"contribution")} type="radio" name="contribution" value="all"
 									checked={this.state.contribution === 'all'} />
 							</div>
-						</div>
+						</div>}
+
 					</div>}
 
-					<button onClick={this.sendMessage} type="button" className="btn btn-success col-sm-offset-4">Send</button>
+					<button onClick={this.sendMessage} disabled={this.state.loading} type="button" className="btn btn-success col-sm-offset-4">Send</button>
 
 				</form>
 			</div>

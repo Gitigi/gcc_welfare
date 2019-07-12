@@ -158,8 +158,8 @@ class BankingForm extends Component {
       return Promise.reject()
     }
 		
-		this.setState({loading:true});
 		return this.confirm.current.show().then(_=>{
+			this.setState({loading:true});
 			let data = this.state.data;
 			data.date = data.date.split('/').reverse().join('-');
 			return axios.post('/api/banking/',data).then(_=>{},error=>{

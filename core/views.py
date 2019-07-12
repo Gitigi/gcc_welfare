@@ -9,9 +9,10 @@ from core.serializers import UserSerializer, MemberSerializer,MemberSerializerMi
 from core.models import Member,Payment,Period,Banking,Note, Notification, Library, Claim, Child
 import datetime
 from dateutil.relativedelta import relativedelta
-from django.db.models import Q,Sum,Max,F
+from django.db.models import Q,Sum,Max,F,Count
 from .utility import send_message,add_params_to_url,paginate_list,paginate_query_by_field
 from django.core.paginator import Paginator
+import re
 
 @ensure_csrf_cookie
 @api_view(['GET', 'POST'])
@@ -101,9 +102,9 @@ def dashboard_summary(request):
     today = datetime.datetime.today()
     suspended = Member.objects.filter(dummy=False,suspended=True)
     active = Member.objects.filter(dummy=False,suspended=False)
-    upto_date = Member.objects.all().filter(dummy=False,payment__period__period__year=today.year,payment__period__period__month=today.month).annotate(id_=Max('id')).filter(id = F('id_'))
-    lagging = Member.objects.all().filter(dummy=False).exclude(id__in=upto_date)
-    dormant = Member.objects.all().filter(dummy=False,suspended=False).exclude(id__in=Payment.objects.all().values_list('member'))
+    upto_date = Member.objects.all().filter(dummy=False,suspended=False,payment__period__period__year=today.year,payment__period__period__month=today.month).annotate(id_=Max('id')).filter(id = F('id_'))
+    lagging = Member.objects.all().filter(dummy=False,suspended=False).annotate(payment_count=Count('payment')).filter(payment_count__gt = 0).exclude(id__in=upto_date)
+    dormant = Member.objects.all().filter(dummy=False,suspended=False).annotate(payment_count=Count('payment')).filter(payment_count = 0)
     #payment total per month for the last three years
     p1 = Payment.objects.filter(period__period__year=today.year-2).values('period__period__month').annotate(total=Sum('amount'))
     p2 = Payment.objects.filter(period__period__year=today.year-1).values('period__period__month').annotate(total=Sum('amount'))
@@ -369,25 +370,55 @@ class NotificationViewSet(viewsets.ModelViewSet):
             return Response(serializer.errors,status.HTTP_400_BAD_REQUEST)
 
         serializer.save()
-        numbers = Member.objects.filter(dummy=False,suspended=False).values_list('mobile_no')
+        numbers = Member.objects.filter()
         if request.data['target'] == 'individual':
             numbers = numbers.filter(id__in=request.data['contacts'].split(';'))
         else:
             today = datetime.datetime.today()
+            numbers = numbers.filter(dummy=False)
             #get list of member who have contributed for current period
             p = Payment.objects.filter(period__period__year=today.year,period__period__month=today.month).values_list('member')
             if request.data['status'] == 'active':
                 numbers = numbers.filter(suspended=False)
             elif request.data['status'] == 'suspended':
                 numbers = numbers.filter(suspended=True)
-            elif request.data['contribution'] == 'up-to-date':
+            if request.data['contribution'] == 'up-to-date':
                 numbers = numbers.filter(id__in=p)
             elif request.data['contribution'] == 'lagging':
-                numbers = numbers.exclude(id__in=p)
+                numbers = numbers.annotate(payment_count=Count('payment')).filter(payment_count__gt = 0).exclude(id__in=p)
+            elif request.data['contribution'] == 'dormant':
+                numbers = numbers.annotate(payment_count=Count('payment')).filter(payment_count = 0)
 
         numbers = list(numbers)
-        numbers = [n[0] for n in numbers]
-        send_message(request.data['body'],numbers)
+        variables_re = re.compile(r'#(NAME|LAST_PAYED_PERIOD|NUMBER_OF_UNPAYED_PERIOD|CURRENT_PERIOD|UNPAYED_PERIOD)')
+        if not variables_re.search(request.data['body']):
+            numbers = [n.mobile_no for n in numbers]
+            send_message(request.data['body'],numbers)
+        else:
+            for m in numbers:
+                msg = request.data['body']
+                name = m.first_name.upper() + ' ' + m.middle_name.upper() + ' ' + m.last_name.upper()
+                current_period = datetime.date.today().replace(day=1).strftime('%d/%m/%Y')
+                unpayed_period = current_period
+                last_payed_period = Period.objects.filter(period__year__gt=2016,payment__member=m).order_by('-period').first()
+                number_of_unpayed_period = None
+                if last_payed_period:
+                    number_of_unpayed_period = int((datetime.date.today() - last_payed_period.period).days / 30)
+                    last_payed_period = last_payed_period.period.strftime('%d/%m/%Y')
+                    if number_of_unpayed_period > 1:
+                        unpayed_period = last_payed_period + ' - ' + current_period
+                    elif number_of_unpayed_period < 1:
+                        unpayed_period = 'None'
+                else:
+                    last_payed_period = 'No record of payment'
+                    number_of_unpayed_period = 'No record of payment'
+
+                msg = re.sub('#NAME',name,msg)
+                msg = re.sub('#CURRENT_PERIOD',current_period,msg)
+                msg = re.sub('#LAST_PAYED_PERIOD',last_payed_period,msg)
+                msg = re.sub('#UNPAYED_PERIOD',unpayed_period,msg)
+                msg = re.sub('#NUMBER_OF_UNPAYED_PERIOD',str(number_of_unpayed_period),msg)
+                send_message(msg,m.mobile_no)
         return Response(serializer.data)
 
 class PaymentViewSet(viewsets.ModelViewSet):

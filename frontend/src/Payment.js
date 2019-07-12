@@ -175,8 +175,9 @@ class PaymentForm extends Component {
       this.setState({error});
       return Promise.reject()
     }
-    this.setState({loading:true});
+    
 		return this.confirm.current.show().then(_=>{
+			this.setState({loading:true});
 			let data = {...this.state.data}
 			data['amount'] = parseFloat(data.amount);
 			return axios.post('/api/payments/',data).then(_=>{},error=>{

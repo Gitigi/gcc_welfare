@@ -22,8 +22,8 @@ export default class PersonalNotes extends Component {
 
 	save(){
 		if(this.state.note.note){
-			this.setState(this.setState({loading:true}))
 			this.confirmSave.current.show().then(_=>{
+				this.setState(this.setState({loading:true}))
 				if(this.state.note.id){
 					axios.put('/api/notes/'+this.state.note.id+'/',this.state.note).then(res=>{
 						this.fetchData();
