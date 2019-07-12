@@ -8,6 +8,11 @@ import PaymentReport from './PaymentReport';
 import PaymentDistribution from './PaymentDistribution';
 import './Report.css';
 
+import IndividualReportIcon from './img/contribution.jfif';
+import AnnualReportIcon from './img/annual.jfif';
+import DefaultersReportIcon from './img/defaulters.jfif';
+import PaymentsReportIcon from './img/payments.jfif';
+
 
 export default class Report extends Component {
 	render() {
@@ -28,27 +33,27 @@ class ReportList extends Component {
 				<h1>Reports</h1>
 				<div className="row placeholders">
 	        <div className="col-xs-6 col-sm-4 placeholder">
-	          <Link to={`${this.props.match.url}/annual-report`}><img src="data:image/gif;base64,R0lGODlhAQABAIAAAHd3dwAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw==" width="200" height="200" className="img-responsive" alt="Generic placeholder thumbnail" /></Link>
+	          <Link to={`${this.props.match.url}/annual-report`}><img src={AnnualReportIcon} style={{borderRadius: "50%",width:"200px",height:"200px"}} className="img-responsive" alt="Generic placeholder thumbnail" /></Link>
 	          <h4>Annual Contribution</h4>
 	          <span className="text-muted">Total amount contributed for each month in a year</span>
 	        </div>
 	        <div className="col-xs-6 col-sm-4 placeholder">
-	          <Link to={`${this.props.match.url}/individual-report`}><img src="data:image/gif;base64,R0lGODlhAQABAIAAAHd3dwAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw==" width="200" height="200" className="img-responsive" alt="Generic placeholder thumbnail" /></Link>
+	          <Link to={`${this.props.match.url}/individual-report`}><img src={IndividualReportIcon} style={{borderRadius: "50%",width:"200px",height:"200px"}} className="img-responsive" alt="Generic placeholder thumbnail" /></Link>
 	          <h4>Individual Contribution</h4>
 	          <span className="text-muted"></span>
 	        </div>
 	        <div className="col-xs-6 col-sm-4 placeholder">
-	          <Link to={`${this.props.match.url}/defaulters-report`}><img src="data:image/gif;base64,R0lGODlhAQABAIAAAHd3dwAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw==" width="200" height="200" className="img-responsive" alt="Generic placeholder thumbnail" /></Link>
+	          <Link to={`${this.props.match.url}/defaulters-report`}><img src={DefaultersReportIcon} style={{borderRadius: "50%",width:"200px",height:"200px"}} className="img-responsive" alt="Generic placeholder thumbnail" /></Link>
 	          <h4>Defaulters</h4>
 	          <span className="text-muted">List of lagging members</span>
 	        </div>
 	        <div className="col-xs-6 col-sm-4 placeholder">
-	          <Link to={`${this.props.match.url}/payment-report`}><img src="data:image/gif;base64,R0lGODlhAQABAIAAAHd3dwAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw==" width="200" height="200" className="img-responsive" alt="Generic placeholder thumbnail" /></Link>
+	          <Link to={`${this.props.match.url}/payment-report`}><img src={PaymentsReportIcon} style={{borderRadius: "50%",width:"200px",height:"200px"}} width="200" height="200" className="img-responsive" alt="Generic placeholder thumbnail" /></Link>
 	          <h4>Payments</h4>
 	          <span className="text-muted">Payment Made</span>
 	        </div>
 	        <div className="col-xs-6 col-sm-4 placeholder">
-	          <Link to={`${this.props.match.url}/payment-distribution`}><img src="data:image/gif;base64,R0lGODlhAQABAIAAAHd3dwAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw==" width="200" height="200" className="img-responsive" alt="Generic placeholder thumbnail" /></Link>
+	          <Link to={`${this.props.match.url}/payment-distribution`}><img src={IndividualReportIcon} style={{borderRadius: "50%",width:"200px",height:"200px"}} className="img-responsive" alt="Generic placeholder thumbnail" /></Link>
 	          <h4>Payment Distribution</h4>
 	          <span className="text-muted"></span>
 	        </div>
