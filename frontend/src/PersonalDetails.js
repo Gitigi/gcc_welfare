@@ -18,12 +18,19 @@ class PersonalDetails extends Component {
   }
 
   componentDidMount() {
-  	if(this.props.match.params.id){
-  		axios.get(`/api/members/${this.props.match.params.id}`).then(response => {
-  			this.setState({data: response.data});
-  		})
+  	if(this.props.member.id){
+  		this.setState({data: this.props.member})
   	}
   	
+  }
+
+  static getDerivedStateFromProps(props,state){
+    if(state.data.id !== props.member.id){
+      return {data: props.member}
+    }
+    else {
+      return null
+    }
   }
 
   validateDate(date) {

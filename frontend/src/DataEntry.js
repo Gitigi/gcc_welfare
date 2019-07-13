@@ -24,11 +24,10 @@ export default class DataEntry extends Component {
 
 
 class Editor extends Component {
-	emptyData = {children: '',first_name: '', middle_name: '', last_name: '',
+	emptyData = {children: [],first_name: '', middle_name: '', last_name: '',
   	id_no: '', address: '',code: '', city: '', mobile_no: '', email: '', nhif_no: '',
-  	spouse_first_name: '',spouse_middle_name: '',spouse_last_name: '', spouse_id_no: 0, spouse_mobile_no: '',
   	father_first_name: '',father_middle_name: '',father_last_name: '',
-  	mother_first_name: '',mother_middle_name: '',mother_last_name: '', suspended: false, salutation: '', gender: 'M',dob: ''};
+  	mother_first_name: '',mother_middle_name: '',mother_last_name: '', suspended: false, dummy: false, salutation: '', gender: 'M',dob: ''};
 	constructor(props) {
     super(props);
 
@@ -36,46 +35,14 @@ class Editor extends Component {
   }
 
   componentDidMount() {
-  	if(this.props.match.params.id){
+  	if(this.props.location.state && this.props.location.state.member){
+  		this.setState({data: this.props.location.state.member})
+  	}else if(this.props.match.params.id){
   		axios.get(`/api/members/${this.props.match.params.id}`).then(response => {
-  			this.setState(state=>(state.data = response.data,state));
+  			this.setState({data: response.data});
   		})
   	}
   	
-  }
-
-  submit(){
-  	let id = this.props.match.params.id;
-  	let data = {...this.state.data};
-  	data.dob = data.dob.split('/').reverse().join('-');
-  	if(id){
-  		return axios.put(`/api/members/${id}/`,data).then(response=>{
-	  		console.log('success');
-	  		return response;
-	  	},error=>(this.setState({error: error.response.data}),console.log(error.response.data)));
-  	}else {
-  		return axios.post('/api/members/',data).then(response=>{
-	  		console.log('success');
-	  		return response;
-	  	},error=>(this.setState({error: error.response.data}),console.log(error.response.data)));
-  	}
-  	
-  }
-
-  apply(){
-  	this.submit();
-  }
-
-  save(){
-  	this.submit().then(()=>this.props.history.push('/data-entry'));
-  }
-
-  save_continue(){
-  	this.submit().then( ()=> this.setState({data: {...this.emptyData}}));
-  }
-
-  close(){
-  	this.props.history.push('/data-entry');
   }
 
 	render() {
@@ -92,8 +59,8 @@ class Editor extends Component {
 				</ul> : null}
 				<div className='tab-content' style={{'paddingTop': '10px'}}>
 					<AnimatedSwitch>
-						<Route exact path={`${this.props.match.path}`} component={PersonalDetails} />
-						<Route path={`${this.props.match.path}/notes`} component={PersonalNotes} />
+						<Route exact path={`${this.props.match.path}`} render={(props)=><PersonalDetails {...props} member={this.state.data} />} />
+						<Route path={`${this.props.match.path}/notes`} render={(props)=><PersonalNotes {...props} member={this.state.data} />} />
 					</AnimatedSwitch>
 				</div>
 			</div>
@@ -108,7 +75,7 @@ class List extends Component {
 		let search = this.props.location.state && this.props.location.state.search;
 		let page = this.props.location.state && this.props.location.state.page;
 
-		this.state = {loading: false, members: {results:[]}, status: status||'active', search,all: false,page: page||1};
+		this.state = {loading: false, members: {results:[]}, status: status||'active', search: search||'',all: false,page: page||1};
 	}
 	componentDidMount() {
 		this.fetchData()
@@ -225,7 +192,7 @@ class List extends Component {
 					<tbody>
 						{this.state.members.results.map(member=>(
 							<tr key={member.id}>
-								<td><Link to={`${match.url}/${member.id}`}>{member.first_name}</Link></td>
+								<td><Link to={{pathname:`${match.url}/${member.id}`,state:{member}}}>{member.first_name}</Link></td>
 								<td><Link to={`${match.url}/${member.id}`}>{member.middle_name}</Link></td>
 								<td><Link to={`${match.url}/${member.id}`}>{member.last_name}</Link></td>
 								<td>{member.id_no}</td>
