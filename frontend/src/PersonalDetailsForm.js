@@ -2,6 +2,7 @@ import React, {Component} from 'react';
 import axios from 'axios';
 import './PersonalDetails.css';
 import NameSearchInput from './NameSearchInput';
+import DateInput from './DateInput';
 
 export default class PersonalDetailsForm extends Component {
 
@@ -14,13 +15,8 @@ export default class PersonalDetailsForm extends Component {
 
   static getDerivedStateFromProps(props,state){
   	if(!state.data || state.data.id !== props.data.id || state.data.spouse !== props.data.spouse){
-  		let dob = props.data.dob.split('-').reverse().join('/');
   		let data = {...props.data};
-	  	data.dob = dob;
-	  	data.children.forEach((v,i)=>{
-	  		data.children[i].dob = v.dob.split('-').reverse().join('/');
-	  	})
-	  	return {data, age: PersonalDetailsForm.calculateAge(dob),
+	  	return {data, age: PersonalDetailsForm.calculateAge(props.data.dob),
 	  		married: props.data.spouse ? true : false,
 	  		spouse_is_member: props.data.spouse ? 'yes' : 'no', spouse: props.data.spouse};
   	}
@@ -31,10 +27,6 @@ export default class PersonalDetailsForm extends Component {
 
   getData() {
   	let data = {...this.state.data};
-  	data.dob = data.dob.split('/').reverse().join('-');
-  	data.children.forEach((v,i)=>{
-  		data.children[i].dob = v.dob.split('/').reverse().join('-'); 
-  	})
   	data.married = this.state.married;
   	if(this.state.married){
   		if(this.state.spouse_is_member === 'yes')
@@ -71,14 +63,14 @@ export default class PersonalDetailsForm extends Component {
   }
 
   handleDOBInput(e){
-  	let date = e.target.value;
-  	this.setState(state=>(state.data['dob'] = date,state));
-  	this.setState({age: PersonalDetailsForm.calculateAge(date)});
+  	let date = e.target.value
+		this.setState(state=>(state.data['dob'] = date,state));
+		this.setState({age: PersonalDetailsForm.calculateAge(date)});
   }
 
   static calculateAge(date){
   	let today = new Date();
-  	let dob = new Date(date.split('/').reverse().join('/'));
+  	let dob = new Date(date);
   	let age;
   	if(dob.getDate()){
   		age = today.getFullYear() - dob.getFullYear();
@@ -232,7 +224,7 @@ export default class PersonalDetailsForm extends Component {
 					<div className={`form-group col-sm-6 ${error.dob ? 'has-error': ''}`}>
 						<label htmlFor="inputDOB" className="col-sm-3 control-label">Date of Birth</label>
 						<div className="col-sm-5">
-				      <input value={this.state.data.dob} onChange={this.handleDOBInput.bind(this)} type="text" className="form-control" id="inputDOB" placeholder="dd/mm/year" />
+				      <DateInput value={this.state.data.dob} onChange={this.handleDOBInput.bind(this)} type="text" className="form-control" id="inputDOB" placeholder="dd/mm/year" />
 				      {error.dob && <span className="glyphicon glyphicon-remove form-control-feedback"></span>}
 				    </div>
 				    <label className="col-sm-2 control-label">Age</label>
@@ -355,7 +347,7 @@ export default class PersonalDetailsForm extends Component {
 						<div>
 							<div className="row">
 								{this.state.data.children.map((child,index)=>(
-									<div key={index} className="col-sm-12">
+									<div key={child.id} className="col-sm-12">
 										<div className="row">
 											<div className={`form-group col-sm-4 ${childrenError[index] && childrenError[index].first_name ? 'has-error': ''}`}>
 												<label className="col-sm-3">First Name</label>
@@ -372,7 +364,7 @@ export default class PersonalDetailsForm extends Component {
 									   	<div className={`form-group col-sm-4 ${childrenError[index] && childrenError[index].dob ? 'has-error': ''}`}>
 									    	<label className="col-sm-3">Date of Birth</label>
 										    <div className="col-sm-9">
-										      <input value={this.state.data.children[index].dob} onChange={this.handleChildEdit.bind(this,'dob',index)} type="text" placeholder="dd/mm/year" className="form-control" />
+										      <DateInput value={this.state.data.children[index].dob} onChange={this.handleChildEdit.bind(this,'dob',index)} type="text" placeholder="dd/mm/year" className="form-control" />
 										    </div>
 									   	</div>
 									    <div className="col-sm-1">
@@ -400,7 +392,7 @@ export default class PersonalDetailsForm extends Component {
 					   	<div className={`form-group col-sm-4 ${this.state.localError.child_dob ? 'has-error': ''}`}>
 					    	<label className="col-sm-3">Date of Birth</label>
 						    <div className="col-sm-9">
-						      <input value={this.state.child.dob} onChange={this.handleNewChildInput.bind(this,'dob')} type="text" placeholder="dd/mm/year" className="form-control" id="inputCMiddlename" />
+						      <DateInput value={this.state.child.dob} onChange={this.handleNewChildInput.bind(this,'dob')} type="text" placeholder="dd/mm/year" className="form-control" id="inputCMiddlename" />
 						    </div>
 					   	</div>
 					    <div className="col-sm-1">

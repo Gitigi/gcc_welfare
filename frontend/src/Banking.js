@@ -6,6 +6,7 @@ import * as $ from 'jquery';
 import axios from 'axios';
 import ConfirmAction from './ConfirmAction';
 import Pagination from './Pagination';
+import DateInput from './DateInput';
 
 
 export default class Banking extends Component {
@@ -161,7 +162,6 @@ class BankingForm extends Component {
 		return this.confirm.current.show().then(_=>{
 			this.setState({loading:true});
 			let data = this.state.data;
-			data.date = data.date.split('/').reverse().join('-');
 			return axios.post('/api/banking/',data).then(_=>{},error=>{
 				console.log(error.response.data);
 				this.setState({error: error.response.data});
@@ -219,7 +219,7 @@ class BankingForm extends Component {
 			  <div className={`form-group col-sm-6 ${error.date ? 'has-error': ''}`}>
 					<label className="col-sm-3 control-label">Deposit Date</label>
 			    <div className="col-sm-9">
-			      <input value={this.state.data.date} onChange={this.handleInput.bind(this,'date')} type="text" placeholder="dd/mm/year" className="form-control" />
+			      <DateInput value={this.state.data.date} onChange={this.handleInput.bind(this,'date')} type="text" placeholder="dd/mm/year" className="form-control" />
 			    </div>
 			  </div>
 
