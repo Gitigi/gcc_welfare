@@ -193,8 +193,8 @@ class List extends Component {
 						{this.state.members.results.map(member=>(
 							<tr key={member.id}>
 								<td><Link to={{pathname:`${match.url}/${member.id}`,state:{member}}}>{member.first_name}</Link></td>
-								<td><Link to={`${match.url}/${member.id}`}>{member.middle_name}</Link></td>
-								<td><Link to={`${match.url}/${member.id}`}>{member.last_name}</Link></td>
+								<td><Link to={{pathname:`${match.url}/${member.id}`,state:{member}}}>{member.middle_name}</Link></td>
+								<td><Link to={{pathname:`${match.url}/${member.id}`,state:{member}}}>{member.last_name}</Link></td>
 								<td>{member.id_no}</td>
 								<td>{member.mobile_no}</td>
 							</tr>
