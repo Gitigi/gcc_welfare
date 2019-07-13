@@ -1,7 +1,9 @@
 import africastalking
+from django.conf import settings
 from django.core.paginator import Paginator
 from rest_framework.response import Response
 from rest_framework import status
+import phonenumbers
 
 try:
     import urlparse
@@ -10,14 +12,25 @@ except:
     import urllib.parse as urlparse
     from urllib.parse import urlencode
 
+africastalking.initialize(username=settings.AFRICASTALKING_USERNAME,
+        api_key=settings.AFRICASTALKING_API_KEY)
+sms = africastalking.SMS
 def send_message(msg,number):
     if type(number) != list:
         number = [number]
     print('sending to',msg,number)
-    # africastalking.initialize(username=settings.AFRICASTALKING_USERNAME,
-    #     api_key=settings.AFRICASTALKING_API_KEY)
-    # sms = africastalking.SMS
-    # return sms.send(message=msg, recipients=[number])
+    numbers = []
+    for n in number:
+        try:
+            n = phonenumbers.parse(n,'KE')
+            if phonenumbers.is_valid_number(n):
+                numbers.append(phonenumbers.format_number(n, phonenumbers.PhoneNumberFormat.E164))
+            else:
+                print('failed to send to number',n)
+        except(phonenumbers.NumberParseException):
+            print('failed to send to number ',n)
+    if len(numbers):
+        sms.send(message=msg, recipients=numbers)
 
 def add_params_to_url(url,params):
     url_parts = list(urlparse.urlparse(url))

@@ -12,7 +12,7 @@ from dateutil.relativedelta import relativedelta
 from django.db.models import Q,Sum,Max,F,Count
 from .utility import send_message,add_params_to_url,paginate_list,paginate_query_by_field
 from django.core.paginator import Paginator
-import re
+import re,threading
 
 @ensure_csrf_cookie
 @api_view(['GET', 'POST'])
@@ -390,13 +390,16 @@ class NotificationViewSet(viewsets.ModelViewSet):
                 numbers = numbers.annotate(payment_count=Count('payment')).filter(payment_count = 0)
 
         numbers = list(numbers)
-        variables_re = re.compile(r'#(NAME|LAST_PAYED_PERIOD|NUMBER_OF_UNPAYED_PERIOD|CURRENT_PERIOD|UNPAYED_PERIOD)')
-        if not variables_re.search(request.data['body']):
-            numbers = [n.mobile_no for n in numbers]
-            send_message(request.data['body'],numbers)
+        threading.Thread(target=self.send_message,args=(numbers,request.data['body'],)).start()
+        return Response(serializer.data)
+
+    def send_message(self,members,msg_original):
+        if not re.search(r'#(NAME|LAST_PAYED_PERIOD|NUMBER_OF_UNPAYED_PERIOD|CURRENT_PERIOD|UNPAYED_PERIOD)',msg_original):
+            numbers = [n.mobile_no for n in members]
+            send_message(msg_original,numbers)
         else:
-            for m in numbers:
-                msg = request.data['body']
+            for m in members:
+                msg = msg_original
                 name = m.first_name.upper() + ' ' + m.middle_name.upper() + ' ' + m.last_name.upper()
                 current_period = datetime.date.today().replace(day=1).strftime('%d/%m/%Y')
                 unpayed_period = current_period
@@ -419,7 +422,6 @@ class NotificationViewSet(viewsets.ModelViewSet):
                 msg = re.sub('#UNPAYED_PERIOD',unpayed_period,msg)
                 msg = re.sub('#NUMBER_OF_UNPAYED_PERIOD',str(number_of_unpayed_period),msg)
                 send_message(msg,m.mobile_no)
-        return Response(serializer.data)
 
 class PaymentViewSet(viewsets.ModelViewSet):
     serializer_class = PaymentSerializer

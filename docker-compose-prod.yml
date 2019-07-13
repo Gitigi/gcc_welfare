@@ -33,8 +33,8 @@ services :
       - DEPLOY_ENV=prod
       - NODE_PATH=/tmp/node_modules
       - DATABASE_URL=postgres://postgres:gcc_welfare@db:5432/gcc_welfare
-      - AFRICASTALKING_USERNAME=sandbox
-      - AFRICASTALKING_API_KEY=c0e35b894c6624c56aae09f185500e447e5106d99e90c9cc531a28f69a0d9f50
+      - AFRICASTALKING_USERNAME=gitigi
+      - AFRICASTALKING_API_KEY=6c4c9f391ba14da5f5805e449a7b009ee343b799b4a43abef84285e52247030f
 
     depends_on:
       - db
