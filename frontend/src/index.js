@@ -7,7 +7,7 @@ import './index.css';
 import App from './App';
 import * as serviceWorker from './serviceWorker';
 
-import * as $ from 'jquery/dist/jquery.slim';
+import * as $ from 'jquery';
 window.jQuery = $;
 import('bootstrap/dist/js/bootstrap');
 

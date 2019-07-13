@@ -1,7 +1,7 @@
 import React, {Component} from 'react';
 import axios from 'axios';
 import NameSearchInput from './NameSearchInput';
-import * as $ from 'jquery/dist/jquery.slim';
+import * as $ from 'jquery';
 import Pagination from './Pagination';
 import ExportButton from './ExportButton';
 import {getPaginatedData} from './utility';

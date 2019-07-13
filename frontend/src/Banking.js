@@ -2,7 +2,7 @@ import React, {Component} from 'react';
 import { Link,Route } from "react-router-dom";
 import AnimatedSwitch from './animated-switch';
 import ReactDOM from 'react-dom'
-import * as $ from 'jquery/dist/jquery.slim';
+import * as $ from 'jquery';
 import axios from 'axios';
 import ConfirmAction from './ConfirmAction';
 import Pagination from './Pagination';

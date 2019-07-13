@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import axios from 'axios';
-import * as $ from 'jquery/dist/jquery.slim'
+import * as $ from 'jquery'
 import './NameSearchInput.css'
 
 var count = 0;

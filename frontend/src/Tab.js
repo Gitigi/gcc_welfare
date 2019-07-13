@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 
-import * as $ from 'jquery/dist/jquery.slim';
+import * as $ from 'jquery';
 
 
 let tabsCount = 0;

@@ -1,7 +1,7 @@
 import React, {Component} from 'react';
 import { Link,Route } from "react-router-dom";
 import AnimatedSwitch from './animated-switch';
-import * as $ from 'jquery/dist/jquery.slim';
+import * as $ from 'jquery';
 import axios from 'axios';
 import NameSearchInput from './NameSearchInput';
 import ConfirmAction from './ConfirmAction';

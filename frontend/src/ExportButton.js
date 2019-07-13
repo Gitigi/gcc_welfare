@@ -2,7 +2,7 @@ import React, {Component} from 'react';
 import ReactDOM from 'react-dom'
 import XLSX from 'xlsx';
 import {saveAs} from 'file-saver';
-import * as $ from 'jquery/dist/jquery.slim';
+import * as $ from 'jquery';
 import './ExportButton.css';
 
 
