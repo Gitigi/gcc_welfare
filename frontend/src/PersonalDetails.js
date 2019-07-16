@@ -136,8 +136,10 @@ class PersonalDetails extends Component {
   }
 
   apply(){
-  	this.submit().then(res=>this.setState({data: res.data,error: {},saved: true}));
-    setTimeout(_=>this.setState({saved: false}),4000);
+  	this.submit().then(res=>{
+      this.setState({data: res.data,error: {},saved: true})
+      setTimeout(_=>this.setState({saved: false}),2000);
+    });
   }
 
   save(){
@@ -145,8 +147,10 @@ class PersonalDetails extends Component {
   }
 
   save_continue(){
-  	this.submit().then( ()=> this.setState({data: {...this.emptyData},error: {},saved: true}));
-    setTimeout(_=>this.setState({saved: false}),4000);
+  	this.submit().then( ()=> {
+      this.setState({data: {...this.emptyData},error: {},saved: true})
+      setTimeout(_=>this.setState({saved: false}),2000);
+    });
   }
 
   close(){

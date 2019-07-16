@@ -222,8 +222,10 @@ class PaymentForm extends Component {
 	}
 
 	saveContinue() {
-		this.submit().then(()=>this.setState({data: {...this.emptyData},error: {},saved: true,member: {}}))
-		setTimeout(_=>this.setState({saved: false}),2000);
+		this.submit().then(()=>{
+			this.setState({data: {...this.emptyData},error: {},saved: true,member: {}});
+			setTimeout(_=>this.setState({saved: false}),2000);
+		})
 	}
 
 	close() {

@@ -203,8 +203,10 @@ class BankingForm extends Component {
 	}
 
 	saveContinue() {
-		this.submit().then(()=>this.setState({data: {...this.emptyData},error: {},saved: true}))
-		setTimeout(_=>this.setState({saved: false}),2000);
+		this.submit().then(()=>{
+			this.setState({data: {...this.emptyData},error: {},saved: true})
+			setTimeout(_=>this.setState({saved: false}),2000);
+		})
 	}
 
 	close() {
