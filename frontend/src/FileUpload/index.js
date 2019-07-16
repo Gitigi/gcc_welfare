@@ -99,6 +99,9 @@ class FileUpload extends Component {
           self.active = false;
           setTimeout(self.progress.percentage = 0);
         }
+        if(self.props.onerror)
+          self.props.onerror(error);
+        
         self.triggerRender();
       });
     }
