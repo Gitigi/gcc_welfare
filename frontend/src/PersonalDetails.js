@@ -161,7 +161,11 @@ class PersonalDetails extends Component {
         <div className={`alert alert-success ${this.state.saved ? 'show' : 'hide'}`} role="alert">
           Successfully saved
         </div>
-        <div className={`alert alert-danger ${Object.keys(this.state.error).length ? 'show' : 'hide'}`} role="alert">
+        <div className={`alert alert-danger alert-dismissible ${this.state.error.detail ? 'show' : 'hide'}`} role="alert">
+          <a href="#" className="close" data-dismiss="alert" aria-label="close">&times;</a>
+          {this.state.error.detail}
+        </div>
+        <div className={`alert alert-danger ${Object.keys(this.state.error).length && !this.state.error.detail ? 'show' : 'hide'}`} role="alert">
           Missing required fields
         </div>
         <ConfirmAction ref={this.confirm} yesLabel="Save" noLabel="Cancel" title="Saving">

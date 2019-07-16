@@ -5,7 +5,7 @@ import ExportButton from './ExportButton';
 import {getPaginatedData} from './utility';
 
 export default class DefaultersReport extends Component {
-	state = {loading:false,data: {results: []},salutation: ''}
+	state = {error:{},loading:false,data: {results: []},salutation: ''}
 	componentDidMount() {
 		this.fetchData();
 	}
@@ -18,7 +18,8 @@ export default class DefaultersReport extends Component {
 
 	fetchData(page=1) {
 		this.setState({loading:true})
-		axios.get('/api/defaulters-report',{params: {page,salutation: this.state.salutation}}).then(res=>this.setState({data: res.data})).finally(_=>this.setState({loading:false}))
+		axios.get('/api/defaulters-report',{params: {page,salutation: this.state.salutation}}).then(res=>this.setState({data: res.data}),
+			error=>this.setState({error:error.response.data})).finally(_=>this.setState({loading:false}))
 	}
 
 	calculateLag(date) {
@@ -58,6 +59,10 @@ export default class DefaultersReport extends Component {
 
 	render() {
 		return <div>
+				<div className={`alert alert-danger alert-dismissible ${this.state.error.detail ? 'show' : 'hide'}`} role="alert">
+          <a href="#" className="close" data-dismiss="alert" aria-label="close">&times;</a>
+          {this.state.error.detail}
+        </div>
 				<h2 className="text-center">Defaulters Report <i className={`fa fa-circle-o-notch fa-spin fa-fw ${this.state.loading ? '' : 'fade'}`}></i> </h2>
 				<div className="row">
 					<form>

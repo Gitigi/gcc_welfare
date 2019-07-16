@@ -31,7 +31,7 @@ class PaymentList extends Component {
 		let date = new Date();
 		let year = date.getFullYear();
 		let month = date.getMonth() + 1;
-		this.state = {loading: false,payments: {results: []},filter: {year,month,search:''}}
+		this.state = {error:{},loading: false,payments: {results: []},filter: {year,month,search:''}}
 	}
 
 	handleFilterChange(field,event){
@@ -47,7 +47,7 @@ class PaymentList extends Component {
 
 	updatePayments(filter={},page=1){
 		this.setState({loading: true});
-		axios.get('/api/payments/',{params: filter}).then(res=>this.setState({payments: res.data})).finally(_=>this.setState({loading:false}))
+		axios.get('/api/payments/',{params: filter}).then(res=>this.setState({payments: res.data}),error=>this.setState({error:error.response.data})).finally(_=>this.setState({loading:false}))
 	}
 
 	showDialog() {
@@ -75,6 +75,10 @@ class PaymentList extends Component {
 	render() {
 		return (
 			<div>
+				<div className={`alert alert-danger alert-dismissible ${this.state.error.detail ? 'show' : 'hide'}`} role="alert">
+          <a href="#" className="close" data-dismiss="alert" aria-label="close">&times;</a>
+          {this.state.error.detail}
+        </div>
 				<h1 className='text-center'>Receipt <i className={`fa fa-circle-o-notch fa-spin fa-fw ${this.state.loading ? '' : 'fade'}`}></i></h1>
 				<div className="row">
 					<Link to={`${this.props.match.url}/new`} className="btn btn-success col-sm-3 col-sm-offset-4">Record Payment <i className='glyphicon glyphicon-plus'></i></Link>
@@ -188,7 +192,7 @@ class PaymentForm extends Component {
 			let data = {...this.state.data}
 			data['amount'] = parseFloat(data.amount);
 			return axios.post('/api/payments/',data).then(_=>{},error=>{
-				console.log(error.response.data);
+				window.scrollTo(0,0);
 				this.setState({error: error.response.data});
 				return Promise.reject(error.response.data);
 			}).finally(_=>this.setState({loading:false}))
@@ -212,6 +216,10 @@ class PaymentForm extends Component {
 		let error = this.state.error;
 		return <div>
 			<h1 className='text-center'>New Receipt</h1>
+			<div className={`alert alert-danger alert-dismissible ${this.state.error.detail ? 'show' : 'hide'}`} role="alert">
+        <a href="#" className="close" data-dismiss="alert" aria-label="close">&times;</a>
+        {this.state.error.detail}
+      </div>
 			<div className={`alert alert-success ${this.state.saved ? 'show' : 'hide'}`} role="alert">
 				Successfully Saved Payment Record
 			</div>

@@ -123,7 +123,7 @@ class Dashboard extends Component {
   months = ['January','February','March','April','May',
     'June','July','August','Septempber','October','November','December']
 
-  state = {loading: false,data: {}}
+  state = {loading: false,data: {},error:{}}
   componentDidMount() {
     this.setState({loading:true});
     axios.get('/api/dashboard-summary/').then(res=>{
@@ -145,7 +145,7 @@ class Dashboard extends Component {
         resize: true
     });
 
-    }).finally(_=>this.setState({loading:false}))
+    },error=>this.setState({error:error.response.data})).finally(_=>this.setState({loading:false}))
 
   }
 
@@ -188,6 +188,10 @@ class Dashboard extends Component {
     let match = this.props.match;
     return (
       <div>
+        <div className={`alert alert-danger alert-dismissible ${this.state.error.detail ? 'show' : 'hide'}`} role="alert">
+          <a href="#" className="close" data-dismiss="alert" aria-label="close">&times;</a>
+          {this.state.error.detail}
+        </div>
         <h2>Dashboard <i className={`fa fa-circle-o-notch fa-spin fa-fw ${this.state.loading ? '' : 'fade'}`}></i> </h2>
         <div className="row">
             <div className="col-lg-offset-1 col-lg-2 col-md-6">

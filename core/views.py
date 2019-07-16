@@ -5,7 +5,7 @@ from django.views.decorators.csrf import ensure_csrf_cookie
 from rest_framework.decorators import api_view,permission_classes
 from rest_framework.response import Response
 from rest_framework import viewsets,status
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny,DjangoModelPermissions
 from core.serializers import UserSerializer, MemberSerializer,MemberSerializerMini, PaymentSerializer, PeriodSerializer, BankingSerializer, NoteSerializer, NotificationSerializer, LibrarySerializer, ClaimSerializer, ChildSerializer
 from core.models import Member,Payment,Period,Banking,Note, Notification, Library, Claim, Child
 import datetime
@@ -37,6 +37,7 @@ def login(request):
 
 
 @api_view(['POST'])
+@permission_classes([AllowAny])
 def logout(request):
     auth.logout(request)
     return Response({})
@@ -122,6 +123,7 @@ def payment_distribution(request):
     return paginate_query_by_field(p,page_number,url,'period__year')
 
 class MemberViewSet(viewsets.ModelViewSet):
+    permission_classes = [DjangoModelPermissions]
     queryset = Member.objects.all().order_by('first_name')
     serializer_class = MemberSerializer
 
@@ -300,6 +302,7 @@ class MemberViewSet(viewsets.ModelViewSet):
 
 
 class BankingViewSet(viewsets.ModelViewSet):
+    permission_classes = [DjangoModelPermissions]
     queryset = Banking.objects.all().order_by('-date')
     serializer_class = BankingSerializer
 
@@ -317,6 +320,7 @@ class BankingViewSet(viewsets.ModelViewSet):
         return q
 
 class ClaimViewSet(viewsets.ModelViewSet):
+    permission_classes = [DjangoModelPermissions]
     queryset = Claim.objects.all().order_by('-date')
     serializer_class = ClaimSerializer
 
@@ -334,6 +338,7 @@ class ClaimViewSet(viewsets.ModelViewSet):
         return q
 
 class LibraryViewSet(viewsets.ModelViewSet):
+    permission_classes = [DjangoModelPermissions]
     queryset = Library.objects.all().order_by('-date')
     serializer_class = LibrarySerializer
 
@@ -345,6 +350,7 @@ class LibraryViewSet(viewsets.ModelViewSet):
         return Response({'files': [serializer.data]})
 
 class NoteViewSet(viewsets.ModelViewSet):
+    permission_classes = [DjangoModelPermissions]
     queryset = Note.objects.all().order_by('-date')
     serializer_class = NoteSerializer
 
@@ -355,6 +361,7 @@ class NoteViewSet(viewsets.ModelViewSet):
         return q.order_by('-date')
 
 class NotificationViewSet(viewsets.ModelViewSet):
+    permission_classes = [DjangoModelPermissions]
     queryset = Notification.objects.all().order_by('-date')
     serializer_class = NotificationSerializer
 
@@ -418,6 +425,7 @@ class NotificationViewSet(viewsets.ModelViewSet):
                 send_message(msg,m.mobile_no)
 
 class PaymentViewSet(viewsets.ModelViewSet):
+    permission_classes = [DjangoModelPermissions]
     serializer_class = PaymentSerializer
     queryset = Payment.objects.all().order_by('-date')
     def get_queryset(self):

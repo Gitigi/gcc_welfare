@@ -36,7 +36,7 @@ class ClaimList extends Component {
 		let date = new Date();
 		let year = date.getFullYear();
 		let month = date.getMonth() + 1;
-		this.state = {loading: false,claims: {results: []},filter: {year,month,search:''}}
+		this.state = {error:{},loading: false,claims: {results: []},filter: {year,month,search:''}}
 	}
 
 	handleFilterChange(field,event){
@@ -52,7 +52,7 @@ class ClaimList extends Component {
 
 	updateClaim(filter={}){
 		this.setState({loading: true});
-		axios.get('/api/claim/',{params: filter}).then(res=>this.setState({claims: res.data})).finally(_=>this.setState({loading:false}))
+		axios.get('/api/claim/',{params: filter}).then(res=>this.setState({claims: res.data}),error=>this.setState({error:error.response.data})).finally(_=>this.setState({loading:false}))
 	}
 
 	showDialog() {
@@ -96,6 +96,10 @@ class ClaimList extends Component {
 	render() {
 		return (
 			<div>
+				<div className={`alert alert-danger alert-dismissible ${this.state.error.detail ? 'show' : 'hide'}`} role="alert">
+          <a href="#" className="close" data-dismiss="alert" aria-label="close">&times;</a>
+          {this.state.error.detail}
+        </div>
 				<h1 className='text-center'>Claims <i className={`fa fa-circle-o-notch fa-spin fa-fw ${this.state.loading ? '' : 'fade'}`}></i></h1>
 				<div className="row">
 					<Link to={`${this.props.match.url}/new`} className="btn btn-success col-sm-2 col-sm-offset-5">Record Claim</Link>
@@ -203,7 +207,7 @@ class ClaimForm extends Component {
 			this.setState({loading:true});
 			let data = this.state.data;
 			return axios.post('/api/claim/',data).then(_=>{},error=>{
-				console.log(error.response.data);
+				window.scrollTo(0,0);
 				this.setState({error: error.response.data});
 				return Promise.reject(error.response.data);
 			}).finally(_=>this.setState({loading:false}))
@@ -226,6 +230,10 @@ class ClaimForm extends Component {
 	render() {
 		let error = this.state.error;
 		return <div>
+			<div className={`alert alert-danger alert-dismissible ${this.state.error.detail ? 'show' : 'hide'}`} role="alert">
+        <a href="#" className="close" data-dismiss="alert" aria-label="close">&times;</a>
+        {this.state.error.detail}
+      </div>
 			<h1 className='text-center'>New Claim</h1>
 			<div className={`alert alert-success ${this.state.saved ? 'show' : 'hide'}`} role="alert">
 				Successfully Saved Payment Record

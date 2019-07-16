@@ -7,7 +7,7 @@ import ExportButton from './ExportButton';
 import {getPaginatedData} from './utility';
 
 export default class IndividualReport extends Component {
-	state = {loading: false,rows: [],first:'',last:'',member: {},data:{results:[]}}
+	state = {error:{},loading: false,rows: [],first:'',last:'',member: {},data:{results:[]}}
 	componentDidMount() {
 		this.fetchData();
 	}
@@ -32,7 +32,7 @@ export default class IndividualReport extends Component {
 
 			let rows = Array.from(new Array(years), (v,i)=>first.getFullYear()+(direction*i));
 			this.setState({rows,first,last,data: res.data})
-		}).finally(_=>this.setState({loading:false}))
+		},error=>this.setState({error:error.response.data})).finally(_=>this.setState({loading:false}))
 	}
 
 	getAmount(year,month) {
@@ -74,6 +74,10 @@ export default class IndividualReport extends Component {
 	render() {
 		let months = (new Array(12)).fill(0);
 		return <div>
+				<div className={`alert alert-danger alert-dismissible ${this.state.error.detail ? 'show' : 'hide'}`} role="alert">
+          <a href="#" className="close" data-dismiss="alert" aria-label="close">&times;</a>
+          {this.state.error.detail}
+        </div>
 				<h2 className="text-center">Individual Report <i className={`fa fa-circle-o-notch fa-spin fa-fw ${this.state.loading ? '' : 'fade'}`}></i> </h2>
 				<div className="row">
 					<form>

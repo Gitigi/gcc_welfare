@@ -33,7 +33,7 @@ class Editor extends Component {
 	constructor(props) {
     super(props);
 
-    this.state = {data: {...this.emptyData}, error: {}};
+    this.state = {error:{},data: {...this.emptyData}, error: {}};
   }
 
   componentDidMount() {
@@ -42,7 +42,7 @@ class Editor extends Component {
   	}else if(this.props.match.params.id){
   		axios.get(`/api/members/${this.props.match.params.id}`).then(response => {
   			this.setState({data: response.data});
-  		})
+  		},error=>this.setState({error:error.response.data}))
   	}
   	
   }
@@ -52,6 +52,10 @@ class Editor extends Component {
 		let data = this.state.data;
 		return (
 			<div>
+				<div className={`alert alert-danger alert-dismissible ${this.state.error.detail ? 'show' : 'hide'}`} role="alert">
+          <a href="#" className="close" data-dismiss="alert" aria-label="close">&times;</a>
+          {this.state.error.detail}
+        </div>
 				{id ? <h2>{`${data.first_name.toUpperCase() + ' ' + data.middle_name.toUpperCase() + ' ' + data.last_name.toUpperCase()}`}</h2> :
 					<h2>New Member</h2>
 				}
@@ -77,7 +81,7 @@ class List extends Component {
 		let search = this.props.location.state && this.props.location.state.search;
 		let page = this.props.location.state && this.props.location.state.page;
 
-		this.state = {loading: false, members: {results:[]}, status: status||'active', search: search||'',all: false,page: page||1};
+		this.state = {error:{},loading: false, members: {results:[]}, status: status||'active', search: search||'',all: false,page: page||1};
 	}
 	componentDidMount() {
 		this.fetchData()
@@ -100,7 +104,8 @@ class List extends Component {
 		if(this.state.search)
 			params['search'] = this.state.search;
 		this.setState({loading: true});
-		axios.get('/api/members/',{params}).then(response => this.setState({members: response.data})).finally(_=>this.setState({loading:false}))
+		axios.get('/api/members/',{params}).then(response => this.setState({members: response.data}),
+			error=>this.setState({error: error.response.data})).finally(_=>this.setState({loading:false}))
 	}
 
 	gotoPage(page){
@@ -169,6 +174,10 @@ class List extends Component {
 		let match = this.props.match;
 		return (
 			<div>
+				<div className={`alert alert-danger alert-dismissible ${this.state.error.detail ? 'show' : 'hide'}`} role="alert">
+          <a href="#" className="close" data-dismiss="alert" aria-label="close">&times;</a>
+          {this.state.error.detail}
+        </div>
 				<h1 className='text-center'> Members <i className={`fa fa-circle-o-notch fa-spin fa-fw ${this.state.loading ? '' : 'fade'}`}></i> </h1>
 				<div className="row">
 					<Link to={`${this.props.match.url}/new`} className="btn btn-success col-sm-3 col-sm-offset-4">Add <i className='glyphicon glyphicon-plus'></i></Link>

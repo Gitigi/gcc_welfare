@@ -4,7 +4,7 @@ import Pagination from './Pagination';
 import ConfirmAction from './ConfirmAction';
 
 export default class PersonalNotes extends Component {
-	state = {loading:false,note: {note:''},sent: false, notes: {results: []}}
+	state = {error:{},loading:false,note: {note:''},sent: false, notes: {results: []}}
 	confirmSave = React.createRef()
 	confirmDelete = React.createRef()
 	componentDidMount() {
@@ -29,13 +29,13 @@ export default class PersonalNotes extends Component {
 						this.fetchData();
 						this.setState({note: {note: ''},sent: true})
 						setTimeout(_=>this.setState({sent: false}),2000);
-					}).finally(_=>this.setState({loading:false}))
+					},error=>this.setState({error:error.response.data})).finally(_=>this.setState({loading:false}))
 				}else{
 					axios.post('/api/notes/',{member: this.props.match.params.id, note: this.state.note.note}).then(res=>{
 						this.fetchData()
 						this.setState({note: {note: ''},sent: true})
 						setTimeout(_=>this.setState({sent: false}),2000);
-					}).finally(_=>this.setState({loading:false}))
+					},error=>this.setState({error:error.response.data})).finally(_=>this.setState({loading:false}))
 				}
 			})
 		}
@@ -48,7 +48,7 @@ export default class PersonalNotes extends Component {
 				axios.delete('/api/notes/'+this.state.note.id+'/').then(res=>{
 					this.fetchData();
 					this.setState({note: {note: ''}})
-				}).finally(_=>this.setState({loading:false}))
+				},error=>this.setState({error:error.response.data})).finally(_=>this.setState({loading:false}))
 			})
 		}
 	}
@@ -73,6 +73,10 @@ export default class PersonalNotes extends Component {
 				<div className={`alert alert-success ${this.state.sent ? 'show' : 'hide'}`} role="alert">
 					Successfully saved the note
 				</div>
+				<div className={`alert alert-danger alert-dismissible ${this.state.error.detail ? 'show' : 'hide'}`} role="alert">
+          <a href="#" className="close" data-dismiss="alert" aria-label="close">&times;</a>
+          {this.state.error.detail}
+        </div>
 				<ConfirmAction ref={this.confirmSave} yesLabel="Save" noLabel="Cancel" title="Saving">
           <p>Do you want to save note</p>
         </ConfirmAction>

@@ -106,6 +106,10 @@ class SendNotification extends Component {
 				<div className={`alert alert-success ${this.state.sent ? 'show' : 'hide'}`} role="alert">
           Successfully sent
         </div>
+        <div className={`alert alert-danger alert-dismissible ${this.state.error.detail ? 'show' : 'hide'}`} role="alert">
+          <a href="#" className="close" data-dismiss="alert" aria-label="close">&times;</a>
+          {this.state.error.detail}
+        </div>
         <ConfirmAction ref={this.confirm} yesLabel="Save" noLabel="Cancel" title="Sending message...">
 					<p>Do you want to send message</p>
 				</ConfirmAction>
@@ -224,13 +228,13 @@ class SendNotification extends Component {
 }
 
 class SentNotification extends Component {
-	state = {loading: false,notifications: {results: []}}
+	state = {error:{},loading: false,notifications: {results: []}}
 	componentDidMount(){
 		this.fetchData()
 	}
 	fetchData(page=1){
 		this.setState({loading:true});
-		axios.get('/api/notification/',{params: {page}}).then(res=>this.setState({notifications: res.data})).finally(_=>this.setState({loading:false}))
+		axios.get('/api/notification/',{params: {page}}).then(res=>this.setState({notifications: res.data}),error=>this.setState({error:error.response.data})).finally(_=>this.setState({loading:false}))
 	}
 
 	formatDate(date){
@@ -245,6 +249,10 @@ class SentNotification extends Component {
 	}
 	render() {
 		return <div>
+				<div className={`alert alert-danger alert-dismissible ${this.state.error.detail ? 'show' : 'hide'}`} role="alert">
+          <a href="#" className="close" data-dismiss="alert" aria-label="close">&times;</a>
+          {this.state.error.detail}
+        </div>
 				<h2>Sent Notifications <i className={`fa fa-circle-o-notch fa-spin fa-fw ${this.state.loading ? '' : 'fade'}`}></i></h2>
 				<table className="table table-striped table-responsive">
 					<thead>

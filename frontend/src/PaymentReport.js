@@ -6,7 +6,7 @@ import ExportButton from './ExportButton';
 import {getPaginatedData} from './utility';
 
 export default class PaymentReport extends Component {
-	state = {loading: false,data: {results: []},member: {},page:1}
+	state = {error:{},loading: false,data: {results: []},member: {},page:1}
 	methodChoices = {'CA': 'CASH', 'BK': 'BANK', 'MP': 'MPESA'}
 	componentDidMount() {
 		this.fetchData();
@@ -18,7 +18,8 @@ export default class PaymentReport extends Component {
 		if(this.state.member.id){
 			params['member'] = this.state.member.id;
 		}
-		axios.get('/api/payment-report',{params}).then(res=>this.setState({data: res.data})).finally(_=>this.setState({loading:false}))
+		axios.get('/api/payment-report',{params}).then(res=>this.setState({data: res.data}),
+			error=>this.setState({error:error.response.data})).finally(_=>this.setState({loading:false}))
 	}
 
 	componentDidUpdate(prevProp,prevState) {
@@ -62,6 +63,10 @@ export default class PaymentReport extends Component {
 
 	render() {
 		return <div>
+				<div className={`alert alert-danger alert-dismissible ${this.state.error.detail ? 'show' : 'hide'}`} role="alert">
+          <a href="#" className="close" data-dismiss="alert" aria-label="close">&times;</a>
+          {this.state.error.detail}
+        </div>
 				<h2 className="text-center">Payment Report <i className={`fa fa-circle-o-notch fa-spin fa-fw ${this.state.loading ? '' : 'fade'}`}></i> </h2>
 				<div className="row">
 					<form>
