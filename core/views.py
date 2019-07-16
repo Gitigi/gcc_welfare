@@ -2,9 +2,10 @@ from django.shortcuts import render
 from django.contrib import auth
 from django.conf import settings
 from django.views.decorators.csrf import ensure_csrf_cookie
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view,permission_classes
 from rest_framework.response import Response
 from rest_framework import viewsets,status
+from rest_framework.permissions import AllowAny
 from core.serializers import UserSerializer, MemberSerializer,MemberSerializerMini, PaymentSerializer, PeriodSerializer, BankingSerializer, NoteSerializer, NotificationSerializer, LibrarySerializer, ClaimSerializer, ChildSerializer
 from core.models import Member,Payment,Period,Banking,Note, Notification, Library, Claim, Child
 import datetime
@@ -16,6 +17,7 @@ import re,threading
 
 @ensure_csrf_cookie
 @api_view(['GET', 'POST'])
+@permission_classes([AllowAny])
 def get_user(request):
     if request.user.is_authenticated:
             return Response(UserSerializer(request.user).data)
@@ -24,6 +26,7 @@ def get_user(request):
 
 
 @api_view(['POST'])
+@permission_classes([AllowAny])
 def login(request):
     user = auth.authenticate(username=request.data["username"], password=request.data["password"])
     if user:

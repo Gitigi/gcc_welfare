@@ -130,7 +130,8 @@ MEDIA_ROOT = os.path.join('/etc/static/media')
 
 REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 8
+    'PAGE_SIZE': 8,
+    'DEFAULT_PERMISSION_CLASSES': ['rest_framework.permissions.IsAuthenticated']
 }
 
 AFRICASTALKING_USERNAME = os.environ.get('AFRICASTALKING_USERNAME','sandbox')

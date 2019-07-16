@@ -66,7 +66,7 @@ class Home extends Component {
                         <b className="caret"></b>
                     </button>
                     <ul className="dropdown-menu">
-                        <li><a href='#log-out' onClick={this.logout}><i className="glyphicon glyphicon-log-out"></i> Log Out</a></li>
+                        <li><a onClick={this.logout}><i className="glyphicon glyphicon-log-out"></i> Log Out</a></li>
                     </ul>
                 </li>
                 </ul>
