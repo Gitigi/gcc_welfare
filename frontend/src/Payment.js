@@ -65,6 +65,13 @@ class PaymentList extends Component {
 		this.updatePayments(params);
 	}
 
+	formatDate(date){
+		date = date.split('.')[0]
+		date = date.split('T');
+		date[0] = date[0].split('-').reverse().join('/')
+		return date.join(' ')
+	}
+
 	render() {
 		return (
 			<div>
@@ -94,12 +101,12 @@ class PaymentList extends Component {
 				<table className="table table-striped table-responsive">
 					<thead>
 						<tr>
-							<td>First name</td>
-							<td>Middle name</td>
-							<td>Last name</td>
-							<td>Amount</td>
-							<td>Method</td>
-							<td>Period</td>
+							<th>First name</th>
+							<th>Middle name</th>
+							<th>Last name</th>
+							<th>Amount</th>
+							<th>Method</th>
+							<th>Date</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -110,7 +117,7 @@ class PaymentList extends Component {
 								<td>{payment.last_name}</td>
 								<td>{payment.amount}</td>
 								<td>{this.methodChoices[payment.method]}</td>
-								<td>{payment.period}</td>
+								<td>{this.formatDate(payment.date)}</td>
 							</tr>
 							))}
 					</tbody>

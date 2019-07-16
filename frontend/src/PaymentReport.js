@@ -7,6 +7,7 @@ import {getPaginatedData} from './utility';
 
 export default class PaymentReport extends Component {
 	state = {loading: false,data: {results: []},member: {},page:1}
+	methodChoices = {'CA': 'CASH', 'BK': 'BANK', 'MP': 'MPESA'}
 	componentDidMount() {
 		this.fetchData();
 	}
@@ -36,12 +37,13 @@ export default class PaymentReport extends Component {
 
 	getData() {
 		return getPaginatedData('/api/payment-report',{member: this.state.member.id}).then(res=>{
-			let rows = [['Name','Date', 'Amount']];
+			let rows = [['Name', 'Amount','Method','Date']];
 			for(let i = 0; i < res.length; i++){
 				rows.push([
 					res[i].member__first_name.toUpperCase() + ' ' + res[i].member__middle_name.toUpperCase()  + ' ' + res[i].member__last_name.toUpperCase(),
-					res[i].date,
-					res[i].amount
+					res[i].amount,
+					this.methodChoices[res[i].method],
+					this.formatDate(res[i].date)
 					])
 			}
 			let filename = 'Payment Report'
@@ -49,6 +51,13 @@ export default class PaymentReport extends Component {
 				filename += ' for ' + this.state.member.first_name.toUpperCase() + ' ' + this.state.member.middle_name.toUpperCase()  + ' ' + this.state.member.last_name.toUpperCase();
 			return {rows,filename};
 		});
+	}
+
+	formatDate(date){
+		date = date.split('.')[0]
+		date = date.split('T');
+		date[0] = date[0].split('-').reverse().join('/')
+		return date.join(' ')
 	}
 
 	render() {
@@ -67,8 +76,9 @@ export default class PaymentReport extends Component {
 							<th>First Name</th>
 							<th>Middle Name</th>
 							<th>Last Name</th>
-							<th>date</th>
 							<th>Amount</th>
+							<th>Method</th>
+							<th>Date</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -77,8 +87,9 @@ export default class PaymentReport extends Component {
 									<td>{p.member__first_name.toUpperCase()}</td>
 									<td>{p.member__middle_name.toUpperCase()}</td>
 									<td>{p.member__last_name.toUpperCase()}</td>
-									<td>{p.date}</td>
 									<td>{p.amount}</td>
+									<td>{this.methodChoices[p.method]}</td>
+									<td>{this.formatDate(p.date)}</td>
 								</tr>
 						})}
 					</tbody>

@@ -90,7 +90,7 @@ def defaulters_report(request):
 
 @api_view(['GET'])
 def payment_report(request):
-    p = Payment.objects.values('date','member','member__first_name','member__middle_name','member__last_name','amount')
+    p = Payment.objects.values('date','member','member__first_name','member__middle_name','member__last_name','amount','method')
     if request.GET.get('member'):
         p = p.filter(member=request.GET['member'])
     url = request.build_absolute_uri()
