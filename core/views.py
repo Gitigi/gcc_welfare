@@ -10,7 +10,7 @@ from core.models import Member,Payment,Period,Banking,Note, Notification, Librar
 import datetime
 from dateutil.relativedelta import relativedelta
 from django.db.models import Q,Sum,Max,F,Count
-from .utility import send_message,add_params_to_url,paginate_list,paginate_query_by_field
+from .utility import send_message,add_params_to_url,paginate_list,paginate_query_by_field,search_name as utility_search_name
 from django.core.paginator import Paginator
 import re,threading
 
@@ -42,16 +42,7 @@ def logout(request):
 def search_name(request):
     like_op = 'like' if 'sqlite' in settings.DATABASES['default']['ENGINE'].split('.')[-1] else 'ilike'
     name = request.GET.get('name','')
-    names = name.split(' ')[:3]
-    sql = ''
-    args = []
-    for i in names:
-        sql += ' UNION ALL ' if len(sql) else ''
-        sql += 'SELECT id FROM core_member WHERE (first_name '+like_op +' %s OR middle_name '+like_op +' %s  OR last_name '+like_op +' %s)'
-        arg = '%s%%'%(i,)
-        args += [arg,arg,arg]
-    f = 'select count(id) count, id from (' + sql + ') a group by id order by count desc limit 10'
-    return Response(MemberSerializerMini(Member.objects.raw(f,args),many=True).data)
+    return Response(MemberSerializerMini(utility_search_name(name),many=True).data)
 
 @api_view(['GET'])
 def annual_report(request):
@@ -457,10 +448,9 @@ class PaymentViewSet(viewsets.ModelViewSet):
                 last_period.save()
             last_period_date = last_period.period
         else:
-            member_date_joined = member.date_joined
-            last_period_date = datetime.date(member_date_joined.year,member_date_joined.month,1)
-            #subtract a month from date of joining.
-            #so that payment begin on the month of joining
+            last_period_date = datetime.date.today()
+            #subtract a month from date of payment.
+            #so that payment begin on the month of payment
             last_period_date += relativedelta(months=-1,day=1)
 
         
@@ -482,7 +472,9 @@ class PaymentViewSet(viewsets.ModelViewSet):
                 amount=rem,
                 period=period)
 
-        send_message("Thank you %s %s %s for your welfare payment of amount %d on %s" % 
-            (member.first_name,member.middle_name,member.last_name,request.data['amount'],date), member.mobile_no)
+        msg = "Thank you %s %s %s for your welfare payment of amount %d on %s" % (
+            member.first_name,member.middle_name,member.last_name,request.data['amount'],date)
+
+        threading.Thread(target=send_message,args=(msg,member.mobile_no)).start()
         
         return Response(PaymentSerializer(payment).data)

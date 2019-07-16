@@ -4,6 +4,7 @@ from django.core.paginator import Paginator
 from rest_framework.response import Response
 from rest_framework import status
 import phonenumbers
+from core.models import Member
 
 try:
     import urlparse
@@ -32,6 +33,18 @@ def send_message(msg,number):
     if len(numbers):
         sms.send(message=msg, recipients=numbers)
 
+def search_name(name):
+    like_op = 'like' if 'sqlite' in settings.DATABASES['default']['ENGINE'].split('.')[-1] else 'ilike'
+    names = name.split(' ')[:3]
+    sql = ''
+    args = []
+    for i in names:
+        sql += ' UNION ALL ' if len(sql) else ''
+        sql += 'SELECT id FROM core_member WHERE (first_name '+like_op +' %s OR middle_name '+like_op +' %s  OR last_name '+like_op +' %s)'
+        arg = '%s%%'%(i,)
+        args += [arg,arg,arg]
+    f = 'select count(id) count, id from (' + sql + ') a group by id order by count desc limit 10'
+    return Member.objects.raw(f,args)
 def add_params_to_url(url,params):
     url_parts = list(urlparse.urlparse(url))
     query = dict(urlparse.parse_qsl(url_parts[4]))
