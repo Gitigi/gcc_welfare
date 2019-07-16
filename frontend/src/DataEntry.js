@@ -12,6 +12,8 @@ import Pagination from './Pagination';
 import ExportButton from './ExportButton';
 import {getPaginatedData} from './utility';
 
+import './DateEntry.css';
+
 export default class DataEntry extends Component {
 	render() {
 		return (
@@ -173,7 +175,7 @@ class List extends Component {
 	render(){
 		let match = this.props.match;
 		return (
-			<div>
+			<div className='members'>
 				<div className={`alert alert-danger alert-dismissible ${this.state.error.detail ? 'show' : 'hide'}`} role="alert">
           <a href="#" className="close" data-dismiss="alert" aria-label="close">&times;</a>
           {this.state.error.detail}
@@ -183,54 +185,41 @@ class List extends Component {
 					<Link to={`${this.props.match.url}/new`} className="btn btn-success col-sm-3 col-sm-offset-4">Add <i className='glyphicon glyphicon-plus'></i></Link>
 				</div>
 				<div className="row">
-					<form className="form-horizontal">
-						<div className="form-group col-sm-2">
-							<label className="col-sm-8 control-label">Active</label>
-							<div className="col-sm-1">
-								<input onChange={this.handleChange.bind(this,'status')} type="radio" name="status" value="active" className="form-control"
-									checked={this.state.status === 'active'} />
-							</div>
+					<form className="form-inline">
+						<div className="form-group">
+						<label className="control-label">Active
+						<input onChange={this.handleChange.bind(this,'status')} type="radio" name="status" value="active" className="form-control"
+									checked={this.state.status === 'active'} /></label>
 						</div>
-						<div className="form-group col-sm-2">
-							<label className="col-sm-8 control-label">Upto Date</label>
-							<div className="col-sm-1">
-								<input onChange={this.handleChange.bind(this,'status')} type="radio" name="status" value="upto-date" className="form-control"
+						<div className="form-group">
+						<label className="control-label">Upto Date</label>
+						<input onChange={this.handleChange.bind(this,'status')} type="radio" name="status" value="upto-date" className="form-control"
 									checked={this.state.status === 'upto-date'} />
-							</div>
 						</div>
-						<div className="form-group col-sm-2">
-							<label className="col-sm-8 control-label">Lagging</label>
-							<div className="col-sm-1">
-								<input onChange={this.handleChange.bind(this,'status')} type="radio" name="status" value="lagging" className="form-control"
+						<div className="form-group">
+						<label className="control-label">Lagging</label>
+						<input onChange={this.handleChange.bind(this,'status')} type="radio" name="status" value="lagging" className="form-control"
 									checked={this.state.status === 'lagging'} />
-							</div>
 						</div>
-						<div className="form-group col-sm-2">
-							<label className="col-sm-8 control-label">Suspended</label>
-							<div className="col-sm-1">
-								<input onChange={this.handleChange.bind(this,'status')} type="radio" name="status" value="suspended" className="form-control"
+						<div className="form-group">
+						<label className="control-label">Suspended</label>
+						<input onChange={this.handleChange.bind(this,'status')} type="radio" name="status" value="suspended" className="form-control"
 									checked={this.state.status === 'suspended'} />
-							</div>
 						</div>
-						<div className="form-group col-sm-2">
-							<label className="col-sm-8 control-label">Dormant</label>
-							<div className="col-sm-1">
-								<input onChange={this.handleChange.bind(this,'status')} type="radio" name="status" value="dormant" className="form-control"
+						<div className="form-group">
+						<label className="control-label">Dormant</label>
+						<input onChange={this.handleChange.bind(this,'status')} type="radio" name="status" value="dormant" className="form-control"
 									checked={this.state.status === 'dormant'} />
-							</div>
 						</div>
-						<div className="form-group col-sm-2">
-							<label className="col-sm-8 control-label">ALL</label>
-							<div className="col-sm-1">
-								<input onChange={this.handleAllChange.bind(this)} checked={this.state.all} type="checkbox" name="status" value="all" className="form-control" />
-							</div>
+						<div className="form-group">
+						<label className="control-label">ALL</label>
+						<input onChange={this.handleAllChange.bind(this)} checked={this.state.all} type="checkbox" name="status" value="all" className="form-control" />
 						</div>
-						<div className="form-group col-sm-4">
-							<label className="col-sm-2 control-label">Name</label>
-							<div className="col-sm-10">
-								<input onChange={this.handleChange.bind(this,'search')} value={this.state.search} type="text" className="form-control" />
-							</div>
+						<div className="form-group">
+						<label className="control-label">Name</label>
+						<input onChange={this.handleChange.bind(this,'search')} value={this.state.search} type="text" className="form-control" />
 						</div>
+
 					</form>
 				</div>
 				<table className="table table-striped table-responsive">

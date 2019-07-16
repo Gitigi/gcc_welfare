@@ -1,0 +1,9 @@
+.members .form-inline {
+    margin: 0 3px;
+}
+
+.members .form-inline .form-group label,
+.members .form-inline .form-group input,
+.members .form-inline .form-group select {
+    margin: 0 6px;
+}
