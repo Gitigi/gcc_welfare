@@ -15,7 +15,6 @@ export default class IndividualReport extends Component {
 		if(prevState.member.id !== this.state.member.id){
 			this.fetchData();
 		}
-		$('[data-toggle="tooltip"]').tooltip({container: 'body'})
 	}
 	fetchData(page=1) {
 		this.setState({loading:true});
@@ -106,7 +105,7 @@ export default class IndividualReport extends Component {
 							return <tr key={year}>
 									<th>{year}</th>
 									{months.map((m,index)=>{
-										return <td key={year+''+index}>{this.getAmount(year,index)}</td>
+										return <td key={year+''+index}>{this.getAmount(year,index+1)}</td>
 									})}
 								</tr>
 						})}

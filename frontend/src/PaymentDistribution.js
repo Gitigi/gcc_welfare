@@ -13,7 +13,8 @@ export default class PaymentDistribution extends Component {
 		if(prevState.member.id !== this.state.member.id){
 			this.fetchData();
 		}
-		$('[data-toggle="tooltip"]').tooltip({container: 'body'})
+		if($('[data-toggle="tooltip"]').tooltip)
+			$('[data-toggle="tooltip"]').tooltip({container: 'body'})
 	}
 	fetchData(page=1) {
 		this.setState({loading:true});
@@ -41,7 +42,7 @@ export default class PaymentDistribution extends Component {
 		if(!p)
 			return '';
 		if(!this.payments[p.payment]) {
-			this.payments[p.payment] = {'color': colors[this.paymentCount % 5],paymentDetails: 'Payment Date ' + Date(p.date) + '\nPeriod amount payed ' + p.amount +'\nActual Total Payment '+ p.payment_total};
+			this.payments[p.payment] = {'color': colors[this.paymentCount % 5],paymentDetails: 'Payment Date ' + Date(p.date) + '\nPeriod amount payed ' + p.amount +'\nActual Total Payment '+ p.payment__amount};
 			this.paymentCount++;
 		}
 		
@@ -89,7 +90,7 @@ export default class PaymentDistribution extends Component {
 							return <tr key={year}>
 									<th>{year}</th>
 									{months.map((m,index)=>{
-										let details = this.getColor(year,index);
+										let details = this.getColor(year,index+1);
 										return <td key={year+''+index} bgcolor={details.color} data-original-title={details.paymentDetails}
 											data-container="body" data-toggle="tooltip" data-placement="top" title=""></td>
 									})}
