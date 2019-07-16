@@ -29,16 +29,20 @@ export default class ExportButton extends Component {
 		let wb = XLSX.utils.book_new();
 		wb.Props = {
 			Title: filename,
-			Subject: "Individual Report",
+			Subject: "Report",
 			Author: "GCC KAYOLE WELFARE",
 			CreatedDate: new Date()
 		}
 		wb.SheetNames.push("Sheet 1");
 		let ws;
-		if(ws_data[0].constructor == Array)
+		if(ws_data[0].constructor == Array){
 			ws = XLSX.utils.aoa_to_sheet(ws_data);
-		else if (ws_data[0].constructor == Object)
+			ws['!cols'] = (new Array(ws_data[0].length)).fill({wch:20})
+		}
+		else if (ws_data[0].constructor == Object){
 			ws = XLSX.utils.json_to_sheet(ws_data);
+			ws['!cols'] = (new Array(Object.keys(ws_data[0]).length)).fill({wch:15})
+		}
 		wb.Sheets["Sheet 1"] = ws;
 
 		let wbout = XLSX.write(wb,{bookType: 'xlsx',type: 'binary'});
