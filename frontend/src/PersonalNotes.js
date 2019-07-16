@@ -57,6 +57,13 @@ export default class PersonalNotes extends Component {
 		this.setState({note});
 	}
 
+	formatDate(date){
+		date = date.split('.')[0]
+		date = date.split('T');
+		date[0] = date[0].split('-').reverse().join('/')
+		return date.join(' ')
+	}
+
 	gotoPage(page) {
 		this.fetchData(page);
 	}
@@ -102,7 +109,7 @@ export default class PersonalNotes extends Component {
 					<tbody>
 						{this.state.notes.results.map(n=>{
 							return <tr key={n.id}>
-									<td><a onClick={this.handleNoteClick.bind(this,n)}>{n.date}</a></td>
+									<td><a onClick={this.handleNoteClick.bind(this,n)}>{this.formatDate(n.date)}</a></td>
 									<td>{n.note}</td>
 								</tr>
 						})}

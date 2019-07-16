@@ -233,6 +233,13 @@ class SentNotification extends Component {
 		axios.get('/api/notification/',{params: {page}}).then(res=>this.setState({notifications: res.data})).finally(_=>this.setState({loading:false}))
 	}
 
+	formatDate(date){
+		date = date.split('.')[0]
+		date = date.split('T');
+		date[0] = date[0].split('-').reverse().join('/')
+		return date.join(' ')
+	}
+
 	gotoPage(page) {
 		this.fetchData(page);
 	}
@@ -251,7 +258,7 @@ class SentNotification extends Component {
 					<tbody>
 						{this.state.notifications.results.map(n=>{
 							return <tr key={n.id}>
-									<td>{n.date}</td>
+									<td>{this.formatDate(n.date)}</td>
 									<td>{n.heading}</td>
 									<td>{n.body}</td>
 									<td>{n.target}</td>

@@ -41,7 +41,7 @@ export default class DefaultersReport extends Component {
 			for(let i = 0; i < res.length; i++){
 				rows.push([
 					res[i].first_name.toUpperCase() + ' ' + res[i].middle_name.toUpperCase()  + ' ' + res[i].last_name.toUpperCase(),
-					res[i].period || "Dormant",
+					(res[i].period && res[i].period.split('-').reverse().join('/')) || "Dormant",
 					this.calculateLag(res[i].period)
 					])
 			}
@@ -93,7 +93,7 @@ export default class DefaultersReport extends Component {
 									<td>{p.first_name.toUpperCase()}</td>
 									<td>{p.middle_name.toUpperCase()}</td>
 									<td>{p.last_name.toUpperCase()}</td>
-									<td>{p.period || "Dormant"}</td>
+									<td>{(p.period && p.period.split('-').reverse().join('/')) || "Dormant"}</td>
 									<td>{this.calculateLag(p.period)}</td>
 								</tr>
 						})}
