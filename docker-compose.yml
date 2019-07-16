@@ -31,8 +31,9 @@ services :
       - static:/etc/static
     environment :
       - DEPLOY_ENV=dev
+      - STATIC_ROOT=/etc/static
+      - MEDIA_ROOT=/etc/static/media
       - NODE_PATH=/tmp/node_modules
-      - VIRTUAL_HOST=http://*,https://*
       - DATABASE_URL=postgres://postgres:gcc_welfare@db:5432/gcc_welfare
       - AFRICASTALKING_USERNAME=sandbox
       - AFRICASTALKING_API_KEY=c0e35b894c6624c56aae09f185500e447e5106d99e90c9cc531a28f69a0d9f50

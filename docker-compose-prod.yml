@@ -31,6 +31,8 @@ services :
       - static:/etc/static
     environment :
       - DEPLOY_ENV=prod
+      - STATIC_ROOT=/etc/static
+      - MEDIA_ROOT=/etc/static/media
       - NODE_PATH=/tmp/node_modules
       - DATABASE_URL=postgres://postgres:gcc_welfare@db:5432/gcc_welfare
       - AFRICASTALKING_USERNAME=gitigi
