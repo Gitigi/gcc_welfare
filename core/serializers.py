@@ -15,7 +15,7 @@ class MemberSerializerMini(serializers.ModelSerializer):
 
 class MemberSerializer(serializers.ModelSerializer):
 	children = serializers.SerializerMethodField()
-	spouse_details = serializers.SerializerMethodField()
+	spouse_info = serializers.SerializerMethodField()
 
 	def get_children(self,obj):
 		query = []
@@ -29,7 +29,7 @@ class MemberSerializer(serializers.ModelSerializer):
 				query |= obj.spouse.fathered.all()
 		return ChildSerializer(query.order_by('dob'),many=True).data
 
-	def get_spouse_details(self,obj):
+	def get_spouse_info(self,obj):
 		details = {}
 		if obj.spouse:
 			details = {
@@ -43,7 +43,7 @@ class MemberSerializer(serializers.ModelSerializer):
 	class Meta:
 		model = Member
 		fields = ('id','first_name','middle_name','last_name','id_no','address','code','city',
-			'mobile_no','email','nhif_no','spouse','spouse_details',
+			'mobile_no','email','nhif_no','spouse','spouse_info',
 			'children','father_first_name','father_middle_name','father_last_name',
 			'mother_first_name','mother_middle_name','mother_last_name','reg','suspended','salutation','gender','dob','date_joined','dummy')
 
