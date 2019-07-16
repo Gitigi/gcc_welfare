@@ -12,12 +12,12 @@ export default class DateInput extends Component {
 	componentDidMount(){
 		var self = this;
 		jquery(this.dateInput.current).datepicker({format: 'dd/mm/yyyy'}).on('changeDate changeMonth changeYear',e=>self.handleChange(e))
-		this.dateInput.current.value = this.props.value.split('-').reverse().join('/');
+		this.dateInput.current.value = this.props.value ? this.props.value.split('-').reverse().join('/') : '';
 	}
 	componentDidUpdate(prevProp,prevState){
 		if(prevProp.value !== this.props.value){
-			let val = this.props.value.split('-').reverse().join('/')
-			this.dateInput.current.value = this.props.value.split('-').reverse().join('/');
+			let val = this.props.value ? this.props.value.split('-').reverse().join('/') : '';
+			this.dateInput.current.value = val;
 			if((new Date(this.props.value)).getDate())
 				jquery(this.dateInput.current).datepicker('setDate',val);
 		}

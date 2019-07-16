@@ -84,15 +84,6 @@ def defaulters_report(request):
     return paginate_list(list(m.order_by('first_name')),page_number,url)
 
 @api_view(['GET'])
-def payment_report(request):
-    p = Payment.objects.values('date','member','member__first_name','member__middle_name','member__last_name','amount','method')
-    if request.GET.get('member'):
-        p = p.filter(member=request.GET['member'])
-    url = request.build_absolute_uri()
-    page_number = request.GET.get('page',1)
-    return paginate_list(list(p.order_by('-date')),page_number,url)
-
-@api_view(['GET'])
 def dashboard_summary(request):
     today = datetime.datetime.today()
     suspended = Member.objects.filter(dummy=False,suspended=True)
@@ -434,6 +425,8 @@ class PaymentViewSet(viewsets.ModelViewSet):
             q = q.filter(date__year=self.request.GET['year'])
         if self.request.GET.get('month'):
             q = q.filter(date__month=self.request.GET['month'])
+        if self.request.GET.get('member'):
+            q = q.filter(member=self.request.GET['member'])
         if self.request.GET.get('search'):
             q = q.filter(
                 Q(member__first_name__startswith=self.request.GET['search']) |
@@ -447,7 +440,7 @@ class PaymentViewSet(viewsets.ModelViewSet):
             return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
 
         member = Member.objects.get(id=request.data['member'])
-        payment = Payment.objects.create(member=member,amount=request.data['amount'],method=request.data['method'])
+        payment = serializer.save()
         amount = int(request.data['amount'])
         last_period = Period.objects.filter(payment__member=request.data['member']).last()
         last_period_date = None

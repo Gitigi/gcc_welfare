@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils import timezone
+import datetime
 
 class Member(models.Model):
     first_name = models.CharField(max_length=30,blank=False,null=False,default='',db_index=True)
@@ -38,7 +39,7 @@ class Member(models.Model):
 class Child(models.Model):
     first_name = models.CharField(max_length=30,blank=False,null=False,default='')
     middle_name = models.CharField(max_length=30,blank=False,null=False,default='')
-    dob = models.DateField(null=False,blank=True,default=timezone.now)
+    dob = models.DateField(null=False,blank=True,default=datetime.date.today)
     father = models.ForeignKey(Member, on_delete=models.SET_NULL,null=True,related_name='fathered')
     mother = models.ForeignKey(Member, on_delete=models.SET_NULL,null=True,related_name='mothered')
 
@@ -47,6 +48,10 @@ class Payment(models.Model):
     amount = models.IntegerField(null=False)
     method = models.CharField(max_length=2,choices=[
         ('CA','cash'),('BK','bank'),('MP','mpesa')],default='CA')
+    ref_no = models.CharField(max_length=15,null=False,blank=True,default='')
+    mobile_no = models.CharField(max_length=15,null=False,blank=True,default='')
+    bank_name = models.CharField(max_length=15,null=False,blank=True,default='')
+    date_of_payment = models.DateField(null=True,blank=True,default=datetime.date.today)
     date = models.DateTimeField(auto_now_add=True)
 
 

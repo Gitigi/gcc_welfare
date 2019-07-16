@@ -19,7 +19,6 @@ urlpatterns = [
     path('annual-report/',views.annual_report),
     path('individual-report/',views.individual_report),
     path('defaulters-report/',views.defaulters_report),
-    path('payment-report/',views.payment_report),
     path('dashboard-summary/',views.dashboard_summary),
     path('payment-distribution/',views.payment_distribution),
     path('',include(router.urls))

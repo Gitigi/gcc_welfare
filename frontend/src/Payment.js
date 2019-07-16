@@ -6,6 +6,7 @@ import axios from 'axios';
 import NameSearchInput from './NameSearchInput';
 import ConfirmAction from './ConfirmAction';
 import Pagination from './Pagination';
+import DateInput from './DateInput';
 
 export default class Payment extends Component {
 	render() {
@@ -110,6 +111,9 @@ class PaymentList extends Component {
 							<th>Last name</th>
 							<th>Amount</th>
 							<th>Method</th>
+							<th>Mobile Number</th>
+							<th>Bank Name</th>
+							<th>Reference No</th>
 							<th>Date</th>
 						</tr>
 					</thead>
@@ -121,6 +125,9 @@ class PaymentList extends Component {
 								<td>{payment.last_name}</td>
 								<td>{payment.amount}</td>
 								<td>{this.methodChoices[payment.method]}</td>
+								<td>{payment.mobile_no}</td>
+								<td>{payment.bank_name}</td>
+								<td>{payment.ref_no}</td>
 								<td>{this.formatDate(payment.date)}</td>
 							</tr>
 							))}
@@ -135,7 +142,7 @@ class PaymentList extends Component {
 class PaymentForm extends Component {
 	confirm = React.createRef();
 	emptyData = {method: 'CA',amount: '', member: '', ref_no: '',
-		phone_no: '', date: '',bank_name: ''}
+		mobile_no: '', date_of_payment: null,bank_name: ''}
 	state = {loading:false,data: {...this.emptyData},error: {},saved: false,member: {}};
 
 	handleInput(field,e) {
@@ -160,12 +167,12 @@ class PaymentForm extends Component {
 			error['method'] = 'This field is required';
 
 		if(data.method == 'MP'){
-			if(!data.phone_no)
-				error['phone_no'] = 'This field is required';
+			if(!data.mobile_no)
+				error['mobile_no'] = 'This field is required';
 			if(!data.ref_no)
 				error['ref_no'] = 'This field is required';
-			if(!data.date)
-				error['date'] = 'This field is required';
+			if(!data.date_of_payment)
+				error['date_of_payment'] = 'This field is required';
 		}
 
 		if(data.method == 'BK'){
@@ -173,8 +180,8 @@ class PaymentForm extends Component {
 				error['bank_name'] = 'This field is required';
 			if(!data.ref_no)
 				error['ref_no'] = 'This field is required';
-			if(!data.date)
-				error['date'] = 'This field is required';
+			if(!data.date_of_payment)
+				error['date_of_payment'] = 'This field is required';
 		}
 
 		return error;
@@ -189,9 +196,20 @@ class PaymentForm extends Component {
     
 		return this.confirm.current.show().then(_=>{
 			this.setState({loading:true});
-			let data = {...this.state.data}
-			data['amount'] = parseFloat(data.amount);
-			return axios.post('/api/payments/',data).then(_=>{},error=>{
+			let data = this.state.data;
+			let payload = {member: data.member,amount:parseFloat(data.amount),method:data.method};
+			if(data.method == 'BK'){
+				payload['bank_name'] = data.bank_name;
+				payload['ref_no'] = data.ref_no;
+				payload['date_of_payment'] = data.date_of_payment;
+			}
+			else if(data.method == 'MP'){
+				payload['mobile_no'] = data.mobile_no;
+				payload['ref_no'] = data.ref_no;
+				payload['date_of_payment'] = data.date_of_payment;
+			}
+			
+			return axios.post('/api/payments/',payload).then(_=>{},error=>{
 				window.scrollTo(0,0);
 				this.setState({error: error.response.data});
 				return Promise.reject(error.response.data);
@@ -254,10 +272,10 @@ class PaymentForm extends Component {
 
 
 				  {this.state.data.method === "MP" && <>
-				  	<div className={`form-group col-sm-6 ${error.phone_no ? 'has-error': ''}`}>
+				  	<div className={`form-group col-sm-6 ${error.mobile_no ? 'has-error': ''}`}>
 							<label className="col-sm-3 control-label">Phone Number</label>
 							<div className="col-sm-9">
-					      <input value={this.state.data.phone_no} onChange={this.handleInput.bind(this,'phone_no')} type="text" className="form-control" />
+					      <input value={this.state.data.mobile_no} onChange={this.handleInput.bind(this,'mobile_no')} type="text" className="form-control" />
 					    </div>
 					  </div>
 					  <div className={`form-group col-sm-6 ${error.ref_no ? 'has-error': ''}`}>
@@ -266,10 +284,10 @@ class PaymentForm extends Component {
 					      <input value={this.state.data.ref_no} onChange={this.handleInput.bind(this,'ref_no')} type="text" className="form-control" />
 					    </div>
 					  </div>
-					  <div className={`form-group col-sm-6 ${error.date ? 'has-error': ''}`}>
+					  <div className={`form-group col-sm-6 ${error.date_of_payment ? 'has-error': ''}`}>
 							<label className="col-sm-3 control-label">Date</label>
 							<div className="col-sm-9">
-					      <input value={this.state.data.date} onChange={this.handleInput.bind(this,'date')} type="text" placeholder="dd/mm/year" className="form-control" />
+					      <DateInput value={this.state.data.date_of_payment} onChange={this.handleInput.bind(this,'date_of_payment')} type="text" placeholder="dd/mm/year" className="form-control" />
 					    </div>
 					  </div>
 				  </>}
@@ -287,10 +305,10 @@ class PaymentForm extends Component {
 					      <input value={this.state.data.ref_no} onChange={this.handleInput.bind(this,'ref_no')} type="text" className="form-control" />
 					    </div>
 					  </div>
-					  <div className={`form-group col-sm-6 ${error.date ? 'has-error': ''}`}>
+					  <div className={`form-group col-sm-6 ${error.date_of_payment ? 'has-error': ''}`}>
 							<label className="col-sm-3 control-label">Date</label>
 							<div className="col-sm-9">
-					      <input value={this.state.data.date} onChange={this.handleInput.bind(this,'date')} type="text" placeholder="dd/mm/year" className="form-control" />
+					      <DateInput value={this.state.data.date_of_payment} onChange={this.handleInput.bind(this,'date_of_payment')} type="text" placeholder="dd/mm/year" className="form-control" />
 					    </div>
 					  </div>
 				  </>}
