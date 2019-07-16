@@ -86,7 +86,7 @@ class BankingList extends Component {
 			if(this.state.filter.year)
 				filename += ' ' + this.state.filter.year;
 			if(this.state.filter.month)
-				filename += '-' + this.months[this.state.filter.month]
+				filename += '-' + this.months[this.state.filter.month-1]
 			return {rows,filename};
 		});
 	}
