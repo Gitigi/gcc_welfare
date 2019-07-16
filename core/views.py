@@ -303,11 +303,6 @@ class BankingViewSet(viewsets.ModelViewSet):
             q = q.filter(date__year=self.request.GET['year'])
         if self.request.GET.get('month'):
             q = q.filter(date__month=self.request.GET['month'])
-        if self.request.GET.get('search'):
-            q = q.filter(
-                Q(member__first_name__startswith=self.request.GET['search']) |
-                Q(member__middle_name__startswith=self.request.GET['search']) |
-                Q(member__last_name__startswith=self.request.GET['search']))
         return q
 
 class ClaimViewSet(viewsets.ModelViewSet):

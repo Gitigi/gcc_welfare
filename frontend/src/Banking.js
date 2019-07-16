@@ -24,7 +24,6 @@ export default class Banking extends Component {
 
 
 class BankingList extends Component {
-	dialog = React.createRef();
 	methodChoices = {'CA': 'CASH', 'BK': 'BANK', 'MP': 'MPESA'}
 	constructor(props){
 		super(props);
@@ -36,11 +35,11 @@ class BankingList extends Component {
 		let date = new Date();
 		let year = date.getFullYear();
 		let month = date.getMonth() + 1;
-		this.state = {error:{},loading: false,banking: {results:[]},filter: {year,month,search:''}}
+		this.state = {error:{},loading: false,banking: {results:[]},filter: {year,month}}
 	}
 
 	handleFilterChange(field,event){
-		let filter = {...this.state.filter};
+		let filter = {...this.state.filter,page: 1};
 		filter[field] = event.target.value;
 		this.setState({filter});
 		this.updateBanking(filter);
@@ -53,16 +52,6 @@ class BankingList extends Component {
 	updateBanking(filter={}){
 		this.setState({loading: true});
 		axios.get('/api/banking/',{params: filter}).then(res=>this.setState({banking: res.data}),error=>this.setState({error:error.response.data})).finally(_=>this.setState({loading: false}))
-	}
-
-	showDialog() {
-		this.dialog.current.show();
-	}
-
-	bankingAdded(banking){
-		let b = this.state.banking.splice(0);
-		b.push(banking);
-		this.setState({banking: b});
 	}
 
 	gotoPage(page) {
@@ -104,7 +93,7 @@ class BankingList extends Component {
 				</div>
 				<form>
 					<div className="form-group">
-						<div className="col-sm-4">
+						<div className="col-sm-offset-2 col-sm-4">
 				      <select value={this.state.filter.year} onChange={this.handleFilterChange.bind(this,'year')} className="form-control">
 				      	<option value=''>ALL</option>
 				      	{this.years.map( v => <option key={v} value={v}>{v}</option> )}
@@ -115,9 +104,6 @@ class BankingList extends Component {
 				      	<option value=''>ALL</option>
 				      	{this.months.map( (m,index) => <option key={m} value={index+1}>{m}</option> )}
 				      </select>
-				    </div>
-				    <div className="col-sm-4">
-				      <input value={this.state.filter.search} onChange={this.handleFilterChange.bind(this,'search')} type="text" className="form-control" id="inputSearch" placeholder="Search" />
 				    </div>
 					</div>
 				</form>

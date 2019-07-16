@@ -20,7 +20,6 @@ export default class Payment extends Component {
 }
 
 class PaymentList extends Component {
-	dialog = React.createRef();
 	methodChoices = {'CA': 'CASH', 'BK': 'BANK', 'MP': 'MPESA'}
 	constructor(props){
 		super(props);
@@ -32,7 +31,7 @@ class PaymentList extends Component {
 		let date = new Date();
 		let year = date.getFullYear();
 		let month = date.getMonth() + 1;
-		this.state = {error:{},loading: false,payments: {results: []},filter: {year,month,search:''}}
+		this.state = {error:{},loading: false,payments: {results: []},filter: {year,month,search:''},_search: ''}
 	}
 
 	handleFilterChange(field,event){
@@ -42,23 +41,26 @@ class PaymentList extends Component {
 		this.updatePayments(filter);
 	}
 
+	timeout = null
+	handleNameChange(e) {
+		let value = e.target.value;
+		this.setState({_search: value});
+		clearTimeout(this.timeout);
+		this.timeout = setTimeout(()=>{
+			let filter = {...this.state.filter,page:1};
+			filter['search'] = value;
+			this.setState({filter});
+			this.updatePayments(filter);
+		},500)
+	}
+
 	componentDidMount() {
 		this.updatePayments(this.state.filter);
 	}
 
-	updatePayments(filter={},page=1){
+	updatePayments(filter={}){
 		this.setState({loading: true});
 		axios.get('/api/payments/',{params: filter}).then(res=>this.setState({payments: res.data}),error=>this.setState({error:error.response.data})).finally(_=>this.setState({loading:false}))
-	}
-
-	showDialog() {
-		this.dialog.current.show();
-	}
-
-	paymentAdded(payment){
-		let p = this.state.payments.splice(0);
-		p.push(payment);
-		this.setState({payments: p});
 	}
 
 	gotoPage(page){
@@ -99,7 +101,7 @@ class PaymentList extends Component {
 				      </select>
 				    </div>
 				    <div className="col-sm-4">
-				      <input value={this.state.filter.search} onChange={this.handleFilterChange.bind(this,'search')} type="text" className="form-control" id="inputSearch" placeholder="Search" />
+				      <input value={this.state._search} onChange={this.handleNameChange.bind(this)} type="text" className="form-control" id="inputSearch" placeholder="Search" />
 				    </div>
 					</div>
 				</form>

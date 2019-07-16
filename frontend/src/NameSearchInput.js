@@ -49,12 +49,17 @@ export default class NameSearchInput extends Component {
 		}
 	}
 
+
+	timeout = null
 	handleChange(e) {
 		this.setState({search: e.target.value});
-		this.fetchData(e.target.value);
-		if(!e.target.value){
-			this._memberSelect({})
-		}
+		let value = e.target.value;
+		clearTimeout(this.timeout);
+		this.timeout = setTimeout(()=>{
+			this.fetchData(value)
+			if(!value)
+				this._memberSelect({})
+		},500)
 	}
 
 	fetchData(name=''){

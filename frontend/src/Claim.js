@@ -24,7 +24,6 @@ export default class Claim extends Component {
 
 
 class ClaimList extends Component {
-	dialog = React.createRef();
 	disbursementChoices = {'CA': 'CASH', 'CQ': 'CHEQUE'}
 	constructor(props){
 		super(props);
@@ -36,14 +35,27 @@ class ClaimList extends Component {
 		let date = new Date();
 		let year = date.getFullYear();
 		let month = date.getMonth() + 1;
-		this.state = {error:{},loading: false,claims: {results: []},filter: {year,month,search:''}}
+		this.state = {error:{},loading: false,claims: {results: []},filter: {year,month,search:''},_search: ''}
 	}
 
 	handleFilterChange(field,event){
-		let filter = {...this.state.filter};
+		let filter = {...this.state.filter,page: 1};
 		filter[field] = event.target.value;
 		this.setState({filter});
 		this.updateClaim(filter);
+	}
+
+	timeout = null
+	handleNameChange(e) {
+		let value = e.target.value;
+		this.setState({_search: value});
+		clearTimeout(this.timeout);
+		this.timeout = setTimeout(()=>{
+			let filter = {...this.state.filter,page:1};
+			filter['search'] = value;
+			this.setState({filter});
+			this.updateClaim(filter);
+		},500)
 	}
 
 	componentDidMount() {
@@ -53,16 +65,6 @@ class ClaimList extends Component {
 	updateClaim(filter={}){
 		this.setState({loading: true});
 		axios.get('/api/claim/',{params: filter}).then(res=>this.setState({claims: res.data}),error=>this.setState({error:error.response.data})).finally(_=>this.setState({loading:false}))
-	}
-
-	showDialog() {
-		this.dialog.current.show();
-	}
-
-	bankingAdded(banking){
-		let b = this.state.banking.splice(0);
-		b.push(banking);
-		this.setState({banking: b});
 	}
 
 	gotoPage(page) {
@@ -119,7 +121,7 @@ class ClaimList extends Component {
 				      </select>
 				    </div>
 				    <div className="col-sm-4">
-				      <input value={this.state.filter.search} onChange={this.handleFilterChange.bind(this,'search')} type="text" className="form-control" id="inputSearch" placeholder="Search" />
+				      <input value={this.state.filter._search} onChange={this.handleNameChange.bind(this)} type="text" className="form-control" id="inputSearch" placeholder="Search" />
 				    </div>
 					</div>
 				</form>

@@ -83,7 +83,7 @@ class List extends Component {
 		let search = this.props.location.state && this.props.location.state.search;
 		let page = this.props.location.state && this.props.location.state.page;
 
-		this.state = {error:{},loading: false, members: {results:[]}, status: status||'active', search: search||'',all: false,page: page||1};
+		this.state = {error:{},loading: false, members: {results:[]}, status: status||'active', search: search||'',all: false,page: page||1,_search:''};
 	}
 	componentDidMount() {
 		this.fetchData()
@@ -115,9 +115,17 @@ class List extends Component {
 	}
 
 	handleChange(field,e){
-		let all = field === 'search' ? this.state.all : false;
+		this.setState({[field]: e.target.value,all:false,page: 1});
+	}
 
-		this.setState({[field]: e.target.value,all,page: 1});
+	timeout = null
+	handleNameChange(e) {
+		let value = e.target.value;
+		this.setState({_search: value});
+		clearTimeout(this.timeout);
+		this.timeout = setTimeout(()=>{
+			this.setState({search: value,page: 1});
+		},500)
 	}
 
 	handleAllChange(e){
@@ -187,37 +195,37 @@ class List extends Component {
 				<div className="row">
 					<form className="form-inline">
 						<div className="form-group">
-						<label className="control-label">Active
-						<input onChange={this.handleChange.bind(this,'status')} type="radio" name="status" value="active" className="form-control"
+							<label className="control-label">Active
+							<input onChange={this.handleChange.bind(this,'status')} type="radio" name="status" value="active" className="form-control"
 									checked={this.state.status === 'active'} /></label>
 						</div>
 						<div className="form-group">
-						<label className="control-label">Upto Date</label>
-						<input onChange={this.handleChange.bind(this,'status')} type="radio" name="status" value="upto-date" className="form-control"
+							<label className="control-label">Upto Date</label>
+							<input onChange={this.handleChange.bind(this,'status')} type="radio" name="status" value="upto-date" className="form-control"
 									checked={this.state.status === 'upto-date'} />
 						</div>
 						<div className="form-group">
-						<label className="control-label">Lagging</label>
-						<input onChange={this.handleChange.bind(this,'status')} type="radio" name="status" value="lagging" className="form-control"
+							<label className="control-label">Lagging</label>
+							<input onChange={this.handleChange.bind(this,'status')} type="radio" name="status" value="lagging" className="form-control"
 									checked={this.state.status === 'lagging'} />
 						</div>
 						<div className="form-group">
-						<label className="control-label">Suspended</label>
-						<input onChange={this.handleChange.bind(this,'status')} type="radio" name="status" value="suspended" className="form-control"
+							<label className="control-label">Suspended</label>
+							<input onChange={this.handleChange.bind(this,'status')} type="radio" name="status" value="suspended" className="form-control"
 									checked={this.state.status === 'suspended'} />
 						</div>
 						<div className="form-group">
-						<label className="control-label">Dormant</label>
-						<input onChange={this.handleChange.bind(this,'status')} type="radio" name="status" value="dormant" className="form-control"
-									checked={this.state.status === 'dormant'} />
+							<label className="control-label">Dormant</label>
+							<input onChange={this.handleChange.bind(this,'status')} type="radio" name="status" value="dormant" className="form-control"
+										checked={this.state.status === 'dormant'} />
 						</div>
 						<div className="form-group">
-						<label className="control-label">ALL</label>
-						<input onChange={this.handleAllChange.bind(this)} checked={this.state.all} type="checkbox" name="status" value="all" className="form-control" />
+							<label className="control-label">ALL</label>
+							<input onChange={this.handleAllChange.bind(this)} checked={this.state.all} type="checkbox" name="status" value="all" className="form-control" />
 						</div>
 						<div className="form-group">
-						<label className="control-label">Name</label>
-						<input onChange={this.handleChange.bind(this,'search')} value={this.state.search} type="text" className="form-control" />
+							<label className="control-label">Name</label>
+							<input onChange={this.handleNameChange.bind(this)} value={this.state._search} type="text" className="form-control" />
 						</div>
 
 					</form>
