@@ -7,6 +7,8 @@ import axios from 'axios';
 import ConfirmAction from './ConfirmAction';
 import Pagination from './Pagination';
 import DateInput from './DateInput';
+import ExportButton from './ExportButton';
+import {getPaginatedData} from './utility';
 
 
 export default class Banking extends Component {
@@ -68,6 +70,27 @@ class BankingList extends Component {
 		this.updateBanking(params);
 	}
 
+	getData() {
+		return getPaginatedData('/api/banking/',this.state.filter).then(res=>{
+			let rows = [['Bank Name','Account', 'Amount','Banked By','Date']];
+			for(let i = 0; i < res.length; i++){
+				rows.push([
+					res[i].bank_name,
+					res[i].account,
+					res[i].amount,
+					res[i].banked_by,
+					res[i].date.split('-').reverse().join('/')
+					])
+			}
+			let filename = 'Banking'
+			if(this.state.filter.year)
+				filename += ' ' + this.state.filter.year;
+			if(this.state.filter.month)
+				filename += '-' + this.months[this.state.filter.month]
+			return {rows,filename};
+		});
+	}
+
 	render() {
 		return (
 			<div>
@@ -111,12 +134,13 @@ class BankingList extends Component {
 								<td>{b.account}</td>
 								<td>{b.amount}</td>
 								<td>{b.banked_by}</td>
-								<td>{b.date}</td>
+								<td>{b.date.split('-').reverse().join('/')}</td>
 							</tr>
 							))}
 					</tbody>
 				</table>
 				<Pagination goto={this.gotoPage.bind(this)} data={this.state.banking} />
+				<ExportButton data={this.getData.bind(this)}/>
 			</div>
 		);
 	}

@@ -9,6 +9,8 @@ import PersonalNotes from './PersonalNotes';
 import NameSearchInput from './NameSearchInput';
 import NavLink from './navlink';
 import Pagination from './Pagination';
+import ExportButton from './ExportButton';
+import {getPaginatedData} from './utility';
 
 export default class DataEntry extends Component {
 	render() {
@@ -120,6 +122,49 @@ class List extends Component {
 		this.setState({all: e.target.checked,status,page: 1});
 	}
 
+	getData() {
+		let params = {status: this.state.status,search:this.state.search}
+		return getPaginatedData('/api/members/',params).then(res=>{
+			let rows = [['Salutation','Name','Gender','ID Number','Postal Address','Mobile Number','Email Address','NHIF Number','Spouse Name','Spouse ID Number','Spouse Mobile Number',
+			'Child Name(1)','Child Date of Birth','Child Name(2)','Child Date of Birth','Child Name(3)','Child Date of Birth','Child Name(4)','Child Date of Birth',
+			'Child Name(5)','Child Date of Birth','Child Name(6)','Child Date of Birth','Father\'s Name','Mother\'s Name']];
+			for(let i = 0; i < res.length; i++){
+				//don't export dummy members
+				if(!res[i].dummy){
+					rows.push([
+						res[i].salutation,
+						res[i].first_name.toUpperCase() + ' ' + res[i].middle_name.toUpperCase()  + ' ' + res[i].last_name.toUpperCase(),
+						res[i].gender,
+						res[i].id_no,
+						res[i].address + (res[i].code ? ('-'+res[i].code) : '') + (res[i].city ? ('-'+res[i].city) : ''),
+						res[i].mobile_no,
+						res[i].email,
+						res[i].nhif_no,
+						res[i].spouse ? res[i].spouse_details.first_name + ' ' + res[i].spouse_details.middle_name + ' ' + res[i].spouse_details.last_name : null,
+						res[i].spouse ? res[i].spouse_details.id_no  : null,
+						res[i].spouse ? res[i].spouse_details.mobile_no : null,
+						res[i].children[1] ? res[i].children[1].first_name + ' ' + res[i].children[1].middle_name : null,
+						res[i].children[1] ? res[i].children[1].dob : null,
+						res[i].children[2] ? res[i].children[2].first_name + ' ' + res[i].children[2].middle_name : null,
+						res[i].children[2] ? res[i].children[2].dob : null,
+						res[i].children[3] ? res[i].children[3].first_name + ' ' + res[i].children[3].middle_name : null,
+						res[i].children[3] ? res[i].children[3].dob : null,
+						res[i].children[4] ? res[i].children[4].first_name + ' ' + res[i].children[4].middle_name : null,
+						res[i].children[4] ? res[i].children[4].dob : null,
+						res[i].children[5] ? res[i].children[5].first_name + ' ' + res[i].children[5].middle_name : null,
+						res[i].children[5] ? res[i].children[5].dob : null,
+						res[i].children[6] ? res[i].children[6].first_name + ' ' + res[i].children[6].middle_name : null,
+						res[i].children[6] ? res[i].children[6].dob : null,
+						res[i].father_first_name + ' ' + res[i].father_middle_name + ' ' + res[i].father_last_name,
+						res[i].mother_first_name + ' ' + res[i].mother_middle_name + ' ' + res[i].mother_last_name
+						])
+					}
+			}
+			let filename = 'Members ' + this.state.status
+			return {rows,filename};
+		});
+	}
+
 	render(){
 		let match = this.props.match;
 		return (
@@ -202,7 +247,7 @@ class List extends Component {
 					</tbody>
 				</table>
 				<Pagination goto={this.gotoPage.bind(this)} data={this.state.members} />
-
+				<ExportButton data={this.getData.bind(this)}/>
 			</div>
 			);
 	}

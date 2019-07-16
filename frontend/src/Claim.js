@@ -8,6 +8,8 @@ import ConfirmAction from './ConfirmAction';
 import NameSearchInput from './NameSearchInput';
 import Pagination from './Pagination';
 import DateInput from './DateInput';
+import ExportButton from './ExportButton';
+import {getPaginatedData} from './utility';
 
 export default class Claim extends Component {
 	render() {
@@ -68,6 +70,29 @@ class ClaimList extends Component {
 		this.updateClaim(params);
 	}
 
+	getData() {
+		return getPaginatedData('/api/claim/',this.state.filter).then(res=>{
+			let rows = [['Name','Bank Name','Account', 'Amount','Disbursement','Reason','Date']];
+			for(let i = 0; i < res.length; i++){
+				rows.push([
+					res[i].first_name + ' ' + res[i].middle_name + ' ' + res[i].last_name,
+					res[i].bank_name,
+					res[i].account,
+					res[i].amount,
+					this.disbursementChoices[res[i].disbursement],
+					res[i].reason,
+					res[i].date.split('-').reverse().join('/')
+					])
+			}
+			let filename = 'Claims'
+			if(this.state.filter.year)
+				filename += ' ' + this.state.filter.year;
+			if(this.state.filter.month)
+				filename += '-' + this.months[this.state.filter.month]
+			return {rows,filename};
+		});
+	}
+
 	render() {
 		return (
 			<div>
@@ -119,12 +144,13 @@ class ClaimList extends Component {
 								<td>{b.amount}</td>
 								<td>{this.disbursementChoices[b.disbursement]}</td>
 								<td>{b.reason}</td>
-								<td>{b.date}</td>
+								<td>{b.date.split('-').reverse().join('/')}</td>
 							</tr>
 							))}
 					</tbody>
 				</table>
 				<Pagination goto={this.gotoPage.bind(this)} data={this.state.claims} />
+				<ExportButton data={this.getData.bind(this)}/>
 			</div>
 		);
 	}
