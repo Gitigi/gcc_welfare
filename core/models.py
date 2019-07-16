@@ -1,5 +1,7 @@
 from django.db import models
 from django.utils import timezone
+from django.db.models.signals import post_delete
+from django.dispatch import receiver
 import datetime
 
 class Member(models.Model):
@@ -95,5 +97,9 @@ class Claim(models.Model):
 
 
 class Library(models.Model):
-    file = models.FileField()
+    file = models.FileField(blank=False)
     date = models.DateField(auto_now_add=True)
+
+@receiver(post_delete, sender=Library)
+def submission_delete(sender, instance, **kwargs):
+    instance.file.delete(False) 
