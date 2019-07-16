@@ -6,30 +6,40 @@ import ExportButton from './ExportButton';
 import {getPaginatedData} from './utility';
 
 export default class PaymentReport extends Component {
-	state = {error:{},loading: false,data: {results: []},member: {},page:1}
+	state = {error:{},loading: false,data: {results: []},member: {},page:1,filter:{}}
 	methodChoices = {'CA': 'CASH', 'BK': 'BANK', 'MP': 'MPESA'}
+	years = Array.from(new Array(20), (v,i)=>2016+i)
+	months = ['January','February','March','April','May',
+		'June','July','August','Septempber','October','November','December']
 	componentDidMount() {
 		this.fetchData();
 	}
 
-	fetchData() {
-		this.setState({loading:true});
-		let params = {page:this.state.page}
-		if(this.state.member.id){
-			params['member'] = this.state.member.id;
-		}
-		axios.get('/api/payments/',{params}).then(res=>this.setState({data: res.data}),
-			error=>this.setState({error:error.response.data})).finally(_=>this.setState({loading:false}))
-	}
-
-	componentDidUpdate(prevProp,prevState) {
-		if(this.state.member.id !== prevState.member.id || this.state.page !== prevState.page){
+	componentDidUpdate(prevProp,prevState){
+		let prevFilter = prevState.filter;
+		let filter = this.state.filter;
+		if(this.state.page !== prevState.page || filter.year !== prevFilter.year || filter.month !== prevFilter.month || filter.member !== prevFilter.member){
 			this.fetchData();
 		}
 	}
 
+	fetchData() {
+		this.setState({loading:true});
+		let params = {...this.state.filter,page:this.state.page};
+		axios.get('/api/payments/',{params}).then(res=>this.setState({data: res.data}),
+			error=>this.setState({error:error.response.data})).finally(_=>this.setState({loading:false}))
+	}
+
+	handleFilterChange(field,event){
+		let filter = {...this.state.filter,page: 1};
+		filter[field] = event.target.value;
+		this.setState({filter});
+	}
+
 	handleMemberChange(member) {
-		this.setState({member,page: 1});
+		let filter = {...this.state.filter};
+		filter.member = member.id;
+		this.setState({filter,member,page: 1});
 	}
 
 	gotoPage(page) {
@@ -37,8 +47,8 @@ export default class PaymentReport extends Component {
 	}
 
 	getData() {
-		return getPaginatedData('/api/payments/',{member: this.state.member.id}).then(res=>{
-			let rows = [['Name', 'Amount','Method','Mobine Number','Bank Name','Reference Number','Date']];
+		return getPaginatedData('/api/payments/',{...this.state.filter}).then(res=>{
+			let rows = [['Name', 'Amount','Method','Mobile Number','Bank Name','Reference Number','Date']];
 			for(let i = 0; i < res.length; i++){
 				rows.push([
 					res[i].first_name.toUpperCase() + ' ' + res[i].middle_name.toUpperCase()  + ' ' + res[i].last_name.toUpperCase(),
@@ -53,6 +63,10 @@ export default class PaymentReport extends Component {
 			let filename = 'Payment Report'
 			if(this.state.member.id)
 				filename += ' for ' + this.state.member.first_name.toUpperCase() + ' ' + this.state.member.middle_name.toUpperCase()  + ' ' + this.state.member.last_name.toUpperCase();
+			if(this.state.filter.year)
+				filename += ' ' + this.state.filter.year;
+			if(this.state.filter.month)
+				filename += ' ' + this.months[this.state.filter.month-1];
 			return {rows,filename};
 		});
 	}
@@ -73,8 +87,22 @@ export default class PaymentReport extends Component {
 				<h2 className="text-center">Payment Report <i className={`fa fa-circle-o-notch fa-spin fa-fw ${this.state.loading ? '' : 'fade'}`}></i> </h2>
 				<div className="row">
 					<form>
-						<div className="col-sm-offset-4 col-sm-4">
-							<NameSearchInput userSelected={this.handleMemberChange.bind(this)}/>
+						<div className="form-group">
+							<div className="col-sm-4">
+					      <select value={this.state.filter.year} onChange={this.handleFilterChange.bind(this,'year')} className="form-control">
+					      	<option value=''>ALL</option>
+					      	{this.years.map( v => <option key={v} value={v}>{v}</option> )}
+					      </select>
+					    </div>
+					    <div className="col-sm-4">
+					      <select value={this.state.filter.month} onChange={this.handleFilterChange.bind(this,'month')} className="form-control">
+					      	<option value=''>ALL</option>
+					      	{this.months.map( (m,index) => <option key={m} value={index+1}>{m}</option> )}
+					      </select>
+					    </div>
+					    <div className="col-sm-4">
+					      <NameSearchInput userSelected={this.handleMemberChange.bind(this)}/>
+					    </div>
 						</div>
 					</form>
 				</div>
