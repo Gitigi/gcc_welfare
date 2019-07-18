@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import axios from 'axios';
-import {Route} from 'react-router-dom';
+import {Route,Link} from 'react-router-dom';
 import AnimatedSwitch from './animated-switch';
 import NameSearchInput from './NameSearchInput';
 import NavLink from './navlink';
@@ -18,6 +18,7 @@ export default class Notification extends Component {
 				<div className='tab-content' style={{'paddingTop': '10px'}}>
 					<AnimatedSwitch>
 						<Route exact path={`${this.props.match.path}`} component={SendNotification} />
+						<Route path={`${this.props.match.path}/custom`} component={SendCustomNotification} />
 						<Route path={`${this.props.match.path}/sent`} component={SentNotification} />
 					</AnimatedSwitch>
 				</div>
@@ -26,6 +27,60 @@ export default class Notification extends Component {
 }
 
 class SendNotification extends Component {
+	state = {sendingReminder: false,errorReminder: {}}
+	confirm = React.createRef();
+	responseSuccess = React.createRef();
+	responseFail = React.createRef();
+	sendReminder() {
+		// this.confirm.current.show().then(_=>this.responseSuccess.current.show(),_=>this.responseFail.current.show())
+		this.confirm.current.show().then(_=>{
+				this.sendReminderMessage().then(res=>{
+					this.setState({errorReminder: {}})
+					this.responseSuccess.current.show();
+			},error=>{
+				console.log(error.response.data);
+				this.setState({errorReminder: error.response.data})
+				this.responseFail.current.show();
+			})
+		})
+	}
+
+	sendReminderMessage(){
+		let data = {
+			heading: "GCC Welfare Payment Reminder",
+			body: "Hi #NAME, we would like to remind you to make payment for the following period #UNPAYED_PERIOD" ,
+			target: "group",
+			status: "active",
+			contribution: "lagging"
+		}
+
+		this.setState({sendingReminder:true})
+		return axios.post('/api/notification/',data).finally(_=>this.setState({sendingReminder:false}))
+	}
+
+	render() {
+		return <div className="row placeholders">
+        <div className="col-xs-6 col-sm-6">
+          <button onClick={this.sendReminder.bind(this)} disabled={this.state.sendingReminder} className="btn-warning btn-lg">Send Period Payment Reminder<i className="fa fa-bullhorn fa-5x"  /></button>
+        </div>
+        <div className="col-xs-6 col-sm-6">
+          <Link to={`${this.props.match.url}/custom`} className="btn btn-info btn-lg text-center">Send Custom Message <i className="fa fa-comment-o fa-5x" /></Link>
+        </div>
+        <ConfirmAction ref={this.confirm} yesLabel="Save" noLabel="Cancel" title="Sending message...">
+					<p>Do you want to send reminder message</p>
+				</ConfirmAction>
+				<ConfirmAction ref={this.responseSuccess} yesClass="hide" noLabel="Close" title="Message status">
+					<p>Message sent</p>
+				</ConfirmAction>
+				<ConfirmAction ref={this.responseFail} yesClass="hide" noLabel="Close" title="Message status">
+					<p>Message not sent</p>
+					<p className="text-danger">{this.state.errorReminder.detail ? this.state.errorReminder.detail : JSON.stringify(this.state.errorReminder)}</p>
+				</ConfirmAction>
+      </div>
+	}
+}
+
+class SendCustomNotification extends Component {
 	confirm = React.createRef();
 	state = {loading:false,sent: false,heading: '', body: '', target: 'individual', status: 'active' ,contribution: 'all',currentUser: {},contacts: [],error:{}}
 

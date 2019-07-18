@@ -19,7 +19,7 @@ sms = africastalking.SMS
 def send_message(msg,number):
     if type(number) != list:
         number = [number]
-    print('sending to',msg,number)
+    print('sending to',number,msg)
     numbers = []
     for n in number:
         try:

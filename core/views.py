@@ -377,7 +377,8 @@ class NotificationViewSet(viewsets.ModelViewSet):
                 numbers = numbers.annotate(payment_count=Count('payment')).filter(payment_count = 0)
 
         numbers = list(numbers)
-        threading.Thread(target=self.send_message,args=(numbers,request.data['body'],)).start()
+        msg = request.data['heading'] + '\n' + request.data['body']
+        threading.Thread(target=self.send_message,args=(numbers,msg,)).start()
         return Response(serializer.data)
 
     def send_message(self,members,msg_original):
@@ -408,7 +409,11 @@ class NotificationViewSet(viewsets.ModelViewSet):
                 msg = re.sub('#LAST_PAYED_PERIOD',last_payed_period,msg)
                 msg = re.sub('#UNPAYED_PERIOD',unpayed_period,msg)
                 msg = re.sub('#NUMBER_OF_UNPAYED_PERIOD',str(number_of_unpayed_period),msg)
-                send_message(msg,m.mobile_no)
+                try:
+                    send_message(msg,m.mobile_no)
+                except Exception as e:
+                    print(e)
+                    pass
 
 class PaymentViewSet(viewsets.ModelViewSet):
     permission_classes = [DjangoModelPermissions]
