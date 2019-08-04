@@ -100,7 +100,7 @@ class LoadPayment:
 				if len(names) == 2:
 					names += ['']
 				member = self.search_name(name)
-				if member and member.first_name == names[0] and (member.middle_name == names[1] or member.last_name == names[2]):
+				if member and member.first_name.lower() == names[0].lower() and (member.middle_name.lower() == names[1].lower() or member.last_name.lower() == names[2].lower()):
 					for index,col in enumerate(r[2:-1]):
 						if col.value:
 							self.make_payment(member,col.value,year,index+1)

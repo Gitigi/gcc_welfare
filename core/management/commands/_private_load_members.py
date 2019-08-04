@@ -179,7 +179,7 @@ class LoadMembers:
 					child_obj.save()
 			if f['spouse_details'].get('first_name') and len(r['spouse'].strip().split(' ')) > 1:
 				s = self.search_name(f['spouse_details']['first_name'] + ' ' + f['spouse_details']['middle_name'] + ' ' +f['spouse_details']['last_name'])
-				if s and s.first_name == f['spouse_details']['first_name'] and (s.middle_name == f['spouse_details']['middle_name'] or s.last_name == f['spouse_details']['last_name']):
+				if s and s.first_name.lower() == f['spouse_details']['first_name'].lower() and (s.middle_name.lower() == f['spouse_details']['middle_name'].lower() or s.last_name.lower() == f['spouse_details']['last_name'].lower()):
 					self.update_spouse(m,s)
 				else:
 					serializer_spouse = MemberSerializer(data=f['spouse_details'])
