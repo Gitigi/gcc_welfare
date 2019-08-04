@@ -84,7 +84,7 @@ class PaymentList extends Component {
         </div>
 				<h1 className='text-center'>Receipt <i className={`fa fa-circle-o-notch fa-spin fa-fw ${this.state.loading ? '' : 'fade'}`}></i></h1>
 				<div className="row">
-					<Link to={`${this.props.match.url}/new`} className="btn btn-success col-sm-3 col-sm-offset-4">Record Payment <i className='glyphicon glyphicon-plus'></i></Link>
+					<Link to={`${this.props.match.url}/new`} className="btn btn-success col-sm-3 col-sm-offset-4">Record Receipt <i className='glyphicon glyphicon-plus'></i></Link>
 				</div>
 				<form>
 					<div className="form-group">
