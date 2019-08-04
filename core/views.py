@@ -55,6 +55,13 @@ def annual_report(request):
     page_number = request.GET.get('page',1)
     return paginate_query_by_field(p,page_number,url,'period__year')
 
+@api_view(['GET'])
+def contribution_vs_claim(request):
+    contribution = Period.objects.all().values('period__year').annotate(total=Sum('amount')).order_by('-period__year')
+    claim = Claim.objects.all().values('date__year').annotate(total=Sum('amount')).order_by('-date__year')
+    return Response({'contribution': contribution, 'claim': claim})
+
+
 
 @api_view(['GET'])
 def individual_report(request):
