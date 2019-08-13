@@ -9,7 +9,7 @@ import axios from 'axios';
 class Login extends Component {
   constructor(props) {
     super(props);
-    this.state = {username: '', password: ''};
+    this.state = {username: '', password: '', loading: false, error: {}};
 
     this.handleUsernameChange = this.handleUsernameChange.bind(this);
     this.handlePasswordChange = this.handlePasswordChange.bind(this);
@@ -25,6 +25,7 @@ class Login extends Component {
 
   handleSubmit(e) {
     e.preventDefault();
+    this.setState({loading: true})
     let self = this;
     axios.post('api/login',this.state).then(response=>{
       self.props.userStore.setUser(response.data);
@@ -33,7 +34,8 @@ class Login extends Component {
         pathname = this.props.location.state.from.pathname;
         self.props.history.replace({pathname})
     },error=>{
-      this.setState({loading: false})
+      console.log(error.response.data)
+      this.setState({loading: false,error: error.response.data})
     })
   }
 
@@ -42,12 +44,15 @@ class Login extends Component {
       <div className="container">
         <form className="form-signin" onSubmit={this.handleSubmit} >
           <h2 className="form-signin-heading">Please sign in</h2>
+          <div className={`alert alert-danger ${this.state.error.error ? 'show' : 'hide'}`} role="alert">
+            {this.state.error.error}
+          </div>
           <label htmlFor="inputUsername" className="sr-only">Username</label>
           <input type="text" value={this.state.username} onChange={this.handleUsernameChange} id="inputUsername" className="form-control" placeholder="Username" required autoFocus />
           <label htmlFor="inputPassword" className="sr-only">Password</label>
           <input type="password" value={this.state.password} onChange={this.handlePasswordChange} id="inputPassword" className="form-control" placeholder="Password" required />
           
-          <button className="btn btn-lg btn-primary btn-block" type="submit">Login</button>
+          <button className="btn btn-lg btn-primary btn-block" disabled={this.state.loading} type="submit">Login</button>
         </form>
 
       </div>
