@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
-from core.models import Member, Child, Payment, Period, Banking, Note, Notification, Library, Claim
+from core.models import Member, Child, Payment, Period, Banking, Note, Notification, Library, Claim, Expenditure
 
 # Serializers define the API representation.
 class UserSerializer(serializers.ModelSerializer):
@@ -97,3 +97,8 @@ class NotificationSerializer(serializers.ModelSerializer):
 	class Meta:
 		model = Notification
 		fields = ('id','heading','body','target','status','contribution','contacts','date')
+
+class ExpenditureSerializer(serializers.ModelSerializer):
+	class Meta:
+		model = Expenditure
+		fields = ('id','name','amount','reason','date')

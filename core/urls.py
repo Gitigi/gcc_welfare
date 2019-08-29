@@ -10,6 +10,7 @@ router.register(r'notes',views.NoteViewSet)
 router.register(r'notification',views.NotificationViewSet)
 router.register(r'library',views.LibraryViewSet)
 router.register(r'claim',views.ClaimViewSet)
+router.register(r'expenditure',views.ExpenditureViewSet)
 
 urlpatterns = [
     path('get-user', views.get_user, name='get-user'),

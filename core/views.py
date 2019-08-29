@@ -6,8 +6,9 @@ from rest_framework.decorators import api_view,permission_classes
 from rest_framework.response import Response
 from rest_framework import viewsets,status
 from rest_framework.permissions import AllowAny,DjangoModelPermissions
-from core.serializers import UserSerializer, MemberSerializer,MemberSerializerMini, PaymentSerializer, PeriodSerializer, BankingSerializer, NoteSerializer, NotificationSerializer, LibrarySerializer, ClaimSerializer, ChildSerializer
-from core.models import Member,Payment,Period,Banking,Note, Notification, Library, Claim, Child
+from core.serializers import UserSerializer, MemberSerializer,MemberSerializerMini, PaymentSerializer, PeriodSerializer,\
+    BankingSerializer, NoteSerializer, NotificationSerializer, LibrarySerializer, ClaimSerializer, ChildSerializer, ExpenditureSerializer
+from core.models import Member,Payment,Period,Banking,Note, Notification, Library, Claim, Expenditure, Child
 import datetime
 from dateutil.relativedelta import relativedelta
 from django.db.models import Q,Sum,Max,F,Count
@@ -328,6 +329,19 @@ class ClaimViewSet(viewsets.ModelViewSet):
                 Q(member__first_name__startswith=self.request.GET['search']) |
                 Q(member__middle_name__startswith=self.request.GET['search']) |
                 Q(member__last_name__startswith=self.request.GET['search']))
+        return q
+
+class ExpenditureViewSet(viewsets.ModelViewSet):
+    permission_classes = [DjangoModelPermissions]
+    queryset = Expenditure.objects.all().order_by('-date')
+    serializer_class = ExpenditureSerializer
+
+    def get_queryset(self):
+        q = self.queryset
+        if self.request.GET.get('year'):
+            q = q.filter(date__year=self.request.GET['year'])
+        if self.request.GET.get('month'):
+            q = q.filter(date__month=self.request.GET['month'])
         return q
 
 class LibraryViewSet(viewsets.ModelViewSet):

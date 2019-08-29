@@ -94,6 +94,11 @@ class Claim(models.Model):
     disbursement = models.CharField(max_length=2,null=False,blank=False,choices=[
         ('CA','Cash'),('CQ','Cheque')],default='CA')
 
+class Expenditure(models.Model):
+    name = models.CharField(max_length=100,null=False,blank=False)
+    amount = models.IntegerField(null=False)
+    date = models.DateField(null=False)
+    reason = models.TextField(blank=True,default='')
 
 
 class Library(models.Model):

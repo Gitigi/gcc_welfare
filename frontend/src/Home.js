@@ -11,6 +11,7 @@ import DataEntry from './DataEntry';
 import Payment from './Payment';
 import Banking from './Banking';
 import Claim from './Claim';
+import Expenditure from './Expenditure';
 import Notification from './Notification';
 import Report from './Report';
 import Library from './Library';
@@ -85,6 +86,7 @@ class Home extends Component {
             <NavLink to={`${match.url}/receipt`}  activeClassName='active'>Receipt</NavLink>
             <NavLink to={`${match.url}/banking`}  activeClassName='active'>Banking</NavLink>
             <NavLink to={`${match.url}/claim`}  activeClassName='active'>Claim</NavLink>
+            <NavLink to={`${match.url}/expenditure`}  activeClassName='active'>Expenditure</NavLink>
             <NavLink to={`${match.url}/notification`}  activeClassName='active'>Notification</NavLink>
             <NavLink to={`${match.url}/reports`}  activeClassName='active'>Reports</NavLink>
             <NavLink to={`${match.url}/library`}  activeClassName='active'>Library</NavLink>
@@ -102,6 +104,7 @@ class Home extends Component {
             <Route path={`${match.path}/dashboard`} component={Dashboard} />
             <Route path={`${match.path}/banking`} component={Banking} />
             <Route path={`${match.path}/claim`} component={Claim} />
+            <Route path={`${match.path}/expenditure`} component={Expenditure} />
             <Route path={`${match.path}/notification`} component={Notification} />
             <Route path={`${match.path}/reports`} component={Report} />
             <Route path={`${match.path}/library`} component={Library} />
