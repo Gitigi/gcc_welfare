@@ -144,7 +144,7 @@ class PaymentList extends Component {
 class PaymentForm extends Component {
 	confirm = React.createRef();
 	emptyData = {method: 'CA',amount: '', member: '', ref_no: '',
-		mobile_no: '', date_of_payment: null,bank_name: ''}
+		mobile_no: '', date_of_payment: null,bank_name: '',start_period: null}
 	state = {loading:false,data: {...this.emptyData},error: {},saved: false,member: {}};
 
 	handleInput(field,e) {
@@ -199,7 +199,7 @@ class PaymentForm extends Component {
 		return this.confirm.current.show().then(_=>{
 			this.setState({loading:true});
 			let data = this.state.data;
-			let payload = {member: data.member,amount:parseFloat(data.amount),method:data.method};
+			let payload = {member: data.member,amount:parseFloat(data.amount),method:data.method, start_period: data.start_period};
 			if(data.method == 'BK'){
 				payload['bank_name'] = data.bank_name;
 				payload['ref_no'] = data.ref_no;
@@ -316,6 +316,14 @@ class PaymentForm extends Component {
 					    </div>
 					  </div>
 				  </>}
+
+				  <div className="clearfix" />
+				  <div className={`form-group col-sm-6 ${error.start_period ? 'has-error': ''}`}>
+				  	<label className="col-sm-6 control-label">Set start period of payment (optional)</label>
+				  	<div className="col-sm-6">
+					      <DateInput value={this.state.data.start_period} onChange={this.handleInput.bind(this,'start_period')} type="text" placeholder="dd/mm/year" className="form-control" />
+					    </div>
+				  </div>
 
 				  <div className="clearfix" />
 

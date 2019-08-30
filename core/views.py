@@ -463,9 +463,12 @@ class PaymentViewSet(viewsets.ModelViewSet):
         member = Member.objects.get(id=request.data['member'])
         payment = serializer.save()
         amount = int(request.data['amount'])
-        last_period = Period.objects.filter(payment__member=request.data['member']).last()
+        last_period = Period.objects.filter(payment__member=request.data['member']).order_by('-period__year','-period__month').first()
         last_period_date = None
-        if last_period:
+        if request.data['start_period']:
+            last_period_date = datetime.datetime.strptime(request.data['start_period'], '%Y-%m-%d')
+            last_period_date += relativedelta(months=-1,day=1)
+        elif last_period:
             if last_period.amount < 200:
                 rem = 200 - last_period.amount
                 amount -= rem

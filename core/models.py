@@ -55,6 +55,7 @@ class Payment(models.Model):
     bank_name = models.CharField(max_length=15,null=False,blank=True,default='')
     date_of_payment = models.DateField(null=True,blank=True,default=datetime.date.today)
     date = models.DateTimeField(auto_now_add=True)
+    start_period = models.DateField(null=True,blank=True)
 
 
 class Period(models.Model):

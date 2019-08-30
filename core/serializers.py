@@ -79,7 +79,7 @@ class PaymentSerializer(serializers.ModelSerializer):
 	period = serializers.ReadOnlyField()
 	class Meta:
 		model = Payment
-		fields = ('id','member','method','amount','ref_no','mobile_no','bank_name','date_of_payment','date','period','first_name','middle_name','last_name','id_no','reg')
+		fields = ('id','member','method','amount','ref_no','mobile_no','bank_name','date_of_payment','date','start_period','period','first_name','middle_name','last_name','id_no','reg')
 
 class PeriodSerializer(serializers.ModelSerializer):
 	payment__amount = serializers.ReadOnlyField(source='payment.amount')
