@@ -11,7 +11,7 @@ export default class DateInput extends Component {
 	hiddenInput = React.createRef()
 	componentDidMount(){
 		var self = this;
-		jquery(this.dateInput.current).datepicker({format: 'dd/mm/yyyy'}).on('changeDate changeMonth changeYear',e=>self.handleChange(e))
+		jquery(this.dateInput.current).datepicker({format: 'dd/mm/yyyy',zIndexOffset: 1040}).on('changeDate changeMonth changeYear',e=>self.handleChange(e))
 		this.dateInput.current.value = this.props.value ? this.props.value.split('-').reverse().join('/') : '';
 	}
 	componentDidUpdate(prevProp,prevState){
