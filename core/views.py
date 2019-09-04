@@ -8,7 +8,7 @@ from rest_framework import viewsets,status
 from rest_framework.permissions import AllowAny,DjangoModelPermissions
 from core.serializers import UserSerializer, MemberSerializer,MemberSerializerMini, PaymentSerializer, PeriodSerializer,\
     BankingSerializer, NoteSerializer, NotificationSerializer, LibrarySerializer, ClaimSerializer, ChildSerializer, ExpenditureSerializer
-from core.models import Member,Payment,Period,Banking,Note, Notification, Library, Claim, Expenditure, Child
+from core.models import Member,Payment,Period,Banking,Note, Notification, Library, Claim, Expenditure, Child, BankingNotification
 import datetime
 from dateutil.relativedelta import relativedelta
 from django.db.models import Q,Sum,Max,F,Count
@@ -319,6 +319,12 @@ class BankingViewSet(viewsets.ModelViewSet):
         if self.request.GET.get('month'):
             q = q.filter(date__month=self.request.GET['month'])
         return q
+    def create(self,request):
+        response = super().create(request)
+        msg = f'Banking for welfare of Kshs {request.data["amount"]} has been booked into the Welfare System'
+        numbers = list(BankingNotification.objects.all().values('mobile_no'))
+        send_message(numbers,default_msg=msg)
+        return response
 
 class ClaimViewSet(viewsets.ModelViewSet):
     permission_classes = [DjangoModelPermissions]

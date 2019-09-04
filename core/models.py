@@ -106,6 +106,13 @@ class Library(models.Model):
     file = models.FileField(blank=False)
     date = models.DateField(auto_now_add=True)
 
+class BankingNotification(models.Model):
+    name = models.CharField(max_length=50,null=False,blank=False)
+    mobile_no = models.CharField(max_length=15,null=False,blank=False)
+
+    def __str__(self):
+        return self.name + ' ' + self.mobile_no
+
 @receiver(post_delete, sender=Library)
 def submission_delete(sender, instance, **kwargs):
     instance.file.delete(False) 
