@@ -7,6 +7,7 @@ import DefaultersReport from './DefaultersReport';
 import PaymentReport from './PaymentReport';
 import PaymentDistribution from './PaymentDistribution';
 import ContributionVsClaim from './ContributionVsClaim';
+import BankingReport from './BankingReport';
 import './Report.css';
 
 import IndividualReportIcon from './img/contribution.jfif';
@@ -24,6 +25,7 @@ export default class Report extends Component {
 				<Route path={`${this.props.match.path}/payment-report`} component={PaymentReport} />
 				<Route path={`${this.props.match.path}/payment-distribution`} component={PaymentDistribution} />
 				<Route path={`${this.props.match.path}/contribution-vs-claim`} component={ContributionVsClaim} />
+				<Route path={`${this.props.match.path}/banking-report`} component={BankingReport} />
 				<Route exact path={`${this.props.match.path}/`} component={ReportList} />
 			</AnimatedSwitch>
 	}
@@ -62,6 +64,11 @@ class ReportList extends Component {
 	        <div className="col-xs-6 col-sm-4 placeholder">
 	          <Link to={`${this.props.match.url}/contribution-vs-claim`}><img src={AnnualReportIcon} style={{borderRadius: "50%",width:"200px",height:"200px"}} className="img-responsive" alt="Generic placeholder thumbnail" /></Link>
 	          <h4>Contribution Vs Claim</h4>
+	          <span className="text-muted"></span>
+	        </div>
+	        <div className="col-xs-6 col-sm-4 placeholder">
+	          <Link to={`${this.props.match.url}/banking-report`}><img src={IndividualReportIcon} style={{borderRadius: "50%",width:"200px",height:"200px"}} className="img-responsive" alt="Generic placeholder thumbnail" /></Link>
+	          <h4>Banking Report</h4>
 	          <span className="text-muted"></span>
 	        </div>
 	      </div>

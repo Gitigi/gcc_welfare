@@ -92,6 +92,13 @@ def defaulters_report(request):
     return paginate_list(list(m.order_by('first_name')),page_number,url)
 
 @api_view(['GET'])
+def banking_report(request):
+    b = Banking.objects.all().values('date__year','date__month').annotate(total=Sum('amount')).order_by('-date__year');
+    url = request.build_absolute_uri()
+    page_number = request.GET.get('page',1)
+    return paginate_query_by_field(b,page_number,url,'date__year')
+
+@api_view(['GET'])
 def dashboard_summary(request):
     today = datetime.datetime.today()
     suspended = Member.objects.filter(dummy=False,suspended=True)

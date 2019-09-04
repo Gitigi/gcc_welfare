@@ -23,5 +23,6 @@ urlpatterns = [
     path('dashboard-summary/',views.dashboard_summary),
     path('payment-distribution/',views.payment_distribution),
     path('contribution-vs-claim',views.contribution_vs_claim),
+    path('banking-report/',views.banking_report),
     path('',include(router.urls))
 ]
