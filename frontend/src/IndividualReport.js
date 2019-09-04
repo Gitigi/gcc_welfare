@@ -38,7 +38,7 @@ export default class IndividualReport extends Component {
 	getAmount(year,month) {
 		let p = this.state.data.results.find(v => v.period__year === year && v.period__month === month);
 		if(!p)
-			return '';
+			return null;
 		return p.amount
 	}
 	handleMemberChange(member) {

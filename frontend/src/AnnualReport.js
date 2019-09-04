@@ -53,7 +53,7 @@ export default class AnnualReport extends Component {
 	getAmount(year,month) {
 		let p = this.state.data.results.find(v=> v.period__year === year && v.period__month === month);
 		if(!p)
-			return '';
+			return null;
 		return p.total
 	}
 
