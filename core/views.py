@@ -513,8 +513,8 @@ class PaymentViewSet(viewsets.ModelViewSet):
                 period=period)
 
         msg = "Thank you %s %s %s for your welfare payment of amount %d on %s" % (
-            member.first_name,member.middle_name,member.last_name,request.data['amount'],date)
+            member.first_name,member.middle_name,member.last_name,request.data['amount'],date.strftime('%d/%m/%Y'))
 
-        threading.Thread(target=send_message,args=(msg,member.mobile_no)).start()
+        send_message([{'msg': msg, 'mobile_no':member.mobile_no}])
         
         return Response(PaymentSerializer(payment).data)
