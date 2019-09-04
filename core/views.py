@@ -405,8 +405,10 @@ class NotificationViewSet(viewsets.ModelViewSet):
     def send_message(self,members,msg_original):
         if not re.search(r'#(NAME|LAST_PAYED_PERIOD|NUMBER_OF_UNPAYED_PERIOD|CURRENT_PERIOD|UNPAYED_PERIOD)',msg_original):
             numbers = [n.mobile_no for n in members]
-            send_message(msg_original,numbers)
+            messages = [{'number': m.mobile_no} for m in members]
+            send_message(messages,default_msg=msg_original)
         else:
+            messages = []
             for m in members:
                 msg = msg_original
                 name = m.first_name.upper() + ' ' + m.middle_name.upper() + ' ' + m.last_name.upper()
@@ -430,11 +432,8 @@ class NotificationViewSet(viewsets.ModelViewSet):
                 msg = re.sub('#LAST_PAYED_PERIOD',last_payed_period,msg)
                 msg = re.sub('#UNPAYED_PERIOD',unpayed_period,msg)
                 msg = re.sub('#NUMBER_OF_UNPAYED_PERIOD',str(number_of_unpayed_period),msg)
-                try:
-                    send_message(msg,m.mobile_no)
-                except Exception as e:
-                    print(e)
-                    pass
+                messages.append({'msg': msg, 'number': m.mobile_no})
+            send_message(messages)
 
 class PaymentViewSet(viewsets.ModelViewSet):
     permission_classes = [DjangoModelPermissions]

@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from rest_framework import status
 import phonenumbers
 from core.models import Member
+import time,requests,hashlib
 
 try:
     import urlparse
@@ -13,25 +14,48 @@ except:
     import urllib.parse as urlparse
     from urllib.parse import urlencode
 
-africastalking.initialize(username=settings.AFRICASTALKING_USERNAME,
-        api_key=settings.AFRICASTALKING_API_KEY)
-sms = africastalking.SMS
-def send_message(msg,number):
-    if type(number) != list:
-        number = [number]
-    print('sending to',number,msg)
-    numbers = []
-    for n in number:
+
+def send_message(messages,default_msg=None):
+    destinationAddr = []
+    messagePayload = [{"Text": default_msg + '\n-'}] if default_msg else []
+    for message in messages:
         try:
-            n = phonenumbers.parse(n,'KE')
+            n = phonenumbers.parse(message['number'],'KE')
             if phonenumbers.is_valid_number(n):
-                numbers.append(phonenumbers.format_number(n, phonenumbers.PhoneNumberFormat.E164))
+                destinationAddr.append({
+                        "MSISDN": phonenumbers.format_number(n, phonenumbers.PhoneNumberFormat.E164),
+                        "LinkID": "",
+                        "SourceID": "2"
+                    })
+                if not default_msg:
+                    messagePayload.append({"Text": message['msg'] + '\n-'})
             else:
                 print('failed to send to number',n)
         except(phonenumbers.NumberParseException):
             print('failed to send to number ',n)
-    if len(numbers):
-        sms.send(message=msg, recipients=numbers)
+
+    batchType = "0" if len(destinationAddr) == 1 else "1" if len(messagePayload) == 1 else "2"
+    payload = {
+        "AuthDetails": [
+            {
+                "UserID": settings.BIZSMS_USER_ID,
+                "Token": hashlib.md5(settings.BIZSMS_PASSWORD.encode()).hexdigest(),
+                "Timestamp": str(int(time.time()))
+            }
+        ],
+        "SubAccountID": [
+            "0"
+        ],
+        "MessageType": [
+            "3"
+        ],
+        "BatchType": [batchType],
+        "SourceAddr": [settings.BIZSMS_SENDER_ID],
+        "MessagePayload": messagePayload,
+        "DestinationAddr": destinationAddr
+    }
+    print(payload)
+    return requests.post("http://api.bizsms.co.ke/submit2.php",json=payload)
 
 def search_name(name):
     like_op = 'like' if 'sqlite' in settings.DATABASES['default']['ENGINE'].split('.')[-1] else 'ilike'
