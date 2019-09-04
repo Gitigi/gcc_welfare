@@ -20,7 +20,7 @@ def send_message(messages,default_msg=None):
     messagePayload = [{"Text": default_msg + '\n-'}] if default_msg else []
     for message in messages:
         try:
-            n = phonenumbers.parse(message['number'],'KE')
+            n = phonenumbers.parse(message['mobile_no'],'KE')
             if phonenumbers.is_valid_number(n):
                 destinationAddr.append({
                         "MSISDN": phonenumbers.format_number(n, phonenumbers.PhoneNumberFormat.E164),

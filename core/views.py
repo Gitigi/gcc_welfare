@@ -412,7 +412,7 @@ class NotificationViewSet(viewsets.ModelViewSet):
     def send_message(self,members,msg_original):
         if not re.search(r'#(NAME|LAST_PAYED_PERIOD|NUMBER_OF_UNPAYED_PERIOD|CURRENT_PERIOD|UNPAYED_PERIOD)',msg_original):
             numbers = [n.mobile_no for n in members]
-            messages = [{'number': m.mobile_no} for m in members]
+            messages = [{'mobile_no': m.mobile_no} for m in members]
             send_message(messages,default_msg=msg_original)
         else:
             messages = []
@@ -439,7 +439,7 @@ class NotificationViewSet(viewsets.ModelViewSet):
                 msg = re.sub('#LAST_PAYED_PERIOD',last_payed_period,msg)
                 msg = re.sub('#UNPAYED_PERIOD',unpayed_period,msg)
                 msg = re.sub('#NUMBER_OF_UNPAYED_PERIOD',str(number_of_unpayed_period),msg)
-                messages.append({'msg': msg, 'number': m.mobile_no})
+                messages.append({'msg': msg, 'mobile_no': m.mobile_no})
             send_message(messages)
 
 class PaymentViewSet(viewsets.ModelViewSet):
