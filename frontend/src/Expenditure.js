@@ -10,20 +10,22 @@ import Pagination from './Pagination';
 import DateInput from './DateInput';
 import ExportButton from './ExportButton';
 import {getPaginatedData} from './utility';
+import lodash from 'lodash';
 
 export default class Expenditure extends Component {
 	render() {
 		return <div>
 			<AnimatedSwitch>
-				<Route exact path={`${this.props.match.path}`} component={ClaimList} />
-				<Route path={`${this.props.match.path}/new`} component={ClaimForm} />
+				<Route exact path={`${this.props.match.path}`} component={ExpenditureList} />
+				<Route path={`${this.props.match.path}/new`} component={NewExpenditure} />
+				<Route path={`${this.props.match.path}/:id`} component={EditExpenditure} />
 			</AnimatedSwitch>
 		</div>
 	}
 }
 
 
-class ClaimList extends Component {
+class ExpenditureList extends Component {
 	disbursementChoices = {'CA': 'CASH', 'CQ': 'CHEQUE'}
 	constructor(props){
 		super(props);
@@ -118,7 +120,7 @@ class ClaimList extends Component {
 					<tbody>
 						{this.state.expenditures.results.map(b=>(
 							<tr key={b.id}>
-								<td>{b.name}</td>
+								<td><Link to={`${this.props.match.path}/${b.id}`}>{b.name}</Link></td>
 								<td>{b.amount}</td>
 								<td>{b.reason}</td>
 								<td>{b.date.split('-').reverse().join('/')}</td>
@@ -133,10 +135,78 @@ class ClaimList extends Component {
 	}
 }
 
-class ClaimForm extends Component {
+
+
+class NewExpenditure extends Component {
+	state = {error: {}}
+	submit(data) {
+		return axios.post(`/api/expenditure/`,data).then(res=>{
+			this.setState({error: {}});
+			return res;
+		},error=>{
+			this.setState({error: error.response.data})
+			return Promise.reject(error);
+		})
+	}
+
+	close() {
+		this.props.history.push('/home/expenditure')
+	}
+
+	render() {
+		return <div>
+				<h1 className='text-center'>New Expenditure</h1>
+				<ExpenditureForm error={this.state.error} submit={this.submit.bind(this)} close={this.close.bind(this)}/>
+			</div>
+	}
+}
+
+class EditExpenditure extends Component {
+	state = {data: {}, error: {}}
+	componentDidMount(){
+		axios.get(`/api/expenditure/${this.props.match.params.id}/`).then(res=>this.setState({data: res.data}),
+			error=>this.setState({error: error.response.data}))
+	}
+
+	submit(data) {
+		return axios.put(`/api/expenditure/${this.props.match.params.id}/`,data).then(res=>{
+			this.setState({data: res.data,error: {}});
+			return res;
+		},error=>{
+			this.setState({error: error.response.data})
+			return Promise.reject(error);
+		})
+	}
+
+	close() {
+		this.props.history.push('/home/expenditure')
+	}
+
+	render() {
+		return <div>
+				<h1 className='text-center'>Edit Expenditure</h1>
+				<ExpenditureForm edit={true} data={this.state.data} error={this.state.error} submit={this.submit.bind(this)} close={this.close.bind(this)} />
+			</div>
+	}
+}
+
+
+
+class ExpenditureForm extends Component {
 	confirm = React.createRef();
 	emptyData = {name: '',amount: '', date: '', reason: ''}
 	state = {loading:false,data: {...this.emptyData},error: {},saved: false,member: {}};
+
+	componentDidUpdate(prevProps,prevState) {
+		if(this.props.edit){
+			if(!lodash.isEqual(this.props.data, prevProps.data)){
+				this.setState({data: {...this.state.data,...this.props.data}})
+			}
+		}
+		if(!lodash.isEqual(this.props.error,prevProps.error)){
+			this.setState({error: {...this.state.error,...this.props.error}})
+		}
+	}
 
 	handleInput(field,e) {
 		let value = e.target.value;
@@ -164,7 +234,7 @@ class ClaimForm extends Component {
 		return this.confirm.current.show().then(_=>{
 			this.setState({loading:true});
 			let data = this.state.data;
-			return axios.post('/api/expenditure/',data).then(_=>{},error=>{
+			return this.props.submit(data).then(_=>{},error=>{
 				window.scrollTo(0,0);
 				this.setState({error: error.response.data});
 				return Promise.reject(error.response.data);
@@ -173,7 +243,7 @@ class ClaimForm extends Component {
 	}
 
 	save() {
-		this.submit().then(res=>this.props.history.push('/home/expenditure'));
+		this.submit().then(res=>this.props.close());
 	}
 
 	saveContinue() {
@@ -183,8 +253,11 @@ class ClaimForm extends Component {
 		})
 	}
 
-	close() {
-		this.props.history.push('/home/expenditure')
+	apply() {
+		this.submit().then(()=>{
+			this.setState({error: {},saved: true})
+			setTimeout(_=>this.setState({saved: false}),2000);
+		})
 	}
 
 	render() {
@@ -194,9 +267,8 @@ class ClaimForm extends Component {
         <a href="#" className="close" data-dismiss="alert" aria-label="close">&times;</a>
         {this.state.error.detail}
       </div>
-			<h1 className='text-center'>New Claim</h1>
 			<div className={`alert alert-success ${this.state.saved ? 'show' : 'hide'}`} role="alert">
-				Successfully Saved Payment Record
+				Successfully Saved Expenditure Record
 			</div>
 			<ConfirmAction ref={this.confirm} yesLabel="Save" noLabel="Cancel" title="Saving">
 				<p>Do you want to save changes</p>
@@ -235,14 +307,16 @@ class ClaimForm extends Component {
       	<hr/>
 
       	<div className="form-group">
-          <div className="col-sm-offset-4 col-sm-2">
+      		{this.props.edit ? <div className="col-sm-offset-6 col-sm-2">
+            <input onClick={this.apply.bind(this)} type="button" value="APPLY" disabled={this.state.loading?true:false} className="btn btn-primary" />
+          </div> : <div className="col-sm-offset-5 col-sm-3">
+            <input onClick={this.saveContinue.bind(this)} type="button" value="SAVE AND CONTINUE" disabled={this.state.loading?true:false} className="btn btn-primary" />
+          </div>}
+          <div className="col-sm-2">
             <input onClick={this.save.bind(this)} type="button" value="SAVE" disabled={this.state.loading?true:false} className="btn btn-success" />
           </div>
-          <div className="col-sm-4">
-            <input onClick={this.saveContinue.bind(this)} type="button" value="SAVE AND CONTINUE" disabled={this.state.loading?true:false} className="btn btn-primary" />
-          </div>
           <div className="col-sm-2">
-            <input onClick={this.close.bind(this)} type="button" value="CLOSE" disabled={this.state.loading?true:false} className="btn btn-warning" />
+            <input onClick={this.props.close} type="button" value="CLOSE" disabled={this.state.loading?true:false} className="btn btn-warning" />
           </div>
         </div>
       </form>
