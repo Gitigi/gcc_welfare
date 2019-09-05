@@ -9,14 +9,15 @@ import Pagination from './Pagination';
 import DateInput from './DateInput';
 import ExportButton from './ExportButton';
 import {getPaginatedData} from './utility';
-
+import lodash from 'lodash'
 
 export default class Banking extends Component {
 	render() {
 		return <div>
 			<AnimatedSwitch>
 				<Route exact path={`${this.props.match.path}`} component={BankingList} />
-				<Route path={`${this.props.match.path}/new`} component={BankingForm} />
+				<Route path={`${this.props.match.path}/new`} component={NewBanking} />
+				<Route path={`${this.props.match.path}/:id`} component={EditBanking} />
 			</AnimatedSwitch>
 		</div>
 	}
@@ -120,7 +121,7 @@ class BankingList extends Component {
 					<tbody>
 						{this.state.banking.results.map(b=>(
 							<tr key={b.id}>
-								<td>{b.bank_name}</td>
+								<td><Link to={`${this.props.match.path}/${b.id}`}>{b.bank_name}</Link></td>
 								<td>{b.account}</td>
 								<td>{b.amount}</td>
 								<td>{b.banked_by}</td>
@@ -136,10 +137,75 @@ class BankingList extends Component {
 	}
 }
 
+class NewBanking extends Component {
+	state = {error: {}}
+	submit(data) {
+		return axios.post(`/api/banking/`,data).then(res=>{
+			this.setState({error: {}});
+			return res;
+		},error=>{
+			this.setState({error: error.response.data})
+			return Promise.reject(error);
+		})
+	}
+
+	close() {
+		this.props.history.push('/home/banking')
+	}
+
+	render() {
+		return <div>
+				<h1 className='text-center'>New Bank Transaction</h1>
+				<BankingForm error={this.state.error} submit={this.submit.bind(this)} close={this.close.bind(this)}/>
+			</div>
+	}
+}
+
+class EditBanking extends Component {
+	state = {data: {}, error: {}}
+	componentDidMount(){
+		axios.get(`/api/banking/${this.props.match.params.id}/`).then(res=>this.setState({data: res.data}),
+			error=>this.setState({error: error.response.data}))
+	}
+
+	submit(data) {
+		return axios.put(`/api/banking/${this.props.match.params.id}/`,data).then(res=>{
+			this.setState({data: res.data,error: {}});
+			return res;
+		},error=>{
+			this.setState({error: error.response.data})
+			return Promise.reject(error);
+		})
+	}
+
+	close() {
+		this.props.history.push('/home/banking')
+	}
+
+	render() {
+		return <div>
+				<h1 className='text-center'>Edit Bank Transaction</h1>
+				<BankingForm edit={true} data={this.state.data} error={this.state.error} submit={this.submit.bind(this)} close={this.close.bind(this)} />
+			</div>
+	}
+}
+
 class BankingForm extends Component {
 	confirm = React.createRef();
 	emptyData = {bank_name: '',amount: '', account: '', date: '',banked_by: ''}
 	state = {loading:false,data: {...this.emptyData},error: {},saved: false};
+
+	componentDidUpdate(prevProps,prevState) {
+		if(this.props.edit){
+			if(!lodash.isEqual(this.props.data, prevProps.data)){
+				this.setState({data: {...this.state.data,...this.props.data}})
+			}
+		}
+		if(!lodash.isEqual(this.props.error,prevProps.error)){
+			this.setState({error: {...this.state.error,...this.props.error}})
+		}
+	}
+
 	handleChange(field,e) {
 		let value = e.target.value;
 		this.setState(state=>(state.data[field]=value,state));
@@ -176,7 +242,7 @@ class BankingForm extends Component {
 		return this.confirm.current.show().then(_=>{
 			this.setState({loading:true});
 			let data = this.state.data;
-			return axios.post('/api/banking/',data).then(_=>{},error=>{
+			return this.props.submit(this.state.data).then(_=>{},error=>{
 				window.scrollTo(0,0);
 				this.setState({error: error.response.data});
 				return Promise.reject(error.response.data);
@@ -185,7 +251,7 @@ class BankingForm extends Component {
 	}
 
 	save() {
-		this.submit().then(res=>this.props.history.push('/home/banking'));
+		this.submit().then(res=>this.props.close());
 	}
 
 	saveContinue() {
@@ -195,8 +261,11 @@ class BankingForm extends Component {
 		})
 	}
 
-	close() {
-		this.props.history.push('/home/banking')
+	apply() {
+		this.submit().then(()=>{
+			this.setState({error: {},saved: true})
+			setTimeout(_=>this.setState({saved: false}),2000);
+		})
 	}
 
 	render() {
@@ -206,7 +275,6 @@ class BankingForm extends Component {
         <a href="#" className="close" data-dismiss="alert" aria-label="close">&times;</a>
         {this.state.error.detail}
       </div>
-			<h1 className='text-center'>New Bank Transaction</h1>
 			<div className={`alert alert-success ${this.state.saved ? 'show' : 'hide'}`} role="alert">
 				Successfully Saved Payment Record
 			</div>
@@ -254,14 +322,16 @@ class BankingForm extends Component {
       	<hr/>
 
       	<div className="form-group">
-          <div className="col-sm-offset-4 col-sm-2">
+      		{this.props.edit ? <div className="col-sm-offset-6 col-sm-2">
+            <input onClick={this.apply.bind(this)} type="button" value="APPLY" disabled={this.state.loading?true:false} className="btn btn-primary" />
+          </div> : <div className="col-sm-offset-5 col-sm-3">
+            <input onClick={this.saveContinue.bind(this)} type="button" value="SAVE AND CONTINUE" disabled={this.state.loading?true:false} className="btn btn-primary" />
+          </div>}
+          <div className="col-sm-2">
             <input onClick={this.save.bind(this)} type="button" value="SAVE" disabled={this.state.loading?true:false} className="btn btn-success" />
           </div>
-          <div className="col-sm-4">
-            <input onClick={this.saveContinue.bind(this)} type="button" value="SAVE AND CONTINUE" disabled={this.state.loading?true:false} className="btn btn-primary" />
-          </div>
           <div className="col-sm-2">
-            <input onClick={this.close.bind(this)} type="button" value="CLOSE" disabled={this.state.loading?true:false} className="btn btn-warning" />
+            <input onClick={this.props.close} type="button" value="CLOSE" disabled={this.state.loading?true:false} className="btn btn-warning" />
           </div>
         </div>
       </form>
