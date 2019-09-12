@@ -426,19 +426,21 @@ class NotificationViewSet(viewsets.ModelViewSet):
                 msg = msg_original
                 name = m.first_name.upper() + ' ' + m.middle_name.upper() + ' ' + m.last_name.upper()
                 current_period = datetime.date.today().replace(day=1).strftime('%d/%m/%Y')
-                unpayed_period = current_period
+                unpayed_period = m.date_joined if m.date_joined.year > 2016 else datetime.date(2017,1,1)
+                unpayed_period += relativedelta(day=1)
                 last_payed_period = Period.objects.filter(period__year__gt=2016,payment__member=m).order_by('-period').first()
-                number_of_unpayed_period = None
                 if last_payed_period:
-                    number_of_unpayed_period = int((datetime.date.today() - last_payed_period.period).days / 30)
+                    unpayed_period = last_payed_period.period + relativedelta(months=+1,day=1)
                     last_payed_period = last_payed_period.period.strftime('%d/%m/%Y')
-                    if number_of_unpayed_period > 1:
-                        unpayed_period = last_payed_period + ' - ' + current_period
-                    elif number_of_unpayed_period < 1:
-                        unpayed_period = 'None'
                 else:
                     last_payed_period = 'No record of payment'
-                    number_of_unpayed_period = 'No record of payment'
+                
+                time_diff = relativedelta(datetime.date.today(),unpayed_period)
+                number_of_unpayed_period = (time_diff.years * 12) + time_diff.months
+                number_of_unpayed_period += 1 if datetime.date.today().month >= unpayed_period.month else 0
+                unpayed_period = unpayed_period.strftime('%d/%m/%Y')
+                if number_of_unpayed_period > 1:
+                    unpayed_period = unpayed_period + ' - ' + current_period
 
                 msg = re.sub('#NAME',name,msg)
                 msg = re.sub('#CURRENT_PERIOD',current_period,msg)
@@ -488,7 +490,7 @@ class PaymentViewSet(viewsets.ModelViewSet):
                 last_period.save()
             last_period_date = last_period.period
         else:
-            last_period_date = datetime.date.today()
+            last_period_date = member.date_joined if member.date_joined.year > 2016 else datetime.date(2017,1,1)
             #subtract a month from date of payment.
             #so that payment begin on the month of payment
             last_period_date += relativedelta(months=-1,day=1)
