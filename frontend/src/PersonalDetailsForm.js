@@ -19,7 +19,9 @@ export default class PersonalDetailsForm extends Component {
     
     this.state = {married: false,age: '', spouse_is_member: true, child: {first_name: '', middle_name: '', dob: ''},localError: {},
   		spouse: '',spouse_is_member: 'yes',spouse_details: {first_name: '',middle_name: '',last_name: '',id_no: 0,mobile_no: ''},
-  		data: {...this.emptyData},error: {}};
+  		data: {...this.emptyData},error: {},
+  		fieldExpanded: {children: false, marriage: false, parents: false, account: false}};
+
   }
 
   componentDidMount() {
@@ -281,6 +283,13 @@ export default class PersonalDetailsForm extends Component {
 		})
 	}
 
+	toggleExpand(field,e) {
+		e.target.classList.toggle("fa-plus");
+		e.target.classList.toggle("fa-minus");
+		let expanded = this.state.fieldExpanded[field] ? false : true;
+		this.setState(state=>(state.fieldExpanded[field]=expanded,state));
+	}
+
 
 	render() {
 		let id = this.props.id;
@@ -417,82 +426,84 @@ export default class PersonalDetailsForm extends Component {
 					</fieldset>
 
 					<fieldset>
-					<legend>Marriage Details:</legend>
-					<div className="form-group">
-						<label htmlFor="inputMarried" className="col-sm-2 control-label">Married</label>
-						<div className="col-sm-10">
-				      <input type="checkbox" checked={this.state.married} onChange={this.handleMarried.bind(this)}/>
-				    </div>
-					</div>
-
-					{this.state.married === true && <>
-						<div className="row">
-							<p className="col-sm-offset-1 col-sm-3 form-control-static">Is spouse member of the welfare?</p>
-							<div className="form-group col-sm-2">
-								<label className="control-label col-sm-4">Yes</label>
-								<div className="col-sm-1">
-									<input className="form-control" type="radio" name='spouse_is_member' value='yes'
-										onChange={this.handleSpouseMembership.bind(this)} checked={this.state.spouse_is_member === 'yes'}/>
-								</div>
-							</div>
-							<div className="form-group col-sm-2">
-								<label className="control-label col-sm-4">No</label>
-								<div className="col-sm-1">
-									<input className="form-control" type="radio" name='spouse_is_member' value='no'
-										onChange={this.handleSpouseMembership.bind(this)} checked={this.state.spouse_is_member === 'no'}/>
-								</div>
-							</div>
+					<legend><i onClick={this.toggleExpand.bind(this,'marriage')} className={`fa fa-${this.state.fieldExpanded.marriage ? "minus": "plus"}`} /> Marriage Details:</legend>
+					<div className={`${!this.state.fieldExpanded.marriage ? "hide": ""}`}>
+						<div className="form-group">
+							<label htmlFor="inputMarried" className="col-sm-2 control-label">Married</label>
+							<div className="col-sm-10">
+					      <input type="checkbox" checked={this.state.married} onChange={this.handleMarried.bind(this)}/>
+					    </div>
 						</div>
-						{this.state.spouse_is_member === 'no' && <div>
-							<div className={`form-group col-sm-4 ${spouseDetailsError && spouseDetailsError.first_name ? 'has-error': ''}`}>
-								<label htmlFor="inputSFirstname" className="col-sm-5 control-label">Spouse's First Name</label>
-								<div className="col-sm-7">
-						      <input value={this.state.spouse_details.first_name} onChange={this.handleSpouseDetails.bind(this,'first_name')} type="text" className="form-control" id="inputSFirstname" />
-						    </div>
-						  </div>
-						  <div className={`form-group col-sm-4 ${spouseDetailsError && spouseDetailsError.middle_name ? 'has-error': ''}`}>
-						    <label htmlFor="inputSMiddlename" className="col-sm-5 control-label">Spouse's Middle Name</label>
-						    <div className="col-sm-7">
-						      <input value={this.state.spouse_details.middle_name} onChange={this.handleSpouseDetails.bind(this,'middle_name')} type="text" className="form-control" id="inputSMiddlename" />
-						    </div>
-						  </div>
-						  <div className={`form-group col-sm-4 ${spouseDetailsError && spouseDetailsError.last_name ? 'has-error': ''}`}>
-						    <label htmlFor="inputSLastname" className="col-sm-5 control-label">Spouse's  Last Name</label>
-						    <div className="col-sm-7">
-						      <input value={this.state.spouse_details.last_name} onChange={this.handleSpouseDetails.bind(this,'last_name')} type="text" className="form-control" id="inputSLastname" />
-						    </div>
-							</div>
 
-							<div className={`form-group col-sm-6 ${spouseDetailsError && spouseDetailsError.id_no ? 'has-error': ''}`}>
-								<label htmlFor="inputSpouseIdNo" className="col-sm-4 control-label">Spouse ID Number</label>
-								<div className="col-sm-8">
-						      <input value={this.state.spouse_details.id_no} onChange={this.handleSpouseDetails.bind(this,'id_no')} type="text" className="form-control" id="inputSpouseIdNo" />
-						    </div>
-						  </div>
-						  <div className={`form-group col-sm-6 ${spouseDetailsError && spouseDetailsError.mobile_no ? 'has-error': ''}`}>
-						    <label htmlFor="inputSpouseMobileNo" className="col-sm-5 control-label">Spouse Mobile Number</label>
-								<div className="col-sm-7">
-						      <input value={this.state.spouse_details.mobile_no} onChange={this.handleSpouseDetails.bind(this,'mobile_no')} type="text" className="form-control" id="inputSpouseMobileNo" />
-						    </div>
-							</div>
-						</div>}
-
-						{this.state.spouse_is_member === 'yes' && <div>
-							<div className={`form-group ${spouseDetailsError && spouseDetailsError.spouse ? 'has-error': ''}`}>
-								<label className="col-sm-4 control-label">Spouse Name</label>
-								<div className="col-sm-5">
-									<NameSearchInput userSelected={this.handleSpouseSelect.bind(this)} memberId={this.state.spouse} />
-									<p className="text-info form-control-static">*ensure that spouse has already been registered as member</p>
+						{this.state.married === true && <>
+							<div className="row">
+								<p className="col-sm-offset-1 col-sm-3 form-control-static">Is spouse member of the welfare?</p>
+								<div className="form-group col-sm-2">
+									<label className="control-label col-sm-4">Yes</label>
+									<div className="col-sm-1">
+										<input className="form-control" type="radio" name='spouse_is_member' value='yes'
+											onChange={this.handleSpouseMembership.bind(this)} checked={this.state.spouse_is_member === 'yes'}/>
+									</div>
+								</div>
+								<div className="form-group col-sm-2">
+									<label className="control-label col-sm-4">No</label>
+									<div className="col-sm-1">
+										<input className="form-control" type="radio" name='spouse_is_member' value='no'
+											onChange={this.handleSpouseMembership.bind(this)} checked={this.state.spouse_is_member === 'no'}/>
+									</div>
 								</div>
 							</div>
-						</div>}
+							{this.state.spouse_is_member === 'no' && <div>
+								<div className={`form-group col-sm-4 ${spouseDetailsError && spouseDetailsError.first_name ? 'has-error': ''}`}>
+									<label htmlFor="inputSFirstname" className="col-sm-5 control-label">Spouse's First Name</label>
+									<div className="col-sm-7">
+							      <input value={this.state.spouse_details.first_name} onChange={this.handleSpouseDetails.bind(this,'first_name')} type="text" className="form-control" id="inputSFirstname" />
+							    </div>
+							  </div>
+							  <div className={`form-group col-sm-4 ${spouseDetailsError && spouseDetailsError.middle_name ? 'has-error': ''}`}>
+							    <label htmlFor="inputSMiddlename" className="col-sm-5 control-label">Spouse's Middle Name</label>
+							    <div className="col-sm-7">
+							      <input value={this.state.spouse_details.middle_name} onChange={this.handleSpouseDetails.bind(this,'middle_name')} type="text" className="form-control" id="inputSMiddlename" />
+							    </div>
+							  </div>
+							  <div className={`form-group col-sm-4 ${spouseDetailsError && spouseDetailsError.last_name ? 'has-error': ''}`}>
+							    <label htmlFor="inputSLastname" className="col-sm-5 control-label">Spouse's  Last Name</label>
+							    <div className="col-sm-7">
+							      <input value={this.state.spouse_details.last_name} onChange={this.handleSpouseDetails.bind(this,'last_name')} type="text" className="form-control" id="inputSLastname" />
+							    </div>
+								</div>
 
-					</>}
+								<div className={`form-group col-sm-6 ${spouseDetailsError && spouseDetailsError.id_no ? 'has-error': ''}`}>
+									<label htmlFor="inputSpouseIdNo" className="col-sm-4 control-label">Spouse ID Number</label>
+									<div className="col-sm-8">
+							      <input value={this.state.spouse_details.id_no} onChange={this.handleSpouseDetails.bind(this,'id_no')} type="text" className="form-control" id="inputSpouseIdNo" />
+							    </div>
+							  </div>
+							  <div className={`form-group col-sm-6 ${spouseDetailsError && spouseDetailsError.mobile_no ? 'has-error': ''}`}>
+							    <label htmlFor="inputSpouseMobileNo" className="col-sm-5 control-label">Spouse Mobile Number</label>
+									<div className="col-sm-7">
+							      <input value={this.state.spouse_details.mobile_no} onChange={this.handleSpouseDetails.bind(this,'mobile_no')} type="text" className="form-control" id="inputSpouseMobileNo" />
+							    </div>
+								</div>
+							</div>}
+
+							{this.state.spouse_is_member === 'yes' && <div>
+								<div className={`form-group ${spouseDetailsError && spouseDetailsError.spouse ? 'has-error': ''}`}>
+									<label className="col-sm-4 control-label">Spouse Name</label>
+									<div className="col-sm-5">
+										<NameSearchInput userSelected={this.handleSpouseSelect.bind(this)} memberId={this.state.spouse} />
+										<p className="text-info form-control-static">*ensure that spouse has already been registered as member</p>
+									</div>
+								</div>
+							</div>}
+
+						</>}
+					</div>
 					</fieldset>
 
 					<fieldset>
-					<legend>Children Details:</legend>
-					<div className="form-group">
+					<legend><i onClick={this.toggleExpand.bind(this,'children')} className={`fa fa-${this.state.fieldExpanded.children ? "minus": "plus"}`} /> Children Details:</legend>
+					<div className={`form-group ${!this.state.fieldExpanded.children ? "hide": ""}`}>
 						<label htmlFor="inputCFirstname" className="col-sm-2 control-label">Children</label>
 						<div>
 							<div className="row">
@@ -553,60 +564,64 @@ export default class PersonalDetailsForm extends Component {
 					</fieldset>
 
 					<fieldset>
-					<legend>Parents Details:</legend>
-					<div className="form-group col-sm-4">
-						<label htmlFor="inputPFFirstname" className="col-sm-5 control-label">Father's First Name</label>
-						<div className="col-sm-7">
-				      <input value={this.state.data.father_first_name} onChange={this.handleInput.bind(this,'father_first_name')} type="text" className="form-control" id="inputPFFirstname" />
-				    </div>
-				  </div>
-				  <div className="form-group col-sm-4">
-				    <label htmlFor="inputPFMiddlename" className="col-sm-5 control-label">Father's Middle Name</label>
-				    <div className="col-sm-7">
-				      <input value={this.state.data.father_middle_name} onChange={this.handleInput.bind(this,'father_middle_name')} type="text" className="form-control" id="inputPFMiddlename" />
-				    </div>
-				  </div>
-				  <div className="form-group col-sm-4">
-				    <label htmlFor="inputPFLastname" className="col-sm-5 control-label">Father's Last Name</label>
-				    <div className="col-sm-7">
-				      <input value={this.state.data.father_last_name} onChange={this.handleInput.bind(this,'father_last_name')} type="text" className="form-control" id="inputPFLastname" />
-				    </div>
-					</div>
+					<legend><i onClick={this.toggleExpand.bind(this,'parents')} className={`fa fa-${this.state.fieldExpanded.parents ? "minus": "plus"}`} /> Parents Details:</legend>
+					<div className={`${!this.state.fieldExpanded.parents ? "hide": ""}`}>
+						<div className="form-group col-sm-4">
+							<label htmlFor="inputPFFirstname" className="col-sm-5 control-label">Father's First Name</label>
+							<div className="col-sm-7">
+					      <input value={this.state.data.father_first_name} onChange={this.handleInput.bind(this,'father_first_name')} type="text" className="form-control" id="inputPFFirstname" />
+					    </div>
+					  </div>
+					  <div className="form-group col-sm-4">
+					    <label htmlFor="inputPFMiddlename" className="col-sm-5 control-label">Father's Middle Name</label>
+					    <div className="col-sm-7">
+					      <input value={this.state.data.father_middle_name} onChange={this.handleInput.bind(this,'father_middle_name')} type="text" className="form-control" id="inputPFMiddlename" />
+					    </div>
+					  </div>
+					  <div className="form-group col-sm-4">
+					    <label htmlFor="inputPFLastname" className="col-sm-5 control-label">Father's Last Name</label>
+					    <div className="col-sm-7">
+					      <input value={this.state.data.father_last_name} onChange={this.handleInput.bind(this,'father_last_name')} type="text" className="form-control" id="inputPFLastname" />
+					    </div>
+						</div>
 
-					<div className="form-group col-sm-4">
-						<label htmlFor="inputPMFirstname" className="col-sm-5 control-label">Mother's First Name</label>
-						<div className="col-sm-7">
-				      <input value={this.state.data.mother_first_name} onChange={this.handleInput.bind(this,'mother_first_name')} type="text" className="form-control" id="inputPMFirstname" />
-				    </div>
-				  </div>
-				  <div className="form-group col-sm-4">
-				    <label htmlFor="inputPMMiddlename" className="col-sm-5 control-label">Mother's Middle Name</label>
-				    <div className="col-sm-7">
-				      <input value={this.state.data.mother_middle_name} onChange={this.handleInput.bind(this,'mother_middle_name')} type="text" className="form-control" id="inputPMMiddlename" />
-				    </div>
-				  </div>
-				  <div className="form-group col-sm-4">
-				    <label htmlFor="inputPMLastname" className="col-sm-5 control-label">Mother's Last Name</label>
-				    <div className="col-sm-7">
-				      <input value={this.state.data.mother_last_name} onChange={this.handleInput.bind(this,'mother_last_name')} type="text" className="form-control" id="inputPMLastname" />
-				    </div>
+						<div className="form-group col-sm-4">
+							<label htmlFor="inputPMFirstname" className="col-sm-5 control-label">Mother's First Name</label>
+							<div className="col-sm-7">
+					      <input value={this.state.data.mother_first_name} onChange={this.handleInput.bind(this,'mother_first_name')} type="text" className="form-control" id="inputPMFirstname" />
+					    </div>
+					  </div>
+					  <div className="form-group col-sm-4">
+					    <label htmlFor="inputPMMiddlename" className="col-sm-5 control-label">Mother's Middle Name</label>
+					    <div className="col-sm-7">
+					      <input value={this.state.data.mother_middle_name} onChange={this.handleInput.bind(this,'mother_middle_name')} type="text" className="form-control" id="inputPMMiddlename" />
+					    </div>
+					  </div>
+					  <div className="form-group col-sm-4">
+					    <label htmlFor="inputPMLastname" className="col-sm-5 control-label">Mother's Last Name</label>
+					    <div className="col-sm-7">
+					      <input value={this.state.data.mother_last_name} onChange={this.handleInput.bind(this,'mother_last_name')} type="text" className="form-control" id="inputPMLastname" />
+					    </div>
+						</div>
 					</div>
 					</fieldset>
 
 					<fieldset>
-					<legend>Account Details:</legend>
-					<div className="form-group">
-						<label htmlFor="inputSuspend" className="col-sm-2 control-label">Suspend Member</label>
-						<div className="col-sm-10">
-				      <input type="checkbox" checked={this.state.data.suspended} onChange={this.handleSuspend.bind(this)}/>
-				    </div>
+					<legend><i onClick={this.toggleExpand.bind(this,'account')} className={`fa fa-${this.state.fieldExpanded.account ? "minus": "plus"}`} /> Account Details:</legend>
+					<div className={`${!this.state.fieldExpanded.account ? "hide": ""}`}>
+						<div className="form-group">
+							<label htmlFor="inputSuspend" className="col-sm-2 control-label">Suspend Member</label>
+							<div className="col-sm-10">
+					      <input type="checkbox" checked={this.state.data.suspended} onChange={this.handleSuspend.bind(this)}/>
+					    </div>
+						</div>
+						{this.state.data.dummy && <div className="form-group">
+							<label className="col-sm-2 control-label">Dummy Member</label>
+							<div className="col-sm-10">
+					      <input type="checkbox" checked={this.state.data.dummy} onChange={this.handleDummy.bind(this)}/>
+					    </div>
+						</div>}
 					</div>
-					{this.state.data.dummy && <div className="form-group">
-						<label className="col-sm-2 control-label">Dummy Member</label>
-						<div className="col-sm-10">
-				      <input type="checkbox" checked={this.state.data.dummy} onChange={this.handleDummy.bind(this)}/>
-				    </div>
-					</div>}
 					</fieldset>
 
 					<div className="form-group">
