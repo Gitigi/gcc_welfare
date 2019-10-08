@@ -7,7 +7,7 @@ import { Link,Route,Redirect } from "react-router-dom";
 import NavLink from './navlink'
 import AnimatedSwitch from './animated-switch';
 import {FadeTransition} from './transitions';
-import DataEntry from './DataEntry';
+import Member from './Member';
 import Payment from './Payment';
 import Banking from './Banking';
 import Claim from './Claim';
@@ -99,7 +99,7 @@ class Home extends Component {
             render={() => <Redirect to="/home/dashboard" />}
           />
           <AnimatedSwitch>
-            <Route path={`${match.path}/members`} component={DataEntry} />
+            <Route path={`${match.path}/members`} component={Member} />
             <Route path={`${match.path}/receipt`} component={Payment} />
             <Route path={`${match.path}/dashboard`} component={Dashboard} />
             <Route path={`${match.path}/banking`} component={Banking} />
