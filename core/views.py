@@ -517,6 +517,9 @@ class PaymentViewSet(viewsets.ModelViewSet):
         msg = "Thank you %s %s %s for your welfare payment of amount %d on %s" % (
             member.first_name,member.middle_name,member.last_name,request.data['amount'],date.strftime('%d/%m/%Y'))
 
-        send_message([{'msg': msg, 'mobile_no':member.mobile_no}])
+        try:
+            send_message([{'msg': msg, 'mobile_no':member.mobile_no}])
+        except Exception as e:
+            pass
         
         return Response(PaymentSerializer(payment).data)
