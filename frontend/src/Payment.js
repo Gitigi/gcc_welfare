@@ -200,7 +200,7 @@ class PaymentForm extends Component {
 	confirm = React.createRef();
 	emptyData = {method: 'CA',amount: '', member: '', ref_no: '',
 		mobile_no: '', date_of_payment: null,bank_name: '',start_period: null}
-	state = {loading:false,data: {...this.emptyData},error: {},saved: false,member: {}};
+	state = {loading:false,data: {...this.emptyData},error: {},saved: false,member: {},advanced: false};
 
 	componentDidUpdate(prevProps,prevState) {
 		if(this.props.edit){
@@ -302,6 +302,13 @@ class PaymentForm extends Component {
 		})
 	}
 
+	toggleAdvanced(e) {
+		e.target.classList.toggle("fa-plus");
+		e.target.classList.toggle("fa-minus");
+		let expanded = this.state.advanced ? false : true;
+		this.setState({advanced: expanded});
+	}
+
 
 	render() {
 		let error = this.state.error;
@@ -386,12 +393,17 @@ class PaymentForm extends Component {
 				  </>}
 
 				  <div className="clearfix" />
-				  <div className={`form-group col-sm-6 ${error.start_period ? 'has-error': ''}`}>
-				  	<label className="col-sm-6 control-label">Set start period of payment (optional)</label>
-				  	<div className="col-sm-6">
-					      <DateInput value={this.state.data.start_period} onChange={this.handleInput.bind(this,'start_period')} type="text" placeholder="dd/mm/year" className="form-control" />
-					    </div>
-				  </div>
+				  <fieldset>
+						<legend><i onClick={this.toggleAdvanced.bind(this)} className={`fa fa-${this.state.advanced ? "minus": "plus"}`} /> Advanced Settings</legend>
+						<div className={`${!this.state.advanced ? "hide": ""}`}>
+						  <div className={`form-group col-sm-6 ${error.start_period ? 'has-error': ''}`}>
+						  	<label className="col-sm-6 control-label">Set start period of payment (optional)</label>
+						  	<div className="col-sm-6">
+							      <DateInput value={this.state.data.start_period} onChange={this.handleInput.bind(this,'start_period')} type="text" placeholder="dd/mm/year" className="form-control" />
+							    </div>
+						  </div>
+					  </div>
+				  </fieldset>
 
 				  <div className="clearfix" />
 
