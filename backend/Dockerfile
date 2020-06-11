@@ -8,10 +8,6 @@ RUN pip3 install --requirement /tmp/requirement.txt
 
 RUN apk del .build-deps
 
-ADD frontend/package.json package.json
-ENV NODE_PATH=/tmp/node_modules
-RUN yarn install --modules-folder $NODE_PATH
-
 RUN mkdir -p /usr/src/app
 
 WORKDIR /usr/src/app

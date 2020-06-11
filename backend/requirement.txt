@@ -7,3 +7,4 @@ phonenumbers==8.9.14
 python-dateutil==2.7.3
 xlrd==1.2.0
 openpyxl==2.6.2
+celery==3.1.18

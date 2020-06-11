@@ -12,23 +12,21 @@ services :
 
   nginx:
     image : nginx:1.17.0-alpine
-    deploy:
-      mode: global
     volumes:
-      - ./nginx-prod.conf:/etc/nginx/conf.d/default.conf
-      - data:/var/tmp
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
       - static:/etc/static
     depends_on:
-      - app
+      - backend
     ports: 
       - 80:80
       
-  app :
-    image: gcc-welfare
+  backend:
+    build: backend/
     volumes :
-      - .:/usr/src/app  #remove in production
-      - data:/var/tmp
+      - ./backend:/usr/src/app  #remove in production
       - static:/etc/static
+    ports:
+      - 8000:8000
     environment :
       - DEPLOY_ENV=prod
       - STATIC_ROOT=/etc/static
@@ -37,11 +35,15 @@ services :
       - DATABASE_URL=postgres://postgres:gcc_welfare@db:5432/gcc_welfare
       - AFRICASTALKING_USERNAME=gitigi
       - AFRICASTALKING_API_KEY=6c4c9f391ba14da5f5805e449a7b009ee343b799b4a43abef84285e52247030f
-
+      - BIZSMS_USER_ID=1219
+      - BIZSMS_PASSWORD=gcc2019password
+      - BIZSMS_SENDER_ID=GCC_KAYOLE
     depends_on:
       - db
 
+  frontend:
+    build: frontend/
+
 volumes:
-  data:
   static:
   pgdata:

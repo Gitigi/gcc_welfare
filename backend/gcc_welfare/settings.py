@@ -39,7 +39,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'core',
-    'frontend'
 ]
 
 MIDDLEWARE = [
@@ -59,7 +58,6 @@ STATICFILES_DIRS = [os.path.join(BASE_DIR,"frontend/build")]
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': ['frontend/build'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

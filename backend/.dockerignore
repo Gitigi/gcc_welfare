@@ -47,7 +47,7 @@ pip-selfcheck.json
 
 # mpeltonen/sbt-idea plugin
 .idea_modules/
-.idea/
+
 # JIRA plugin
 atlassian-ide-plugin.xml
 
@@ -152,16 +152,8 @@ ENV/
 # Rope project settings
 .ropeproject
 
+# compiled python files
+*.pyc
+
 /static
-/static/*
 /media
-
-frontend/node_modules
-frontend/transpiled
-frontend/static/js/index.js
-frontend/static/js/index.min.js
-frontend/static/js/index.js.map
-
-frontend_angular/transpiled
-
-db.sqlite3
