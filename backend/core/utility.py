@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework import status
 import phonenumbers
 from core.models import Member
-import time,requests,hashlib
+import time,requests,hashlib,random
 
 try:
     import urlparse
@@ -25,7 +25,7 @@ def send_message(messages,default_msg=None):
                 destinationAddr.append({
                         "MSISDN": phonenumbers.format_number(n, phonenumbers.PhoneNumberFormat.E164),
                         "LinkID": "",
-                        "SourceID": "2"
+                        "SourceID": str(random.randint(1,10))
                     })
                 if not default_msg:
                     messagePayload.append({"Text": message['msg'] + '\n-'})
@@ -55,7 +55,9 @@ def send_message(messages,default_msg=None):
         "DestinationAddr": destinationAddr
     }
     print(payload)
-    return requests.post("http://api.bizsms.co.ke/submit2.php",json=payload)
+    response = requests.post("http://api.bizsms.co.ke/submit2.php",json=payload)
+    print(response.json())
+    return response
 
 def search_name(name):
     like_op = 'like' if 'sqlite' in settings.DATABASES['default']['ENGINE'].split('.')[-1] else 'ilike'

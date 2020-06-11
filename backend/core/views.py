@@ -8,7 +8,7 @@ from rest_framework import viewsets,status
 from rest_framework.permissions import AllowAny,DjangoModelPermissions
 from core.serializers import UserSerializer, MemberSerializer,MemberSerializerMini, PaymentSerializer, PeriodSerializer,\
     BankingSerializer, NoteSerializer, NotificationSerializer, LibrarySerializer, ClaimSerializer, ChildSerializer, ExpenditureSerializer
-from core.models import Member,Payment,Period,Banking,Note, Notification, Library, Claim, Expenditure, Child, BankingNotification
+from core.models import Member,Payment,Period,Banking,Note, Notification, Library, Claim, Expenditure, Child, BankingNotification, SmsMessage
 import datetime
 from dateutil.relativedelta import relativedelta
 from django.db.models import Q,Sum,Max,F,Count
@@ -323,7 +323,8 @@ class BankingViewSet(viewsets.ModelViewSet):
         response = super().create(request)
         msg = f'Banking for welfare of Kshs {request.data["amount"]} has been booked into the Welfare System'
         numbers = list(BankingNotification.objects.all().values('mobile_no'))
-        send_message(numbers,default_msg=msg)
+        for number in numbers:
+            SmsMessage.objects.create(msg=msg, mobile_no=number['mobile_no'])
         return response
 
 class ClaimViewSet(viewsets.ModelViewSet):
@@ -384,71 +385,6 @@ class NotificationViewSet(viewsets.ModelViewSet):
     permission_classes = [DjangoModelPermissions]
     queryset = Notification.objects.all().order_by('-date')
     serializer_class = NotificationSerializer
-
-    def create(self,request):
-        serializer = NotificationSerializer(data=request.data)
-        if not serializer.is_valid():
-            return Response(serializer.errors,status.HTTP_400_BAD_REQUEST)
-
-        serializer.save()
-        numbers = Member.objects.filter()
-        if request.data['target'] == 'individual':
-            numbers = numbers.filter(id__in=request.data['contacts'].split(';'))
-        else:
-            today = datetime.datetime.today()
-            numbers = numbers.filter(dummy=False)
-            #get list of member who have contributed for current period
-            p = Payment.objects.filter(period__period__year=today.year,period__period__month=today.month).values_list('member')
-            if request.data['status'] == 'active':
-                numbers = numbers.filter(suspended=False)
-            elif request.data['status'] == 'suspended':
-                numbers = numbers.filter(suspended=True)
-            if request.data['contribution'] == 'up-to-date':
-                numbers = numbers.filter(id__in=p)
-            elif request.data['contribution'] == 'lagging':
-                numbers = numbers.annotate(payment_count=Count('payment')).filter(payment_count__gt = 0).exclude(id__in=p)
-            elif request.data['contribution'] == 'dormant':
-                numbers = numbers.annotate(payment_count=Count('payment')).filter(payment_count = 0)
-
-        numbers = list(numbers)
-        msg = request.data['heading'] + '\n' + request.data['body']
-        threading.Thread(target=self.send_message,args=(numbers,msg,)).start()
-        return Response(serializer.data)
-
-    def send_message(self,members,msg_original):
-        if not re.search(r'#(NAME|LAST_PAYED_PERIOD|NUMBER_OF_UNPAYED_PERIOD|CURRENT_PERIOD|UNPAYED_PERIOD)',msg_original):
-            numbers = [n.mobile_no for n in members]
-            messages = [{'mobile_no': m.mobile_no} for m in members]
-            send_message(messages,default_msg=msg_original)
-        else:
-            messages = []
-            for m in members:
-                msg = msg_original
-                name = m.first_name.upper() + ' ' + m.middle_name.upper() + ' ' + m.last_name.upper()
-                current_period = datetime.date.today().replace(day=1).strftime('%d/%m/%Y')
-                unpayed_period = m.date_joined if m.date_joined.year > 2016 else datetime.date(2017,1,1)
-                unpayed_period += relativedelta(day=1)
-                last_payed_period = Period.objects.filter(period__year__gt=2016,payment__member=m).order_by('-period').first()
-                if last_payed_period:
-                    unpayed_period = last_payed_period.period + relativedelta(months=+1,day=1)
-                    last_payed_period = last_payed_period.period.strftime('%d/%m/%Y')
-                else:
-                    last_payed_period = 'No record of payment'
-                
-                time_diff = relativedelta(datetime.date.today(),unpayed_period)
-                number_of_unpayed_period = (time_diff.years * 12) + time_diff.months
-                number_of_unpayed_period += 1 if datetime.date.today().month >= unpayed_period.month else 0
-                unpayed_period = unpayed_period.strftime('%d/%m/%Y')
-                if number_of_unpayed_period > 1:
-                    unpayed_period = unpayed_period + ' - ' + current_period
-
-                msg = re.sub('#NAME',name,msg)
-                msg = re.sub('#CURRENT_PERIOD',current_period,msg)
-                msg = re.sub('#LAST_PAYED_PERIOD',last_payed_period,msg)
-                msg = re.sub('#UNPAYED_PERIOD',unpayed_period,msg)
-                msg = re.sub('#NUMBER_OF_UNPAYED_PERIOD',str(number_of_unpayed_period),msg)
-                messages.append({'msg': msg, 'mobile_no': m.mobile_no})
-            send_message(messages)
 
 class PaymentViewSet(viewsets.ModelViewSet):
     permission_classes = [DjangoModelPermissions]
@@ -518,7 +454,7 @@ class PaymentViewSet(viewsets.ModelViewSet):
             member.first_name,member.middle_name,member.last_name,request.data['amount'],date.strftime('%d/%m/%Y'))
 
         try:
-            send_message([{'msg': msg, 'mobile_no':member.mobile_no}])
+            SmsMessage.objects.create(msg=msg, mobile_no=member.mobile_no)
         except Exception as e:
             pass
         
