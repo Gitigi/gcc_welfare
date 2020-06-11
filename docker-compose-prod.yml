@@ -44,6 +44,12 @@ services :
   frontend:
     build: frontend/
 
+  redis:
+    image: redis:5.0.7-alpine
+    volumes:
+      - redis-data:/var/lib/redis
+
 volumes:
   static:
   pgdata:
+  redis-data:

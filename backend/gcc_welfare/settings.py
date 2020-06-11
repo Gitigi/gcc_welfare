@@ -23,7 +23,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = 'xu__o7_6$)g6#qwu04et_0re!$0kig_yy=890w+!+^i5n=#9_n'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False if os.environ.get('DEPLOY_ENV', '') == 'prod' else True
 
 ALLOWED_HOSTS = ['*']
 
@@ -52,8 +52,6 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'gcc_welfare.urls'
-
-STATICFILES_DIRS = [os.path.join(BASE_DIR,"frontend/build")]
 
 TEMPLATES = [
     {
