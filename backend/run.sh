@@ -12,13 +12,16 @@ fi
 python3 manage.py migrate --noinput
 python3 manage.py collectstatic --noinput
 
-celery multi start worker1 -A gcc_welfare --pidfile="$HOME/run/celery/%n.pid" --logfile="$HOME/log/celery/%n.log"
+#start celery as a daemon
+#celery multi start worker1 -A gcc_welfare --pidfile="$HOME/run/celery/%n.pid" --logfile="$HOME/log/celery/%n.log"
 
 if [ $DEPLOY_ENV == prod ] || [ $DEPLOY_ENV == stagging ];
 then
+		celery -A gcc_welfare worker -l info & \
     uwsgi --vacuum --plugin python3 --enable-threads --thunder-lock\
     --ini uwsgi.ini:prod
 else
+		celery -A gcc_welfare worker -l info & \
     uwsgi --vacuum --plugin python3 --ini uwsgi.ini
 fi
 
