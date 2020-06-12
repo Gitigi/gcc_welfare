@@ -19,6 +19,7 @@ export default class Notification extends Component {
 					<AnimatedSwitch>
 						<Route exact path={`${this.props.match.path}`} component={SendNotification} />
 						<Route path={`${this.props.match.path}/custom`} component={SendCustomNotification} />
+						<Route path={`${this.props.match.path}/sent/:notificationId`} component={SentNotificationInfo} />
 						<Route path={`${this.props.match.path}/sent`} component={SentNotification} />
 					</AnimatedSwitch>
 				</div>
@@ -316,6 +317,7 @@ class SentNotification extends Component {
 							<th>Heading</th>
 							<th>Body</th>
 							<th>Target</th>
+							<th>Info</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -325,11 +327,77 @@ class SentNotification extends Component {
 									<td>{n.heading}</td>
 									<td>{n.body}</td>
 									<td>{n.target}</td>
+									<td><Link to={`${this.props.match.path}/${n.id}`} className="btn btn-info" ><i className="fa fa-info"></i></Link></td>
 								</tr>
 						})}
 					</tbody>
 				</table>
 				<Pagination goto={this.gotoPage.bind(this)} data={this.state.notifications} />
 			</div>
+	}
+}
+
+class SentNotificationInfo extends Component {
+	state = {}
+	componentDidMount() {
+		axios.get(`/api/notification/${this.props.match.params.notificationId}`).then(res=>{
+			this.setState({data: res.data});
+		})
+	}
+
+	resendMessage = (event) => {
+		console.log(event.target.getAttribute('data-id'));
+		let smsId = event.target.getAttribute('data-id');
+		let ref = 'loading_' + smsId
+		console.log(ref);
+		this.setState({[ref]: true});
+		axios.post(`/api/resend-sms/${smsId}`,{})
+		.then(response=>{
+			let data = {...this.state.data};
+			data.sms_messages = data.sms_messages.map(sms => sms.id == smsId ? response.data : sms);
+			this.setState({data});
+		}, error=>{
+			console.log(error.response.data);
+		})
+		.finally(()=>this.setState({[ref]: false}))
+	}
+
+	render() {
+		return <div>
+			<h2>Notification Details</h2>
+			{this.state.data && <div>
+				<span class="h4">{this.state.data.heading}</span> &nbsp;
+				<span class="blockquote">{this.state.data.body}</span>
+			</div> }
+			<table className="table table-striped table-responsive">
+					<thead>
+						<tr>
+							<th>Name</th>
+							<th>Number</th>
+							<th>Status</th>
+							<th>Action</th>
+						</tr>
+					</thead>
+					<tbody>
+						{this.state.data && this.state.data.sms_messages.map(sms=>{
+							return <tr key={sms.id}>
+									<td>{sms.member__first_name} {sms.member__middle_name}</td>
+									<td>{sms.member__mobile_no}</td>
+									<td>{sms.status_desc}</td>
+									<td>
+										{sms.status_code == '1001'
+											? <i className="fa fa-check-circle"></i>
+											: <button data-id={`${sms.id}`} onClick={this.resendMessage} className="btn btn-warning" disabled={this.state[`loading_${sms.id}`]}>
+												{this.state[`loading_${sms.id}`] && <i className={`fa fa-circle-o-notch fa-spin`}></i>}
+												&nbsp; Resend <i className='fa fa-location-arrow'></i>
+											</button>
+										}
+									</td>
+								</tr>
+						})}
+					</tbody>
+				</table>
+		</div>
+
 	}
 }

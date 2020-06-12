@@ -15,6 +15,7 @@ from django.db.models import Q,Sum,Max,F,Count
 from .utility import send_message,add_params_to_url,paginate_list,paginate_query_by_field,search_name as utility_search_name
 from django.core.paginator import Paginator
 import re,threading
+from . import tasks
 
 @ensure_csrf_cookie
 @api_view(['GET', 'POST'])
@@ -128,6 +129,20 @@ def payment_distribution(request):
     page_number = request.GET.get('page',1)
     return paginate_query_by_field(p,page_number,url,'period__year')
 
+@api_view(['POST'])
+def resend_sms(request,pk):
+    response = tasks.send_sms.apply(pk).get()
+    sms_messages = SmsMessage.objects.get(id = pk)
+    return Response({
+        'id': sms_messages.id,
+        'member__first_name': sms_messages.member.first_name,
+        'member__last_name': sms_messages.member.first_name,
+        'member__mobile_no': sms_messages.member.mobile_no,
+        'status_code': sms_messages.status_code,
+        'status_desc': sms_messages.status_desc
+        })
+
+
 class MemberViewSet(viewsets.ModelViewSet):
     permission_classes = [DjangoModelPermissions]
     queryset = Member.objects.all().order_by('first_name')
@@ -146,7 +161,7 @@ class MemberViewSet(viewsets.ModelViewSet):
             elif self.request.GET['status'] == 'upto-date':
                 members = members.filter(dummy=False,suspended=False).filter(id__in = p)
             elif self.request.GET['status'] == 'lagging':
-                members = members.filter(dummy=False,suspended=False).filter(id__in=Payment.objects.all().values_list('member')).exclude(id__in = p)
+                members = members.filter(dummy=False,suspended=False).exclude(id__in = p)
             elif self.request.GET['status'] == 'dormant':
                 members = members.filter(dummy=False,suspended=False).exclude(id__in=Payment.objects.all().values_list('member'))
         if self.request.GET.get('search'):
@@ -385,6 +400,14 @@ class NotificationViewSet(viewsets.ModelViewSet):
     permission_classes = [DjangoModelPermissions]
     queryset = Notification.objects.all().order_by('-date')
     serializer_class = NotificationSerializer
+
+    def retrieve(self,request,pk):
+        notification = Notification.objects.get(id=pk)
+        serializer = NotificationSerializer(notification)
+        data = serializer.data
+        data['sms_messages'] = SmsMessage.objects.filter(notification=pk).values('id', 'member__first_name', 'member__middle_name', 'member__mobile_no', 'status_code', 'status_desc')
+        return Response(data)
+
 
 class PaymentViewSet(viewsets.ModelViewSet):
     permission_classes = [DjangoModelPermissions]

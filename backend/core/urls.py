@@ -24,5 +24,6 @@ urlpatterns = [
     path('payment-distribution/',views.payment_distribution),
     path('contribution-vs-claim',views.contribution_vs_claim),
     path('banking-report/',views.banking_report),
+    path('resend-sms/<int:pk>', views.resend_sms),
     path('',include(router.urls))
 ]

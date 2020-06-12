@@ -16,7 +16,8 @@ def send_sms(batch):
     destinationAddr = []
     messagePayload = []
     for param in batch:
-        sms_message = SmsMessage.objects.get(id=param.args[0])
+        id = param.args if type(param.args) == int else param.args[0] #The Batches base calls the task with inconsistent params when used with delay and apply
+        sms_message = SmsMessage.objects.get(id=id)
         message = sms_message.get_message()
         try:
             n = phonenumbers.parse(message['mobile_no'],'KE')

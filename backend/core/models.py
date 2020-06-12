@@ -4,6 +4,7 @@ from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
 import datetime, threading, re
 from dateutil.relativedelta import relativedelta
+from django.db.models import Count
 
 class Member(models.Model):
     first_name = models.CharField(max_length=30,blank=False,null=False,default='',db_index=True)
@@ -160,10 +161,6 @@ class SmsMessage(models.Model):
 
         return {'msg': msg, 'mobile_no': self.member.mobile_no}
 
-    def send_message(self):
-        from .utility import send_message as send_message_utility
-        threading.Thread(target=send_message_utility,args=([self.get_message()],)).start()
-
 
 
 @receiver(post_delete, sender=Library)
@@ -189,7 +186,7 @@ def send_messages_on_save(sender, instance, created, *args, **kwargs):
         if instance.contribution == 'up-to-date':
             members = members.filter(id__in=p)
         elif instance.contribution == 'lagging':
-            members = members.annotate(payment_count=Count('payment')).filter(payment_count__gt = 0).exclude(id__in=p)
+            members = members.annotate(payment_count=Count('payment')).exclude(id__in=p)
         elif instance.contribution == 'dormant':
             members = members.annotate(payment_count=Count('payment')).filter(payment_count = 0)
     for member in members:
