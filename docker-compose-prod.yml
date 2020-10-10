@@ -18,15 +18,13 @@ services :
     depends_on:
       - backend
     ports: 
-      - 80:80
+      - 8300:80
       
   backend:
     build: backend/
     volumes :
       - ./backend:/usr/src/app  #remove in production
       - static:/etc/static
-    ports:
-      - 8000:8000
     environment :
       - DEPLOY_ENV=prod
       - STATIC_ROOT=/etc/static
